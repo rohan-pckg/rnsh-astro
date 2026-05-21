@@ -16,6 +16,8 @@
     "@astrojs/react": "^4.4.2",
     "@base-ui/react": "^1.5.0",
     "@fontsource-variable/geist": "^5.2.9",
+    "@lottiefiles/dotlottie-react": "^0.19.4",
+    "@lottiefiles/dotlottie-web": "^0.74.0",
     "@remixicon/react": "^4.9.0",
     "@tailwindcss/vite": "^4.2.1",
     "@types/react": "^19.2.14",
