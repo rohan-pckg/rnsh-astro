@@ -6,24 +6,24 @@ import DinoAnimation from "../../public/lottie/cat-peek.json"
 ---
 
 <Layout>
-  <div class="flex min-h-svh place-content-center p-32">
-    <div class="flex max-w-md min-w-0 flex-col gap-4 text-sm leading-loose">
-      <div>
-        <LottiePlayer
-          animationData={DinoAnimation}
-          className="h-8 w-8"
-          client:visible
-        />
-        <h1 class="my-6 font-medium">
-          <span class="text-muted-foreground">Hi, I'm</span> Rohan
-        </h1>
-        <p class="my-6 text-base/6 text-sm text-muted-foreground">
-          I’m a design engineer working across code, design, and motion. Always
-          experimenting. Always learning. Always exploring.
-        </p>
+  <div class="flex min-h-svh items-center justify-center px-6 py-16 sm:px-32">
+    <div class="flex w-full max-w-md flex-col gap-4 text-sm leading-loose">
+      <LottiePlayer
+        animationData={DinoAnimation}
+        className="h-8 w-8"
+        client:visible
+      />
+      <h1 class="my-6 font-medium">
+        <span class="text-muted-foreground">Hi, I'm</span> Rohan
+      </h1>
+      <p class="my-6 text-base/6 text-sm text-muted-foreground">
+        I'm a design engineer working across code, design, and motion. Always
+        experimenting. Always learning. Always exploring.
+      </p>
 
-        <Button client:load className="mt-2">Get in Touch</Button>
-      </div>
+      <a href="mailto:rnsh.space@gmail.com">
+        <Button className="mt-2">Get in Touch</Button>
+      </a>
     </div>
   </div>
 </Layout>
