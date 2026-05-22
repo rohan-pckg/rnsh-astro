@@ -1,5 +1,6 @@
 ---
 import "@/styles/global.css"
+const { pathname } = Astro.url
 ---
 
 <html lang="en">
@@ -9,7 +10,11 @@ import "@/styles/global.css"
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>\(^-^)/</title>
   </head>
-  <body>
-    <slot />
+  <body class="bg-background text-foreground">
+    <div class="mx-auto max-w-2xl px-6">
+      <main>
+        <slot />
+      </main>
+    </div>
   </body>
 </html>
