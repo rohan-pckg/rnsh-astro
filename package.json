@@ -13,6 +13,7 @@
     "typecheck": "astro check"
   },
   "dependencies": {
+    "@astrojs/mdx": "^5.0.6",
     "@astrojs/react": "^4.4.2",
     "@base-ui/react": "^1.5.0",
     "@fontsource-variable/geist": "^5.2.9",
