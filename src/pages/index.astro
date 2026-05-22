@@ -6,7 +6,7 @@ import DinoAnimation from "../../public/lottie/cat-peek.json"
 ---
 
 <Layout>
-  <div class="flex min-h-svh items-center justify-center px-6 py-16 sm:px-32">
+  <div class="flex min-h-svh justify-center px-6 py-32 sm:px-32">
     <div class="flex w-full max-w-md flex-col gap-4 text-sm leading-loose">
       <LottiePlayer
         animationData={DinoAnimation}
@@ -16,14 +16,33 @@ import DinoAnimation from "../../public/lottie/cat-peek.json"
       <h1 class="my-6 font-medium">
         <span class="text-muted-foreground">Hi, I'm</span> Rohan
       </h1>
-      <p class="my-6 text-base/6 text-sm text-muted-foreground">
-        I'm a design engineer working across code, design, and motion. Always
-        experimenting. Always learning. Always exploring.
+
+      <p class="my-6 text-base/5 text-sm text-muted-foreground">
+        I’m interested in interfaces, motion, systems, and the web. Sometimes I
+        share my <span class="font-medium"><a href="/blogs">thoughts</a> </span>
+        <i class="ri-quill-pen-fill"></i>, sometimes I ship <span
+          class="font-medium"
+          ><a href="/blogs">projects</a>
+        </span>
+        <i class="ri-folder-6-fill"></i> , and sometimes I disappear into the <span
+          class="font-medium"
+          ><a href="/blogs">lab</a>
+        </span><i class="ri-space-ship-2-fill"></i>
+        to experiment with weird ideas.
       </p>
 
-      <a href="mailto:rnsh.space@gmail.com">
-        <Button className="mt-2">Get in Touch</Button>
-      </a>
+      <div class="contact flex gap-2.5">
+        <a href="mailto:rnsh.space@gmail.com">
+          <Button className="mt-2" variant={"secondary"}>
+            <i class="ri-mail-line"></i>Email</Button
+          >
+        </a>
+        <a href="https://github.com/rohan-pckg">
+          <Button className="mt-2" variant={"secondary"}
+            ><i class="ri-github-fill"></i>Github</Button
+          >
+        </a>
+      </div>
     </div>
   </div>
 </Layout>
