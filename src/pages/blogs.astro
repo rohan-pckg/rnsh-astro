@@ -27,7 +27,7 @@ const posts = (await getCollection("writing"))
         <ul class="flex flex-col gap-4">
           {
             posts.map((post) => (
-              <li class="mb-4 border-b border-border pb-4 last:border-none">
+              <li class="mb-4 pb-4 last:border-none">
                 <a
                   href={`/writing/${post.slug}`}
                   class="group flex flex-col gap-1"
