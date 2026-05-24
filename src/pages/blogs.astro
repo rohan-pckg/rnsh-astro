@@ -30,10 +30,12 @@ const posts = (await getCollection("writing"))
               <li class="w-full">
                 <a
                   href={`/writing/${post.slug}`}
-                  class="group flex items-center justify-between bg-gray-100 px-4 py-4 transition-colors hover:bg-gray-200"
+                  class="group border-2transition-colors borde flex items-center justify-between"
                 >
                   <div class="flex flex-col gap-1">
-                    <span class="text-foreground">{post.data.title}</span>
+                    <span class="text-muted-foreground underline">
+                      {post.data.title}
+                    </span>
 
                     <span class="text-xs text-muted-foreground">
                       {post.data.date.toLocaleDateString("en-US", {
@@ -43,8 +45,6 @@ const posts = (await getCollection("writing"))
                       })}
                     </span>
                   </div>
-
-                  <i class="ri-arrow-right-up-long-line text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                 </a>
               </li>
             ))
