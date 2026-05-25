@@ -10,7 +10,7 @@ export default function LottiePlayer({
     className = "",
 }: Props) {
     return (
-        <div className={className}>
+        <div className={`${className} dark:bg-zinc-100 dark:rounded-full transition-all duration-300`}>
             <DotLottieReact
                 data={animationData}
                 loop
