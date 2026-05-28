@@ -1,25 +1,65 @@
 ---
 import Layout from "@/layouts/main.astro"
-import { Button } from "@/components/ui/button"
-import LottiePlayer from "@/components/ui/lottie"
-import DinoAnimation from "../../public/lottie/cat-peek.json"
+import { getCollection } from "astro:content"
+
+const designs = (await getCollection("design"))
+  .filter((d) => !d.data.draft)
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
 ---
 
 <Layout>
   <div class="flex min-h-svh justify-center px-2 py-32 sm:px-16">
     <div class="flex w-full max-w-md flex-col gap-4 text-sm leading-loose">
-      <!-- <a href="/">
-        <LottiePlayer
-          animationData={DinoAnimation}
-          className="h-8 w-8"
-          client:visible
-        />
-      </a> -->
+      <a
+        href="/"
+        class="flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
+      >
+        <i class="ri-arrow-left-line"></i> Back
+      </a>
+
       <h1 class="my-6 font-medium">
         <span class="text-muted-foreground opacity-50"
-          >Design Explorations - Under Construction</span
+          >Design Explorations...</span
         >
       </h1>
+
+      <div class="flex gap-8">
+        <ul class="flex w-full flex-col gap-6">
+          {
+            designs.map((design) => (
+              <li class="w-full">
+                <a
+                  href={`/design/${design.slug}`}
+                  class="group flex flex-col gap-3 transition-all"
+                >
+                  {design.data.thumbnail && (
+                    <div class="relative aspect-video w-full overflow-hidden bg-muted">
+                      <img
+                        src={design.data.thumbnail}
+                        alt={design.data.title}
+                        class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      />
+                    </div>
+                  )}
+                  <div class="flex flex-row place-content-between py-1">
+                    <span class="font-medium text-foreground underline underline-offset-4 transition-colors group-hover:text-pink-500">
+                      {design.data.title}
+                    </span>
+
+                    <span class="mt-1 text-xs text-muted-foreground">
+                      {design.data.date.toLocaleDateString("en-US", {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      })}
+                    </span>
+                  </div>
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
     </div>
   </div>
 </Layout>

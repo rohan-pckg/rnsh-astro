@@ -11,4 +11,15 @@ const writing = defineCollection({
     }),
 });
 
-export const collections = { writing };
+
+const design = defineCollection({
+    type: "content",
+    schema: z.object({
+        thumbnail: z.string(),
+        title: z.string(),
+        description: z.string(),
+        date: z.date(),
+        draft: z.boolean().default(false),
+    }),
+});
+export const collections = { writing, design };
