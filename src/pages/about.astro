@@ -1,0 +1,48 @@
+---
+import Layout from "@/layouts/main.astro"
+import { Button } from "@/components/ui/button"
+---
+
+<Layout>
+  <div class="flex min-h-svh justify-center px-2 py-32 sm:px-16">
+    <div class="flex w-full max-w-md flex-col gap-4 text-sm leading-loose">
+      <a
+        href="/"
+        class="flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
+      >
+        <i class="ri-arrow-left-line"></i> Back
+      </a>
+
+      <h1 class="my-6 font-medium">
+        <span class="text-muted-foreground opacity-50">So, who am I?</span>
+      </h1>
+
+      <!-- Profile -->
+      <div class="flex flex-col gap-0.5">
+        <span class="font-medium">Rohan Singh</span>
+        <span class="text-xs text-muted-foreground">23 · Mumbai, India</span>
+      </div>
+
+      <!-- Bio -->
+      <p class="text-sm/7 text-muted-foreground">
+        I'm a designer and developer who enjoys building clean, functional
+        interfaces. I care about the details - typography, spacing, motion - and
+        how they shape the way people experience the web. Currently exploring
+        systems thinking, open-source, and creative tooling.
+      </p>
+
+      <p class="text-sm/7 text-muted-foreground">
+        When I'm not at a screen, I'm probably walking, taking pictures , or
+        probably thinking...
+      </p>
+
+      <a
+        href="/resume.pdf"
+        target="_blank"
+        class="inline-flex w-fit items-center gap-1.5 text-xs font-medium text-foreground underline underline-offset-4 transition-colors hover:text-orange-500"
+      >
+        View Resume
+      </a>
+    </div>
+  </div>
+</Layout>

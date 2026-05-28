@@ -8,13 +8,9 @@ import DinoAnimation from "../../public/lottie/cat-peek.json"
 <Layout>
   <div class="flex min-h-svh justify-center px-2 py-32 sm:px-16">
     <div class="flex w-full max-w-md flex-col gap-4 text-sm leading-loose">
-      <!-- <a href="/">
-        <LottiePlayer
-          animationData={DinoAnimation}
-          className="h-8 w-8"
-          client:visible
-        />
-      </a> -->
+      <div id="ascii-cat" class="ascii-cat" role="img" aria-label="A cute cat">
+        <pre id="cat-art"></pre>
+      </div>
       <h1 class="my-6 flex items-center gap-2 font-medium">
         <span><span class="text-muted-foreground">Hi, I'm</span> Rohan</span>
         <button
@@ -26,27 +22,26 @@ import DinoAnimation from "../../public/lottie/cat-peek.json"
       </h1>
 
       <p class="my-6 text-sm/7 text-muted-foreground">
-        I’m interested in interfaces, motion, systems, and the web. Sometimes I
-        share my <span
-          class="bg-blue-100 px-1 font-medium transition-colors duration-200 hover:bg-blue-400 hover:text-white dark:bg-blue-950/50 dark:text-blue-300 dark:hover:bg-blue-500 dark:hover:text-white"
+        I'm interested in interfaces, motion, systems, and the web. This space
+        is part <span
+          class="mr-1 bg-orange-100 px-0.5 font-medium transition-colors duration-200 hover:bg-orange-400 hover:text-white dark:bg-orange-950/50 dark:text-orange-300 dark:hover:bg-orange-500 dark:hover:text-white"
+          ><a href="/about" class="pr-1">about</a><i class="ri-user-5-fill"></i>
+        </span> me, part <span
+          class="mr-1 bg-blue-100 px-0.5 font-medium transition-colors duration-200 hover:bg-blue-400 hover:text-white dark:bg-blue-950/50 dark:text-blue-300 dark:hover:bg-blue-500 dark:hover:text-white"
           ><a href="/blogs" class="pr-1"> thoughts</a><i
             class="ri-quill-pen-fill"></i>
         </span>
-        sometimes I ship <span
-          class="bg-indigo-100 px-1 font-medium transition-colors duration-200 hover:bg-indigo-400 hover:text-white dark:bg-indigo-950/50 dark:text-indigo-300 dark:hover:bg-indigo-500 dark:hover:text-white"
+        , part <span
+          class="mr-1 bg-indigo-100 px-0.5 font-medium transition-colors duration-200 hover:bg-indigo-400 hover:text-white dark:bg-indigo-950/50 dark:text-indigo-300 dark:hover:bg-indigo-500 dark:hover:text-white"
           ><a href="/projects" class="pr-1">projects</a><i
             class="ri-folder-6-fill"></i>
         </span>
-        and sometimes I disappear into the <span
-          class="bg-orange-100 px-1 font-medium transition-colors duration-200 hover:bg-orange-400 hover:text-white dark:bg-orange-950/50 dark:text-orange-300 dark:hover:bg-orange-500 dark:hover:text-white"
-          ><a href="/lab" class="pr-1">lab</a><i class="ri-space-ship-2-fill"
-          ></i>
-        </span>
-        to experiment with weird ideas. and ofcourse some <span
-          class="bg-pink-100 px-1 font-medium transition-colors duration-200 hover:bg-pink-400 hover:text-white dark:bg-pink-950/50 dark:text-pink-300 dark:hover:bg-pink-500 dark:hover:text-white"
+        and part, <span
+          class="mr-1 bg-pink-100 px-0.5 font-medium transition-colors duration-200 hover:bg-pink-400 hover:text-white dark:bg-pink-950/50 dark:text-pink-300 dark:hover:bg-pink-500 dark:hover:text-white"
           ><a href="/design" class="pr-1">design</a><i
             class="ri-artboard-2-fill"></i>
         </span>
+        experiments.
       </p>
 
       <div class="contact flex gap-2.5">
@@ -78,5 +73,126 @@ import DinoAnimation from "../../public/lottie/cat-peek.json"
         }
       })
     }
+
+    // Cat states
+    const cat = {
+      idle:    "  ╱|、\n(˚ˎ 。7\n |、˜〵\n じしˍ,)ノ",
+      blink:   "  ╱|、\n(– ˎ –7\n |、˜〵\n じしˍ,)ノ",
+      hover:   "  ╱|、\n(⁰ˎ ⁰7\n |、˜〵\n じしˍ,)ノ",
+      pet:     "  ╱|、\n(˚ˎ 。7  ♡\n |、˜〵\n じしˍ,)ノ",
+      sleep:   "  ╱|、\n(- ˎ -7  zzz\n |、˜〵\n じしˍ,)ノ",
+    }
+
+    const catEl = document.getElementById("ascii-cat")
+    const catArt = document.getElementById("cat-art")
+    if (catEl && catArt) {
+      let state = "idle"
+      let petCount = 0
+      let sleepTimer: ReturnType<typeof setTimeout> | null = null
+
+      function render(s: string) {
+        catArt.textContent = cat[s as keyof typeof cat]
+      }
+
+      render("idle")
+
+      // Blink every 3-5s when idle
+      function scheduleBlink() {
+        const delay = 3000 + Math.random() * 2000
+        setTimeout(() => {
+          if (state === "idle") {
+            render("blink")
+            setTimeout(() => {
+              if (state === "idle") render("idle")
+            }, 150)
+          }
+          scheduleBlink()
+        }, delay)
+      }
+      scheduleBlink()
+
+      // Hover → curious eyes
+      catEl.addEventListener("mouseenter", () => {
+        state = "hover"
+        render("hover")
+        if (sleepTimer) { clearTimeout(sleepTimer); sleepTimer = null }
+      })
+
+      catEl.addEventListener("mouseleave", () => {
+        state = "idle"
+        petCount = 0
+        render("idle")
+        // Fall asleep after 8s of no interaction
+        sleepTimer = setTimeout(() => {
+          if (state === "idle") {
+            state = "sleep"
+            render("sleep")
+          }
+        }, 8000)
+      })
+
+      // Click → pet → heart + nudge
+      catEl.addEventListener("click", () => {
+        petCount++
+        state = "pet"
+        render("pet")
+        catEl.classList.remove("petted")
+        void catEl.offsetWidth
+        catEl.classList.add("petted")
+        setTimeout(() => {
+          if (state === "pet") {
+            state = "hover"
+            render("hover")
+          }
+          catEl.classList.remove("petted")
+        }, 1200)
+      })
+
+      // Initial sleep timer
+      sleepTimer = setTimeout(() => {
+        if (state === "idle") {
+          state = "sleep"
+          render("sleep")
+        }
+      }, 8000)
+    }
   </script>
+
+  <style>
+    .ascii-cat {
+      font-family: monospace;
+      font-size: 11px;
+      line-height: 1.35;
+      margin: 0;
+      color: var(--foreground);
+      opacity: 0.3;
+      cursor: pointer;
+      user-select: none;
+      transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+      width: fit-content;
+      transform: translateY(0);
+    }
+
+    .ascii-cat:hover {
+      opacity: 0.6;
+      transform: translateY(-2px);
+    }
+
+    .ascii-cat.petted {
+      animation: nudge 0.3s ease;
+    }
+
+    .ascii-cat pre {
+      margin: 0;
+      font: inherit;
+      transition: opacity 0.15s ease;
+    }
+
+    @keyframes nudge {
+      0%, 100% { transform: translateY(-2px); }
+      30% { transform: translateY(-4px) rotate(-2deg); }
+      60% { transform: translateY(-3px) rotate(1deg); }
+    }
+  </style>
 </Layout>
+

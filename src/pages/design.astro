@@ -33,7 +33,7 @@ const designs = (await getCollection("design"))
                   class="group flex flex-col gap-3 transition-all"
                 >
                   {design.data.thumbnail && (
-                    <div class="relative aspect-video w-full overflow-hidden bg-muted">
+                    <div class="relative aspect-video w-full overflow-hidden border bg-muted">
                       <img
                         src={design.data.thumbnail}
                         alt={design.data.title}
