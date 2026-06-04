@@ -48,7 +48,7 @@ const photos: { src: string; alt: string }[] = [
           <div class="grid grid-cols-2 gap-2" id="gallery">
             {photos.map((photo, i) => (
               <button
-                class="gallery-item block w-full cursor-zoom-in overflow-hidden rounded-sm focus:outline-none focus-visible:ring-1 focus-visible:ring-foreground"
+                class="gallery-item block w-full cursor-zoom-in overflow-hidden focus:outline-none focus-visible:ring-1 focus-visible:ring-foreground"
                 data-src={photo.src}
                 data-index={String(i)}
                 aria-label={`Open photo ${i + 1}`}
