@@ -1,5 +1,24 @@
 ---
 import Layout from "@/layouts/main.astro"
+
+/**
+ * Drop your CDN URLs here.
+ * Mix portrait/landscape shots for a natural masonry rhythm.
+ */
+const photos: { src: string; alt: string }[] = [
+  {
+    src: "https://res.cloudinary.com/ddznytnco/image/upload/v1780612569/588168828_17861161749550924_8301708971962220453_n_fbkf0s.jpg",
+    alt: "",
+  },
+  {
+    src: "https://res.cloudinary.com/ddznytnco/image/upload/v1780612569/588842121_17861161536550924_9053216440401849384_n_afhps8.jpg",
+    alt: "",
+  },
+  {
+    src: "https://res.cloudinary.com/ddznytnco/image/upload/v1780612568/671132601_17880909024550924_8240613125899683734_n_ygdg4b.jpg",
+    alt: "",
+  },
+]
 ---
 
 <Layout>
@@ -19,8 +38,158 @@ import Layout from "@/layouts/main.astro"
         <i class="ri-arrow-left-line"></i> Back
       </a>
       <h1 class="my-4 font-medium">
-        <span class="text-muted-foreground opacity-50">Random clicks...</span>
+        <span class="text-muted-foreground opacity-50"
+          >Random Clicks on my 1+[8t]</span
+        >
       </h1>
+      <!-- Gallery -->
+      {
+        photos.length > 0 ? (
+          <div class="grid grid-cols-2 gap-2" id="gallery">
+            {photos.map((photo, i) => (
+              <button
+                class="gallery-item block w-full cursor-zoom-in overflow-hidden rounded-sm focus:outline-none focus-visible:ring-1 focus-visible:ring-foreground"
+                data-src={photo.src}
+                data-index={String(i)}
+                aria-label={`Open photo ${i + 1}`}
+              >
+                <img
+                  src={photo.src}
+                  alt={photo.alt}
+                  loading="lazy"
+                  decoding="async"
+                  class="gallery-img block h-auto w-full"
+                />
+              </button>
+            ))}
+          </div>
+        ) : (
+          <p class="text-xs text-muted-foreground opacity-40">
+            nothing here yet.
+          </p>
+        )
+      }
     </div>
   </div>
+
+  <!-- Lightbox -->
+  <div
+    id="lightbox"
+    class="fixed inset-0 z-50 hidden items-center justify-center bg-white/90 backdrop-blur-xl dark:bg-zinc-950/92"
+    role="dialog"
+    aria-modal="true"
+  >
+    <button
+      id="lb-close"
+      class="absolute top-5 right-5 cursor-pointer text-muted-foreground transition-colors hover:text-foreground"
+      aria-label="Close"
+    >
+      <i class="ri-close-line text-xl"></i>
+    </button>
+    <button
+      id="lb-prev"
+      class="absolute top-1/2 left-4 -translate-y-1/2 cursor-pointer text-muted-foreground transition-colors hover:text-foreground"
+      aria-label="Previous"
+    >
+      <i class="ri-arrow-left-s-line text-xl"></i>
+    </button>
+    <img
+      id="lb-img"
+      src=""
+      alt=""
+      class="max-h-[88vh] max-w-[88vw] object-contain"
+    />
+    <button
+      id="lb-next"
+      class="absolute top-1/2 right-4 -translate-y-1/2 cursor-pointer text-muted-foreground transition-colors hover:text-foreground"
+      aria-label="Next"
+    >
+      <i class="ri-arrow-right-s-line text-xl"></i>
+    </button>
+    <span
+      id="lb-count"
+      class="absolute bottom-5 left-1/2 -translate-x-1/2 font-mono text-[10px] tracking-widest text-muted-foreground"
+    ></span>
+  </div>
+  <script>
+    const items = [
+      ...document.querySelectorAll<HTMLButtonElement>(".gallery-item"),
+    ]
+    const lb = document.getElementById("lightbox")!
+    const lbImg = document.getElementById("lb-img") as HTMLImageElement
+    const lbCnt = document.getElementById("lb-count")!
+    const srcs = items.map((el) => ({
+      src: el.dataset.src ?? "",
+      alt: el.querySelector("img")?.alt ?? "",
+    }))
+    let cur = 0
+
+    function nav(i: number) {
+      cur = ((i % srcs.length) + srcs.length) % srcs.length
+      lbImg.src = srcs[cur].src
+      lbImg.alt = srcs[cur].alt
+      lbCnt.textContent = `${cur + 1} / ${srcs.length}`
+    }
+    function open(i: number) {
+      nav(i)
+      lb.classList.replace("hidden", "flex")
+      document.body.style.overflow = "hidden"
+    }
+    function close() {
+      lb.classList.replace("flex", "hidden")
+      document.body.style.overflow = ""
+    }
+
+    items.forEach((el, i) => el.addEventListener("click", () => open(i)))
+    document.getElementById("lb-close")!.addEventListener("click", close)
+    document
+      .getElementById("lb-prev")!
+      .addEventListener("click", () => nav(cur - 1))
+    document
+      .getElementById("lb-next")!
+      .addEventListener("click", () => nav(cur + 1))
+    lb.addEventListener("click", (e) => {
+      if (e.target === lb) close()
+    })
+    document.addEventListener("keydown", (e) => {
+      if (lb.classList.contains("hidden")) return
+      if (e.key === "Escape") close()
+      if (e.key === "ArrowLeft") nav(cur - 1)
+      if (e.key === "ArrowRight") nav(cur + 1)
+    })
+
+    // Auto-detect landscape → span full row; fade in on load
+    document
+      .querySelectorAll<HTMLImageElement>(".gallery-img")
+      .forEach((img) => {
+        const btn = img.closest<HTMLElement>(".gallery-item")!
+        const check = () => {
+          if (img.naturalWidth > img.naturalHeight) {
+            btn.classList.add("is-landscape")
+          }
+          img.classList.add("loaded")
+        }
+        img.complete ? check() : img.addEventListener("load", check)
+      })
+  </script>
+
+  <style>
+    /* Landscape images span both columns */
+    .gallery-item.is-landscape {
+      grid-column: span 2;
+    }
+
+    .gallery-img {
+      opacity: 0;
+      transition:
+        opacity 0.45s ease,
+        transform 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+    .gallery-img.loaded {
+      opacity: 1;
+    }
+    .gallery-item:hover .gallery-img {
+      transform: scale(1.03);
+    }
+  </style>
 </Layout>
