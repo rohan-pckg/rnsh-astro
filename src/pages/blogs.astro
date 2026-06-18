@@ -37,11 +37,11 @@ const posts = (await getCollection("writing"))
             posts.map((post) => (
               <li class="w-full">
                 <a
-                  href={`/writing/${post.slug}`}
+                  href={`/writing/${post.id}`}
                   class="group border-2transition-colors borde flex items-center justify-between"
                 >
                   <div class="flex flex-col gap-1">
-                    <span class="text-foreground underline hover:text-blue-400">
+                    <span class="text-foreground hover:text-blue-400">
                       {post.data.title}
                     </span>
 

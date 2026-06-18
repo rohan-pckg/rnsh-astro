@@ -13,8 +13,8 @@
     "typecheck": "astro check"
   },
   "dependencies": {
-    "@astrojs/mdx": "^5.0.6",
-    "@astrojs/react": "^4.4.2",
+    "@astrojs/mdx": "^6.0.3",
+    "@astrojs/react": "^5.0.7",
     "@base-ui/react": "^1.5.0",
     "@fontsource-variable/geist": "^5.2.9",
     "@lottiefiles/dotlottie-react": "^0.19.4",
@@ -23,7 +23,7 @@
     "@tailwindcss/vite": "^4.2.1",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
-    "astro": "^5.18.1",
+    "astro": "^6.4.8",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "react": "^19.2.4",

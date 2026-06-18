@@ -29,7 +29,7 @@ const designs = (await getCollection("design"))
             designs.map((design) => (
               <li class="w-full">
                 <a
-                  href={`/design/${design.slug}`}
+                  href={`/design/${design.id}`}
                   class="group flex flex-col gap-3 transition-all"
                 >
                   {design.data.thumbnail && (
@@ -41,8 +41,8 @@ const designs = (await getCollection("design"))
                       />
                     </div>
                   )}
-                  <div class="flex flex-row place-content-between items-center py-1">
-                    <span class="font-medium text-foreground underline underline-offset-4 transition-colors group-hover:text-pink-500">
+                  <div class="flex flex-row place-content-between items-center ">
+                    <span class="font-medium text-foreground  transition-colors group-hover:text-pink-500">
                       {design.data.title}
                     </span>
 
