@@ -1,0 +1,13 @@
+---
+export interface Props {
+  class?: string
+}
+
+const { class: className = "" } = Astro.props
+---
+
+<div
+  class={`mx-auto flex min-h-svh w-full max-w-[760px] flex-col px-6 py-12 sm:px-8 sm:py-16 lg:px-8 lg:py-24 ${className}`}
+>
+  <slot />
+</div>

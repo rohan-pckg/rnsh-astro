@@ -1,0 +1,13 @@
+---
+import PageContainer from "@/components/layout/PageContainer.astro"
+
+export interface Props {
+  class?: string
+}
+
+const { class: className = "" } = Astro.props
+---
+
+<PageContainer class={className}>
+  <slot />
+</PageContainer>

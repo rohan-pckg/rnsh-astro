@@ -7,6 +7,8 @@ const writing = defineCollection({
     title: z.string(),
     description: z.string(),
     date: z.date(),
+    cover: z.string().optional(),
+    category: z.string().default("Writing"),
     draft: z.boolean().default(false),
   }),
 })

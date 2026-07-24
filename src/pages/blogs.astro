@@ -1,64 +1,40 @@
 ---
+import ArticleListItem from "@/components/ArticleListItem.astro"
+import PageHeader from "@/components/PageHeader.astro"
+import PageShell from "@/components/PageShell.astro"
 import Layout from "@/layouts/main.astro"
-import LottiePlayer from "@/components/ui/lottie"
-import DinoAnimation from "../../public/lottie/cat-peek.json"
 import { getCollection } from "astro:content"
 
 const posts = (await getCollection("writing"))
   .filter((p) => !p.data.draft)
   .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
+  .map((post) => ({
+    title: post.data.title,
+    href: `/writing/${post.id}`,
+    date: post.data.date.toLocaleDateString("en-US", {
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+    }),
+    category: post.data.category,
+  }))
 ---
 
 <Layout>
-  <div class="flex min-h-svh justify-center py-24 sm:px-16">
-    <div class="flex w-full max-w-md flex-col gap-4 text-sm leading-loose">
-      <!-- <a href="/">
-        <LottiePlayer
-          animationData={DinoAnimation}
-          className="h-8 w-8"
-          client:visible
-        />
-      </a> -->
-      <a
-        href="/"
-        class="flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
-      >
-        <i class="ri-arrow-left-line"></i> Back
-      </a>
-      <h1 class="my-4 font-medium">
-        <span class="text-muted-foreground opacity-50"
-          >Sharing my thoughts...</span
-        >
-      </h1>
-
-      <div class="flex gap-8">
-        <ul class="flex w-full flex-col gap-6">
-          {
-            posts.map((post) => (
-              <li class="w-full">
-                <a
-                  href={`/writing/${post.id}`}
-                  class="group border-2transition-colors borde flex items-center justify-between"
-                >
-                  <div class="flex flex-col gap-1">
-                    <span class="text-foreground hover:text-blue-400">
-                      {post.data.title}
-                    </span>
-
-                    <span class="text-xs text-muted-foreground">
-                      {post.data.date.toLocaleDateString("en-US", {
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric",
-                      })}
-                    </span>
-                  </div>
-                </a>
-              </li>
-            ))
-          }
+  <PageShell>
+    <PageHeader title="Writing" spacing="compact" />
+    {
+      posts.length > 0 ? (
+        <ul class="space-y-2">
+          {posts.map((post) => (
+            <li>
+              <ArticleListItem {...post} />
+            </li>
+          ))}
         </ul>
-      </div>
-    </div>
-  </div>
+      ) : (
+        <p class="body-text">Nothing here yet.</p>
+      )
+    }
+  </PageShell>
 </Layout>

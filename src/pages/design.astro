@@ -1,65 +1,24 @@
 ---
+import IndexList from "@/components/IndexList.astro"
+import PageHeader from "@/components/PageHeader.astro"
+import PageShell from "@/components/PageShell.astro"
 import Layout from "@/layouts/main.astro"
 import { getCollection } from "astro:content"
 
 const designs = (await getCollection("design"))
   .filter((d) => !d.data.draft)
   .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
+  .map((design) => ({
+    title: design.data.title,
+    href: `/design/${design.id}`,
+    date: design.data.date,
+    thumbnail: design.data.thumbnail,
+  }))
 ---
 
 <Layout>
-  <div class="flex min-h-svh justify-center py-24 sm:px-16">
-    <div class="flex w-full max-w-md flex-col gap-4 text-sm leading-loose">
-      <a
-        href="/"
-        class="flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
-      >
-        <i class="ri-arrow-left-line"></i> Back
-      </a>
-
-      <h1 class="my-4 font-medium">
-        <span class="text-muted-foreground opacity-50"
-          >Design Explorations...</span
-        >
-      </h1>
-
-      <div class="flex gap-8">
-        <ul class="flex w-full flex-col gap-6">
-          {
-            designs.map((design) => (
-              <li class="w-full">
-                <a
-                  href={`/design/${design.id}`}
-                  class="group flex flex-col gap-3 transition-all"
-                >
-                  {design.data.thumbnail && (
-                    <div class="relative aspect-video w-full overflow-hidden border bg-muted">
-                      <img
-                        src={design.data.thumbnail}
-                        alt={design.data.title}
-                        class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                      />
-                    </div>
-                  )}
-                  <div class="flex flex-row place-content-between items-center ">
-                    <span class="font-medium text-foreground  transition-colors group-hover:text-pink-500">
-                      {design.data.title}
-                    </span>
-
-                    <span class="mt-1 text-xs text-muted-foreground">
-                      {design.data.date.toLocaleDateString("en-US", {
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric",
-                      })}
-                    </span>
-                  </div>
-                </a>
-              </li>
-            ))
-          }
-        </ul>
-      </div>
-    </div>
-  </div>
+  <PageShell>
+    <PageHeader title="Design" />
+    <IndexList items={designs} />
+  </PageShell>
 </Layout>

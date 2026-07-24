@@ -1,42 +1,37 @@
 ---
 import Layout from "@/layouts/main.astro"
+import PageHeader from "@/components/PageHeader.astro"
+import PageShell from "@/components/PageShell.astro"
 
-const pfp = "/me.png"
+const pfp = "/about.jpeg"
 ---
 
 <Layout>
-  <div class="flex min-h-svh justify-center py-24 sm:px-16">
-    <div class="flex w-full max-w-md flex-col gap-4 text-sm leading-loose">
-      <a
-        href="/"
-        class="flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
-      >
-        <i class="ri-arrow-left-line"></i> Back
-      </a>
+  <PageShell>
+    <PageHeader title="So, who am I?" />
 
-      <h1 class="my-4 font-medium">
-        <span class="text-muted-foreground opacity-50">So, who am I?</span>
-      </h1>
-
-      <!-- Profile -->
-      <div class="flex flex-col gap-3">
-        <img src={pfp} alt="Rohan Singh" class="" />
+    <div class="editorial-stack">
+      <div class="flex flex-col gap-3 pb-2">
+        <img
+          src={pfp}
+          alt="Rohan Singh"
+          class="rounded-md border border-border"
+        />
         <span class="font-medium">Rohan Singh</span>
       </div>
 
-      <!-- Bio -->
-      <p class="text-sm/6 text-muted-foreground">
+      <p class="body-text">
         Based in Mumbai, India, I’m a 23-year-old engineer blending a formal
         background in Computer Science (B.Tech, 2024) with a passion for
         front-end architecture and interface design. I'm currently working as a
-        <span class="text-foreground">Software Engineer</span> at <a href=""
-          ><span class="text-foreground blur-xs">Hoora</span></a
+        <span class="text-foreground">Software Engineer</span> at <span
+          class="text-foreground blur-xs">Hoora</span
         >, where I focus on crafting high-fidelity digital experiences. I’m
         obsessed with the details that often go unnoticed sharp typography,
         macro-spacing, and intentional motion.
       </p>
 
-      <p class="text-sm/6 text-muted-foreground">
+      <p class="body-text">
         When I step away from my desk, I'm usually wandering around taking
         photographs, walking, or overthinking something new.
       </p>
@@ -44,10 +39,11 @@ const pfp = "/me.png"
       <a
         href="https://drive.google.com/file/d/1-OwRzZ0MiUsGfCJodpC7bJmnpdQbaSHy/view?usp=sharing"
         target="_blank"
-        class="inline-flex w-fit items-center gap-1.5 text-xs font-medium text-foreground underline underline-offset-4 transition-colors hover:text-orange-500"
+        rel="noreferrer"
+        class="inline-annotation inline-flex w-fit text-sm"
       >
         View Resume
       </a>
     </div>
-  </div>
+  </PageShell>
 </Layout>

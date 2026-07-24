@@ -1,0 +1,29 @@
+---
+export interface Props {
+  title: string
+  backHref?: string
+  backLabel?: string
+  spacing?: "default" | "compact"
+}
+
+const {
+  title,
+  backHref = "/",
+  backLabel = "Back",
+  spacing = "default",
+} = Astro.props
+const headerClass = spacing === "compact" ? "mb-6" : "mb-8"
+const backClass = spacing === "compact" ? "mb-8" : "mb-8"
+---
+
+<header class={headerClass}>
+  <a
+    href={backHref}
+    class={`${backClass} inline-flex size-9 items-center justify-center rounded-full border border-border bg-background text-muted-foreground shadow-sm transition-colors duration-150 hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring`}
+    aria-label={backLabel}
+  >
+    <i class="ri-arrow-left-line" aria-hidden="true"></i>
+  </a>
+
+  <h1 class="page-title">{title}</h1>
+</header>

@@ -1,0 +1,273 @@
+---
+import type { MarkdownHeading } from "astro"
+
+import ArticleContainer from "@/components/layout/ArticleContainer.astro"
+import CodeBlockEnhancer from "@/components/article/CodeBlockEnhancer"
+import ArticleReveal from "@/components/article/ArticleReveal"
+import ReadingProgress from "@/components/article/ReadingProgress"
+import TableOfContents from "@/components/article/TableOfContents"
+
+export interface Props {
+  headings: MarkdownHeading[]
+}
+
+const { headings } = Astro.props
+const tocHeadings = headings
+  .filter((heading) => heading.depth === 2 || heading.depth === 3)
+  .map((heading) => ({
+    depth: heading.depth,
+    slug: heading.slug,
+    text: heading.text,
+  }))
+const hasToc = tocHeadings.length > 0
+---
+
+<ReadingProgress client:load />
+<CodeBlockEnhancer client:idle />
+<ArticleReveal client:idle />
+
+<ArticleContainer hasToc={hasToc}>
+  {
+    hasToc && (
+      <aside class="contents lg:sticky lg:top-20 lg:block lg:h-fit">
+        <TableOfContents headings={tocHeadings} client:load />
+      </aside>
+    )
+  }
+
+  <article class="max-w-full min-w-0 lg:w-full">
+    <slot />
+  </article>
+</ArticleContainer>
+
+<style>
+  article :global(.article-shell) {
+    width: 100%;
+  }
+
+  article :global(.article-content) {
+    color: var(--muted-foreground);
+    font-size: 1rem;
+    line-height: 1.85;
+  }
+
+  article :global(.article-content > * + *) {
+    margin-top: 1.625rem;
+  }
+
+  article :global(.article-content h1),
+  article :global(.article-content h2),
+  article :global(.article-content h3),
+  article :global(.article-content h4),
+  article :global(.article-content h5),
+  article :global(.article-content h6) {
+    scroll-margin-top: 6rem;
+    color: var(--foreground);
+    font-weight: 500;
+    line-height: 1.3;
+  }
+
+  article :global(.article-content h1) {
+    margin-top: 4.5rem;
+    font-size: 1.75rem;
+  }
+
+  article :global(.article-content h2) {
+    margin-top: 4.75rem;
+    font-size: 1.5rem;
+  }
+
+  article :global(.article-content h3) {
+    margin-top: 3.25rem;
+    font-size: 1.15rem;
+  }
+
+  article :global(.article-content h4) {
+    margin-top: 2.5rem;
+    font-size: 1rem;
+  }
+
+  article :global(.article-content p) {
+    margin-top: 1.45rem;
+  }
+
+  article :global(.article-content a) {
+    border-radius: var(--radius-md);
+    background: var(--muted);
+    padding: 0.125rem 0.375rem;
+    color: var(--foreground);
+    text-decoration: none;
+    transition: background-color 200ms ease;
+  }
+
+  article :global(.article-content a:hover) {
+    background: var(--border);
+  }
+
+  article :global(.article-content ul),
+  article :global(.article-content ol) {
+    margin-top: 1.5rem;
+    padding-left: 1.25rem;
+  }
+
+  article :global(.article-content ul) {
+    list-style: disc;
+  }
+
+  article :global(.article-content ol) {
+    list-style: decimal;
+  }
+
+  article :global(.article-content li) {
+    margin-top: 0.4rem;
+  }
+
+  article :global(.article-content li::marker) {
+    color: var(--muted-foreground);
+  }
+
+  article :global(.article-content blockquote) {
+    margin: 2.5rem 0;
+    border-left: 1px solid var(--border);
+    padding-left: 1.5rem;
+    color: var(--foreground);
+    font-size: 1.0625rem;
+    line-height: 1.8;
+  }
+
+  article :global(.article-content img) {
+    width: 100%;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+  }
+
+  article :global(.article-content em:has(+ br)),
+  article :global(.article-content img + em) {
+    display: block;
+    margin-top: 0.5rem;
+    text-align: center;
+    color: var(--muted-foreground);
+    font-size: 0.75rem;
+  }
+
+  article :global(.article-content code) {
+    border-radius: var(--radius-sm);
+    background: var(--muted);
+    padding: 0.125rem 0.375rem;
+    color: var(--foreground);
+    font-size: 0.8125rem;
+  }
+
+  article :global(.article-content pre code) {
+    background: transparent;
+    padding: 0;
+    color: inherit;
+  }
+
+  article :global(.article-content pre) {
+    overflow-x: auto;
+    padding: 1.25rem 0;
+    font-size: 0.8125rem;
+    line-height: 1.7;
+    outline: none;
+    background: transparent !important;
+  }
+
+  article :global(.article-content pre .line) {
+    display: inline-block;
+    min-width: 100%;
+    padding-right: 1.25rem;
+    padding-left: 4rem;
+  }
+
+  article :global(.article-content pre .line::before) {
+    content: var(--line-number);
+    display: inline-block;
+    width: 2rem;
+    margin-left: -3rem;
+    padding-right: 1rem;
+    color: oklch(0.62 0.01 286 / 0.55);
+    text-align: right;
+    user-select: none;
+  }
+
+  article :global(.article-content pre .highlighted),
+  article :global(.article-content pre mark) {
+    display: block;
+    margin-right: 0;
+    margin-left: 0;
+    padding-right: 1rem;
+    padding-left: 4rem;
+    background: oklch(1 0 0 / 6%);
+  }
+
+  article :global(.article-code-frame) {
+    margin-top: 2.25rem;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: oklch(0.145 0.004 286);
+    box-shadow: 0 12px 40px oklch(0 0 0 / 12%);
+  }
+
+  article :global(.article-code-toolbar) {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    border-bottom: 1px solid oklch(1 0 0 / 10%);
+    padding: 0.625rem 0.875rem;
+  }
+
+  article :global(.article-code-badge),
+  article :global(.article-code-copy) {
+    color: oklch(0.82 0.01 286);
+    font-size: 0.6875rem;
+  }
+
+  article :global(.article-code-copy) {
+    border: 1px solid oklch(1 0 0 / 10%);
+    border-radius: var(--radius-md);
+    padding: 0.25rem 0.5rem;
+    transition:
+      background-color 150ms ease,
+      color 150ms ease;
+  }
+
+  article :global(.article-code-copy:hover),
+  article :global(.article-code-copy:focus-visible) {
+    background: oklch(1 0 0 / 8%);
+    color: oklch(0.98 0 0);
+    outline: none;
+  }
+
+  article :global(.article-code-frame .astro-code),
+  article :global(.article-code-frame .astro-code span) {
+    background: transparent !important;
+    color: var(--shiki-dark) !important;
+  }
+
+  article :global(.article-content table) {
+    width: 100%;
+    font-size: 0.875rem;
+  }
+
+  article :global(.article-content th),
+  article :global(.article-content td) {
+    border: 1px solid var(--border);
+    padding: 0.5rem 0.75rem;
+  }
+
+  article :global(.article-content th) {
+    color: var(--foreground);
+    font-weight: 500;
+    text-align: left;
+  }
+
+  article :global(.article-content .footnotes) {
+    margin-top: 4rem;
+    border-top: 1px solid var(--border);
+    padding-top: 1.5rem;
+    font-size: 0.8125rem;
+  }
+</style>

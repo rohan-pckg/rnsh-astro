@@ -1,31 +1,12 @@
 ---
+import PageHeader from "@/components/PageHeader.astro"
+import PageShell from "@/components/PageShell.astro"
 import Layout from "@/layouts/main.astro"
-import { Button } from "@/components/ui/button"
-import LottiePlayer from "@/components/ui/lottie"
-import DinoAnimation from "../../public/lottie/cat-peek.json"
 ---
 
 <Layout>
-  <div class="flex min-h-svh justify-center py-24 sm:px-16">
-    <div class="flex w-full max-w-md flex-col gap-4 text-sm leading-loose">
-      <!-- <a href="/">
-        <LottiePlayer
-          animationData={DinoAnimation}
-          className="h-8 w-8"
-          client:visible
-        />
-      </a> -->
-      <a
-        href="/"
-        class="flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
-      >
-        <i class="ri-arrow-left-line"></i> Back
-      </a>
-      <h1 class="my-4 font-medium">
-        <span class="text-muted-foreground opacity-50"
-          >Stuff I've Build - Under Construction</span
-        >
-      </h1>
-    </div>
-  </div>
+  <PageShell>
+    <PageHeader title="Projects" />
+    <p class="body-text">Nothing published here yet.</p>
+  </PageShell>
 </Layout>

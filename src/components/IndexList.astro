@@ -1,0 +1,68 @@
+---
+export interface IndexListItem {
+  title: string
+  href: string
+  date?: Date
+  description?: string
+  thumbnail?: string
+}
+
+export interface Props {
+  items: IndexListItem[]
+  emptyLabel?: string
+}
+
+const { items, emptyLabel = "Nothing here yet." } = Astro.props
+
+const formatDate = (date: Date) =>
+  date.toLocaleDateString("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  })
+---
+
+{
+  items.length > 0 ? (
+    <ul class="space-y-6">
+      {items.map((item) => (
+        <li>
+          <a
+            href={item.href}
+            class="group -mx-3 grid rounded-lg px-3 py-3 transition-colors duration-200 hover:bg-muted/40 focus-visible:bg-muted/40 focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none"
+          >
+            {item.thumbnail && (
+              <div class="overflow-hidden rounded-md border border-border bg-muted">
+                <img
+                  src={item.thumbnail}
+                  alt=""
+                  loading="lazy"
+                  decoding="async"
+                  class="aspect-video w-full object-cover"
+                />
+              </div>
+            )}
+
+            <div class="flex items-baseline justify-between gap-4">
+              <span class="page-title transition-colors duration-200 group-hover:text-foreground">
+                {item.title}
+              </span>
+              {item.date && (
+                <time
+                  datetime={item.date.toISOString()}
+                  class="metadata shrink-0"
+                >
+                  {formatDate(item.date)}
+                </time>
+              )}
+            </div>
+
+            {item.description && <p class="body-text">{item.description}</p>}
+          </a>
+        </li>
+      ))}
+    </ul>
+  ) : (
+    <p class="body-text">{emptyLabel}</p>
+  )
+}

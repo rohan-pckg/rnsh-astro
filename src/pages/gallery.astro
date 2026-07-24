@@ -1,4 +1,6 @@
 ---
+import PageHeader from "@/components/PageHeader.astro"
+import PageShell from "@/components/PageShell.astro"
 import Layout from "@/layouts/main.astro"
 
 /**
@@ -18,55 +20,34 @@ const photos: { src: string; alt: string }[] = [
 ---
 
 <Layout>
-  <div class="flex min-h-svh justify-center py-24 sm:px-16">
-    <div class="flex w-full max-w-md flex-col gap-4 text-sm leading-loose">
-      <!-- <a href="/">
-        <LottiePlayer
-          animationData={DinoAnimation}
-          className="h-8 w-8"
-          client:visible
-        />
-      </a> -->
-      <a
-        href="/"
-        class="flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
-      >
-        <i class="ri-arrow-left-line"></i> Back
-      </a>
-      <h1 class="my-4 font-medium">
-        <span class="text-muted-foreground opacity-50"
-          >Random Clicks on my OnePlus-8T</span
-        >
-      </h1>
-      <!-- Gallery -->
-      {
-        photos.length > 0 ? (
-          <div class="grid grid-cols-2 gap-2" id="gallery">
-            {photos.map((photo, i) => (
-              <button
-                class="gallery-item block w-full cursor-zoom-in overflow-hidden focus:outline-none focus-visible:ring-1 focus-visible:ring-foreground"
-                data-src={photo.src}
-                data-index={String(i)}
-                aria-label={`Open photo ${i + 1}`}
-              >
-                <img
-                  src={photo.src}
-                  alt={photo.alt}
-                  loading="lazy"
-                  decoding="async"
-                  class="gallery-img block h-auto w-full"
-                />
-              </button>
-            ))}
-          </div>
-        ) : (
-          <p class="text-xs text-muted-foreground opacity-40">
-            nothing here yet.
-          </p>
-        )
-      }
-    </div>
-  </div>
+  <PageShell>
+    <PageHeader title="Gallery" />
+    <!-- Gallery -->
+    {
+      photos.length > 0 ? (
+        <div class="grid grid-cols-2 gap-3" id="gallery">
+          {photos.map((photo, i) => (
+            <button
+              class="gallery-item block w-full cursor-zoom-in overflow-hidden rounded-md border border-border focus:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              data-src={photo.src}
+              data-index={String(i)}
+              aria-label={`Open photo ${i + 1}`}
+            >
+              <img
+                src={photo.src}
+                alt={photo.alt}
+                loading="lazy"
+                decoding="async"
+                class="gallery-img block h-auto w-full"
+              />
+            </button>
+          ))}
+        </div>
+      ) : (
+        <p class="body-text">Nothing here yet.</p>
+      )
+    }
+  </PageShell>
 
   <!-- Lightbox -->
   <div
@@ -77,14 +58,14 @@ const photos: { src: string; alt: string }[] = [
   >
     <button
       id="lb-close"
-      class="absolute top-5 right-5 cursor-pointer text-muted-foreground transition-colors hover:text-foreground"
+      class="absolute top-5 right-5 cursor-pointer text-muted-foreground transition-colors duration-150 hover:text-foreground focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none"
       aria-label="Close"
     >
       <i class="ri-close-line text-xl"></i>
     </button>
     <button
       id="lb-prev"
-      class="absolute top-1/2 left-4 -translate-y-1/2 cursor-pointer text-muted-foreground transition-colors hover:text-foreground"
+      class="absolute top-1/2 left-4 -translate-y-1/2 cursor-pointer text-muted-foreground transition-colors duration-150 hover:text-foreground focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none"
       aria-label="Previous"
     >
       <i class="ri-arrow-left-s-line text-xl"></i>
@@ -97,7 +78,7 @@ const photos: { src: string; alt: string }[] = [
     />
     <button
       id="lb-next"
-      class="absolute top-1/2 right-4 -translate-y-1/2 cursor-pointer text-muted-foreground transition-colors hover:text-foreground"
+      class="absolute top-1/2 right-4 -translate-y-1/2 cursor-pointer text-muted-foreground transition-colors duration-150 hover:text-foreground focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none"
       aria-label="Next"
     >
       <i class="ri-arrow-right-s-line text-xl"></i>
@@ -119,6 +100,7 @@ const photos: { src: string; alt: string }[] = [
       alt: el.querySelector("img")?.alt ?? "",
     }))
     let cur = 0
+    let activeTrigger: HTMLButtonElement | null = null
 
     function nav(i: number) {
       cur = ((i % srcs.length) + srcs.length) % srcs.length
@@ -127,13 +109,16 @@ const photos: { src: string; alt: string }[] = [
       lbCnt.textContent = `${cur + 1} / ${srcs.length}`
     }
     function open(i: number) {
+      activeTrigger = items[i] ?? null
       nav(i)
       lb.classList.replace("hidden", "flex")
       document.body.style.overflow = "hidden"
+      document.getElementById("lb-close")?.focus()
     }
     function close() {
       lb.classList.replace("flex", "hidden")
       document.body.style.overflow = ""
+      activeTrigger?.focus()
     }
 
     items.forEach((el, i) => el.addEventListener("click", () => open(i)))
@@ -177,15 +162,10 @@ const photos: { src: string; alt: string }[] = [
 
     .gallery-img {
       opacity: 0;
-      transition:
-        opacity 0.45s ease,
-        transform 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      transition: opacity 0.3s ease;
     }
     .gallery-img.loaded {
       opacity: 1;
-    }
-    .gallery-item:hover .gallery-img {
-      transform: scale(1.03);
     }
   </style>
 </Layout>
