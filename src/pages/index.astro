@@ -31,16 +31,19 @@ const inlineLinkClass = "inline-annotation"
       height="48"
       decoding="async"
       fetchpriority="high"
-      class="size-10 rounded-xl object-cover sm:size-12"
+      class="size-10 rounded-full object-cover sm:size-12"
     />
 
-    <h1 class="page-title my-1 flex items-center gap-2">
+    <h1 class="my-1 flex items-center gap-3">
       <span><span class="text-muted-foreground">Hi, I'm</span> Rohan</span>
       <button
         id="theme-toggle"
-        class="h-3 w-3 cursor-pointer rounded-full border border-foreground bg-foreground transition-all duration-300 hover:scale-125 focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none dark:border-amber-400 dark:bg-amber-400 dark:shadow-[0_0_8px_rgba(251,191,36,0.8)]"
+        class="group inline-flex size-9 items-center justify-center rounded-md transition-colors duration-150 hover:bg-secondary focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none"
         aria-label="Toggle dark mode"
       >
+        <span
+          class="size-3 rounded-full bg-foreground transition-colors duration-150 group-hover:bg-muted-foreground"
+        ></span>
       </button>
     </h1>
 
@@ -64,7 +67,7 @@ const inlineLinkClass = "inline-annotation"
 
     <section class="mt-8" aria-labelledby="recent-heading">
       <div class="mb-4 flex items-center justify-between">
-        <h2 id="recent-heading" class="section-heading">Recent writings</h2>
+        <h2 id="recent-heading" class="body-text">Recent writings</h2>
 
         <a
           href="/blogs"
@@ -76,7 +79,7 @@ const inlineLinkClass = "inline-annotation"
 
       {
         recentPosts.length > 0 ? (
-          <ul class="space-y-2">
+          <ul class="space-y-1">
             {recentPosts.map((post) => (
               <li>
                 <ArticleListItem {...post} />

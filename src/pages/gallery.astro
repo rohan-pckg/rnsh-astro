@@ -10,18 +10,18 @@ import Layout from "@/layouts/main.astro"
 const photos: { src: string; alt: string }[] = [
   {
     src: "https://res.cloudinary.com/ddznytnco/image/upload/v1780612569/588168828_17861161749550924_8301708971962220453_n_fbkf0s.jpg",
-    alt: "",
+    alt: "Street photograph from Rohan's gallery",
   },
   {
     src: "https://res.cloudinary.com/ddznytnco/image/upload/v1780612569/588842121_17861161536550924_9053216440401849384_n_afhps8.jpg",
-    alt: "",
+    alt: "Outdoor photograph from Rohan's gallery",
   },
 ]
 ---
 
 <Layout>
   <PageShell>
-    <PageHeader title="Gallery" />
+    <PageHeader title="Gallery" backHref="/" />
     <!-- Gallery -->
     {
       photos.length > 0 ? (
@@ -52,20 +52,21 @@ const photos: { src: string; alt: string }[] = [
   <!-- Lightbox -->
   <div
     id="lightbox"
-    class="fixed inset-0 z-50 hidden items-center justify-center bg-white/90 backdrop-blur-xl dark:bg-zinc-950/92"
+    class="fixed inset-0 z-50 hidden items-center justify-center bg-background/90 backdrop-blur-sm"
     role="dialog"
     aria-modal="true"
+    aria-label="Image preview"
   >
     <button
       id="lb-close"
-      class="absolute top-5 right-5 cursor-pointer text-muted-foreground transition-colors duration-150 hover:text-foreground focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none"
+      class="surface-button absolute top-5 right-5"
       aria-label="Close"
     >
       <i class="ri-close-line text-xl"></i>
     </button>
     <button
       id="lb-prev"
-      class="absolute top-1/2 left-4 -translate-y-1/2 cursor-pointer text-muted-foreground transition-colors duration-150 hover:text-foreground focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none"
+      class="surface-button absolute top-1/2 left-4 -translate-y-1/2"
       aria-label="Previous"
     >
       <i class="ri-arrow-left-s-line text-xl"></i>
@@ -78,14 +79,14 @@ const photos: { src: string; alt: string }[] = [
     />
     <button
       id="lb-next"
-      class="absolute top-1/2 right-4 -translate-y-1/2 cursor-pointer text-muted-foreground transition-colors duration-150 hover:text-foreground focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none"
+      class="surface-button absolute top-1/2 right-4 -translate-y-1/2"
       aria-label="Next"
     >
       <i class="ri-arrow-right-s-line text-xl"></i>
     </button>
     <span
       id="lb-count"
-      class="absolute bottom-5 left-1/2 -translate-x-1/2 font-mono text-[10px] tracking-widest text-muted-foreground"
+      class="caption absolute bottom-5 left-1/2 -translate-x-1/2 font-mono tracking-widest"
     ></span>
   </div>
   <script>
@@ -121,6 +122,28 @@ const photos: { src: string; alt: string }[] = [
       activeTrigger?.focus()
     }
 
+    function trapFocus(e: KeyboardEvent) {
+      if (e.key !== "Tab" || lb.classList.contains("hidden")) return
+
+      const focusable = [
+        ...lb.querySelectorAll<HTMLElement>(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        ),
+      ].filter((el) => !el.hasAttribute("disabled"))
+
+      const first = focusable[0]
+      const last = focusable[focusable.length - 1]
+      if (!first || !last) return
+
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault()
+        last.focus()
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault()
+        first.focus()
+      }
+    }
+
     items.forEach((el, i) => el.addEventListener("click", () => open(i)))
     document.getElementById("lb-close")!.addEventListener("click", close)
     document
@@ -137,6 +160,7 @@ const photos: { src: string; alt: string }[] = [
       if (e.key === "Escape") close()
       if (e.key === "ArrowLeft") nav(cur - 1)
       if (e.key === "ArrowRight") nav(cur + 1)
+      trapFocus(e)
     })
 
     // Auto-detect landscape → span full row; fade in on load

@@ -1,5 +1,5 @@
 import { AnimatePresence, motion, useReducedMotion } from "motion/react"
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 
 import { fadeUp, spring, stagger } from "@/lib/animations"
 
@@ -47,6 +47,7 @@ export default function TableOfContents({ headings }: Props) {
   const groups = useMemo(() => buildGroups(headings), [headings])
   const [activeSlug, setActiveSlug] = useState(groups[0]?.slug ?? "")
   const [open, setOpen] = useState(false)
+  const sheetRef = useRef<HTMLDivElement>(null)
   const reduceMotion = useReducedMotion()
   const activeParent = parentFor(groups, activeSlug)
 
@@ -77,6 +78,42 @@ export default function TableOfContents({ headings }: Props) {
     return () => observer.disconnect()
   }, [headings])
 
+  useEffect(() => {
+    if (!open) return
+
+    window.setTimeout(() => {
+      sheetRef.current
+        ?.querySelector<HTMLElement>("button, [href], [tabindex]")
+        ?.focus()
+    }, 0)
+
+    function handleDialogKeydown(event: KeyboardEvent) {
+      if (event.key === "Escape") setOpen(false)
+      if (event.key !== "Tab") return
+
+      const focusable = [
+        ...(sheetRef.current?.querySelectorAll<HTMLElement>(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        ) ?? []),
+      ].filter((el) => !el.hasAttribute("disabled"))
+
+      const first = focusable[0]
+      const last = focusable[focusable.length - 1]
+      if (!first || !last) return
+
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault()
+        last.focus()
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault()
+        first.focus()
+      }
+    }
+
+    document.addEventListener("keydown", handleDialogKeydown)
+    return () => document.removeEventListener("keydown", handleDialogKeydown)
+  }, [open])
+
   function scrollTo(slug: string) {
     document.getElementById(slug)?.scrollIntoView({
       behavior: reduceMotion ? "auto" : "smooth",
@@ -90,7 +127,7 @@ export default function TableOfContents({ headings }: Props) {
 
   const nav = (
     <motion.ol
-      className="space-y-1"
+      className="space-y-2 lg:space-y-1"
       variants={stagger}
       initial="hidden"
       animate="visible"
@@ -103,13 +140,13 @@ export default function TableOfContents({ headings }: Props) {
           <motion.li key={group.slug} variants={fadeUp}>
             <button
               type="button"
-              className="group relative flex w-full items-center py-1.5 pr-2 pl-4 text-left text-xs text-muted-foreground transition-colors duration-150 hover:text-foreground focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none"
+              className="metadata group relative flex min-h-11 w-full items-center py-2 pr-2 pl-5 text-left transition-colors duration-150 hover:text-foreground focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none lg:min-h-0 lg:py-1.5 lg:pl-4"
               onClick={() => scrollTo(group.slug)}
             >
               {isActiveGroup && (
                 <motion.span
                   layoutId="toc-active"
-                  className="absolute top-1.5 bottom-1.5 left-0 w-px bg-foreground"
+                  className="absolute top-2.5 bottom-2.5 left-0 w-0.5 rounded-full bg-foreground lg:top-1.5 lg:bottom-1.5 lg:w-px"
                   transition={spring}
                 />
               )}
@@ -121,7 +158,7 @@ export default function TableOfContents({ headings }: Props) {
             <AnimatePresence initial={false}>
               {isActiveGroup && group.children.length > 0 && (
                 <motion.ol
-                  className="ml-4 overflow-hidden"
+                  className="ml-5 space-y-1 overflow-hidden lg:ml-4 lg:space-y-0"
                   initial={{ height: 0, opacity: 0 }}
                   animate={{ height: "auto", opacity: 1 }}
                   exit={{ height: 0, opacity: 0 }}
@@ -131,7 +168,7 @@ export default function TableOfContents({ headings }: Props) {
                     <li key={child.slug}>
                       <button
                         type="button"
-                        className={`block w-full py-1 pr-2 pl-4 text-left text-xs transition-colors duration-150 focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none ${
+                        className={`metadata block min-h-11 w-full py-2 pr-2 pl-5 text-left transition-colors duration-150 focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none lg:min-h-0 lg:py-1 lg:pl-4 ${
                           activeSlug === child.slug
                             ? "text-foreground"
                             : "text-muted-foreground hover:text-foreground"
@@ -154,16 +191,14 @@ export default function TableOfContents({ headings }: Props) {
   return (
     <>
       <nav aria-label="Table of contents" className="hidden lg:block">
-        <p className="mb-4 text-xs font-medium text-foreground">Contents</p>
+        <p className="metadata mb-4 text-muted-foreground">Contents</p>
         {nav}
       </nav>
 
       <div className="lg:hidden">
         <motion.button
           type="button"
-          className="fixed right-5 bottom-5 z-40 rounded-full border border-border bg-background px-3 py-2 text-xs text-foreground shadow-sm focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none"
-          whileHover={{ scale: 1.03 }}
-          whileTap={{ scale: 0.98 }}
+          className="metadata fixed right-5 bottom-5 z-40 min-h-10 rounded-md bg-secondary px-4 py-2 text-foreground transition-colors duration-150 hover:bg-accent focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none"
           transition={spring}
           onClick={() => setOpen(true)}
         >
@@ -173,33 +208,48 @@ export default function TableOfContents({ headings }: Props) {
         <AnimatePresence>
           {open && (
             <motion.div
-              className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm"
+              className="fixed inset-0 z-50 bg-background/70 backdrop-blur-sm"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.16 }}
+              onClick={() => setOpen(false)}
             >
               <motion.div
-                className="absolute right-0 bottom-0 left-0 border-t border-border bg-background p-6"
-                initial={{ y: "100%" }}
-                animate={{ y: 0 }}
-                exit={{ y: "100%" }}
-                transition={reduceMotion ? { duration: 0 } : spring}
+                ref={sheetRef}
+                className="absolute right-0 bottom-0 left-0 max-h-[82vh] overflow-y-auto rounded-t-[2rem] border-t border-border bg-card px-6 pt-4 pb-8"
+                initial={{ y: reduceMotion ? 0 : "100%", opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: reduceMotion ? 0 : "100%", opacity: 0 }}
+                transition={
+                  reduceMotion
+                    ? { duration: 0 }
+                    : { ...spring, stiffness: 360, damping: 38 }
+                }
                 role="dialog"
                 aria-modal="true"
                 aria-label="Table of contents"
+                drag={reduceMotion ? false : "y"}
+                dragDirectionLock
+                dragConstraints={{ top: 0, bottom: 120 }}
+                dragElastic={0.08}
+                onDragEnd={(_, info) => {
+                  if (info.offset.y > 80 || info.velocity.y > 500) {
+                    setOpen(false)
+                  }
+                }}
+                onClick={(event) => event.stopPropagation()}
               >
-                <div className="mb-4 flex items-center justify-between">
-                  <p className="text-sm font-medium text-foreground">
-                    Contents
-                  </p>
+                <div className="mb-6">
                   <button
                     type="button"
-                    className="text-xs text-muted-foreground transition-colors hover:text-foreground focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none"
+                    className="mx-auto mb-6 block h-1.5 w-11 rounded-full bg-muted-foreground/40 focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none"
+                    aria-label="Close table of contents"
                     onClick={() => setOpen(false)}
-                  >
-                    Close
-                  </button>
+                  />
+                  <p className="metadata font-medium text-foreground">
+                    Contents
+                  </p>
                 </div>
                 {nav}
               </motion.div>

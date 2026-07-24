@@ -22,7 +22,8 @@ export default function CopyLinkButton() {
     <motion.button
       type="button"
       aria-label={copied ? "Link copied" : "Copy article link"}
-      className="inline-flex size-9 items-center justify-center rounded-full border border-border bg-background text-xs text-muted-foreground shadow-sm transition-colors duration-150 hover:bg-muted hover:text-foreground focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none"
+      className="surface-button metadata"
+      disabled={copied}
       variants={scale}
       initial="rest"
       whileHover="hover"

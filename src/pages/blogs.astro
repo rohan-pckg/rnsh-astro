@@ -22,10 +22,10 @@ const posts = (await getCollection("writing"))
 
 <Layout>
   <PageShell>
-    <PageHeader title="Writing" spacing="compact" />
+    <PageHeader title="Writing" backHref="/" spacing="compact" />
     {
       posts.length > 0 ? (
-        <ul class="space-y-2">
+        <ul class="space-y-1">
           {posts.map((post) => (
             <li>
               <ArticleListItem {...post} />

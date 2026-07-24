@@ -5,7 +5,7 @@ export interface Props {
 
 const { hasToc = false } = Astro.props
 const containerClass = hasToc
-  ? "mx-auto grid w-full max-w-[1050px] grid-cols-1 gap-y-8 px-6 py-12 sm:px-8 sm:py-16 lg:grid-cols-[250px_minmax(680px,760px)] lg:gap-x-10 lg:px-8 lg:py-24"
+  ? "mx-auto grid w-full max-w-[1180px] grid-cols-1 gap-y-8 px-6 py-12 sm:px-8 sm:py-16 lg:grid-cols-[minmax(0,1fr)_minmax(680px,760px)_180px] lg:gap-x-16 lg:px-8 lg:py-24"
   : "mx-auto grid w-full max-w-[820px] grid-cols-1 gap-y-8 px-6 py-12 sm:px-8 sm:py-16 lg:grid-cols-[minmax(680px,760px)] lg:px-8 lg:py-24"
 ---
 

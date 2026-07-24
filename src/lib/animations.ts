@@ -13,8 +13,8 @@ export const fadeIn: Variants = {
 }
 
 export const fadeUp: Variants = {
-  hidden: { opacity: 0, y: 8, filter: "blur(4px)" },
-  visible: { opacity: 1, y: 0, filter: "blur(0px)" },
+  hidden: { opacity: 0, y: 8 },
+  visible: { opacity: 1, y: 0 },
 }
 
 export const stagger: Variants = {
@@ -28,8 +28,8 @@ export const stagger: Variants = {
 
 export const scale: Variants = {
   rest: { scale: 1 },
-  hover: { scale: 1.04 },
-  tap: { scale: 0.98 },
+  hover: { scale: 1 },
+  tap: { scale: 1 },
 }
 
 export const pageTransition = {

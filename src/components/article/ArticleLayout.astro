@@ -27,6 +27,12 @@ const hasToc = tocHeadings.length > 0
 <ArticleReveal client:idle />
 
 <ArticleContainer hasToc={hasToc}>
+  {hasToc && <div aria-hidden="true" class="hidden lg:block" />}
+
+  <article class="max-w-full min-w-0 lg:w-full">
+    <slot />
+  </article>
+
   {
     hasToc && (
       <aside class="contents lg:sticky lg:top-20 lg:block lg:h-fit">
@@ -34,10 +40,6 @@ const hasToc = tocHeadings.length > 0
       </aside>
     )
   }
-
-  <article class="max-w-full min-w-0 lg:w-full">
-    <slot />
-  </article>
 </ArticleContainer>
 
 <style>
@@ -47,8 +49,8 @@ const hasToc = tocHeadings.length > 0
 
   article :global(.article-content) {
     color: var(--muted-foreground);
-    font-size: 1rem;
-    line-height: 1.85;
+    font-size: var(--type-body);
+    line-height: 1.8;
   }
 
   article :global(.article-content > * + *) {
@@ -69,22 +71,30 @@ const hasToc = tocHeadings.length > 0
 
   article :global(.article-content h1) {
     margin-top: 4.5rem;
-    font-size: 1.75rem;
+    font-size: var(--type-page-title);
   }
 
   article :global(.article-content h2) {
     margin-top: 4.75rem;
-    font-size: 1.5rem;
+    font-size: var(--type-section-title);
   }
 
   article :global(.article-content h3) {
     margin-top: 3.25rem;
-    font-size: 1.15rem;
+    font-size: var(--type-card-title);
   }
 
   article :global(.article-content h4) {
     margin-top: 2.5rem;
-    font-size: 1rem;
+    font-size: var(--type-body);
+  }
+
+  article :global(.article-content > :first-child) {
+    margin-top: 0;
+  }
+
+  article :global(.article-content--hide-first-title > h1:first-child) {
+    display: none;
   }
 
   article :global(.article-content p) {
@@ -147,7 +157,7 @@ const hasToc = tocHeadings.length > 0
     margin-top: 0.5rem;
     text-align: center;
     color: var(--muted-foreground);
-    font-size: 0.75rem;
+    font-size: var(--type-caption);
   }
 
   article :global(.article-content code) {
@@ -155,7 +165,7 @@ const hasToc = tocHeadings.length > 0
     background: var(--muted);
     padding: 0.125rem 0.375rem;
     color: var(--foreground);
-    font-size: 0.8125rem;
+    font-size: var(--type-metadata);
   }
 
   article :global(.article-content pre code) {
@@ -167,7 +177,7 @@ const hasToc = tocHeadings.length > 0
   article :global(.article-content pre) {
     overflow-x: auto;
     padding: 1.25rem 0;
-    font-size: 0.8125rem;
+    font-size: var(--type-metadata);
     line-height: 1.7;
     outline: none;
     background: transparent !important;
@@ -222,12 +232,12 @@ const hasToc = tocHeadings.length > 0
   article :global(.article-code-badge),
   article :global(.article-code-copy) {
     color: oklch(0.82 0.01 286);
-    font-size: 0.6875rem;
+    font-size: var(--type-caption);
   }
 
   article :global(.article-code-copy) {
-    border: 1px solid oklch(1 0 0 / 10%);
     border-radius: var(--radius-md);
+    background: oklch(1 0 0 / 6%);
     padding: 0.25rem 0.5rem;
     transition:
       background-color 150ms ease,
@@ -236,7 +246,7 @@ const hasToc = tocHeadings.length > 0
 
   article :global(.article-code-copy:hover),
   article :global(.article-code-copy:focus-visible) {
-    background: oklch(1 0 0 / 8%);
+    background: oklch(1 0 0 / 11%);
     color: oklch(0.98 0 0);
     outline: none;
   }
@@ -249,7 +259,7 @@ const hasToc = tocHeadings.length > 0
 
   article :global(.article-content table) {
     width: 100%;
-    font-size: 0.875rem;
+    font-size: var(--type-body-small);
   }
 
   article :global(.article-content th),

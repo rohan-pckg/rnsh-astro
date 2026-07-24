@@ -16,15 +16,13 @@ export default function ArticleImage({ caption, alt = "", ...props }: Props) {
         {...props}
         alt={alt}
         className={`w-full rounded-md border border-border ${props.className ?? ""}`}
-        initial={reduceMotion ? false : { opacity: 0, y: 8, scale: 0.995 }}
-        whileInView={{ opacity: 1, y: 0, scale: 1 }}
+        initial={reduceMotion ? false : { opacity: 0, y: 8 }}
+        whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-10% 0px" }}
         transition={pageTransition}
       />
       {caption && (
-        <figcaption className="mt-2 text-center text-xs text-muted-foreground">
-          {caption}
-        </figcaption>
+        <figcaption className="caption mt-2 text-center">{caption}</figcaption>
       )}
     </figure>
   )
