@@ -59,6 +59,17 @@ export default function TableOfContents({ headings }: Props) {
 
     if (targets.length === 0) return
 
+    function updateActiveHeading() {
+      const offset = Math.min(window.innerHeight * 0.28, 220)
+      const current =
+        [...targets]
+          .reverse()
+          .find((target) => target.getBoundingClientRect().top <= offset) ??
+        targets[0]
+
+      if (current?.id) setActiveSlug(current.id)
+    }
+
     const observer = new IntersectionObserver(
       (entries) => {
         const visible = entries
@@ -67,16 +78,26 @@ export default function TableOfContents({ headings }: Props) {
 
         if (visible[0]?.target.id) {
           setActiveSlug(visible[0].target.id)
+        } else {
+          updateActiveHeading()
         }
       },
       {
-        rootMargin: "-18% 0px -68% 0px",
+        rootMargin: "-12% 0px -70% 0px",
         threshold: [0, 1],
       }
     )
 
     targets.forEach((target) => observer.observe(target))
-    return () => observer.disconnect()
+    updateActiveHeading()
+    window.addEventListener("scroll", updateActiveHeading, { passive: true })
+    window.addEventListener("resize", updateActiveHeading)
+
+    return () => {
+      observer.disconnect()
+      window.removeEventListener("scroll", updateActiveHeading)
+      window.removeEventListener("resize", updateActiveHeading)
+    }
   }, [headings])
 
   useEffect(() => {
@@ -131,6 +152,7 @@ export default function TableOfContents({ headings }: Props) {
       block: "start",
     })
     window.history.replaceState(null, "", `#${slug}`)
+    setActiveSlug(slug)
     if (open) closeSheet()
   }
 

@@ -1,0 +1,21 @@
+---
+import PageHeader from "@/components/PageHeader.astro"
+import PageShell from "@/components/PageShell.astro"
+import SketchbookCanvas from "@/components/sketchbook/SketchbookCanvas"
+import Layout from "@/layouts/main.astro"
+---
+
+<Layout>
+  <PageShell>
+    <PageHeader title="Sketchbook" backHref="/" />
+
+    <div class="editorial-stack">
+      <p class="body-text">
+        A quiet notebook for loose lines, quick shapes, and ideas that do not
+        need to become anything yet.
+      </p>
+
+      <SketchbookCanvas client:load />
+    </div>
+  </PageShell>
+</Layout>

@@ -232,6 +232,86 @@
   .surface-button {
     @apply inline-flex size-9 items-center justify-center rounded-md bg-secondary text-muted-foreground transition-colors duration-150 select-none hover:bg-accent hover:text-foreground focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none disabled:pointer-events-none;
   }
+
+  .sketch-action {
+    display: inline-flex;
+    min-height: 2.25rem;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-md);
+    background: var(--secondary);
+    padding: 0 0.75rem;
+    color: var(--muted-foreground);
+    font-size: var(--type-metadata);
+    line-height: 1.5;
+    font-weight: 400;
+    font-variant-numeric: tabular-nums;
+    user-select: none;
+    transition:
+      background-color 150ms ease,
+      color 150ms ease,
+      opacity 150ms ease;
+  }
+
+  .sketch-action:hover {
+    background: var(--accent);
+    color: var(--foreground);
+  }
+
+  .sketch-action:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 1px var(--ring);
+  }
+
+  .sketch-action:disabled {
+    pointer-events: none;
+    opacity: 0.4;
+  }
+
+  .sketch-toolbar {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .sketch-control-group {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.5rem;
+  }
+
+  .sketch-tool-group {
+    border-radius: var(--radius-md);
+    background: var(--secondary);
+    padding: 0.25rem;
+  }
+
+  .sketch-tool-group .sketch-action {
+    background: transparent;
+  }
+
+  .sketch-tool-group .sketch-action[aria-pressed="true"] {
+    background: var(--background);
+    color: var(--foreground);
+  }
+
+  @media (min-width: 768px) {
+    .sketch-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.75rem 1.75rem;
+    }
+
+    .sketch-control-group {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .sketch-export-group {
+      margin-left: auto;
+    }
+  }
 }
 
 .astro-code,

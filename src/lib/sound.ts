@@ -13,6 +13,10 @@ export type SoundCategory =
   | "hover"
   | "success"
   | "error"
+  | "draw"
+  | "edit"
+  | "clear"
+  | "export"
 
 export type SoundVariant = "open" | "close"
 
@@ -28,6 +32,10 @@ const SOUND_RECIPES = {
   hover: "whisper",
   success: "success",
   error: "error",
+  draw: "whisper",
+  edit: "tick",
+  clear: "droplet",
+  export: "success",
 } satisfies Record<SoundCategory, SoundName>
 
 const DRAWER_RECIPES = {

@@ -1,5 +1,6 @@
 import { useEffect } from "react"
 
+import { copyText } from "@/lib/clipboard"
 import { playSound } from "@/lib/sound"
 
 export default function CodeBlock() {
@@ -50,14 +51,18 @@ export default function CodeBlock() {
       button.setAttribute("aria-label", "Copy code")
 
       button.addEventListener("click", async () => {
-        await navigator.clipboard.writeText(code?.textContent ?? "")
-        playSound("copy")
-        button.textContent = "✓ Copied"
-        button.setAttribute("aria-label", "Code copied")
-        window.setTimeout(() => {
-          button.textContent = "Copy"
-          button.setAttribute("aria-label", "Copy code")
-        }, 1600)
+        try {
+          await copyText(code?.textContent ?? "")
+          playSound("copy")
+          button.textContent = "✓ Copied"
+          button.setAttribute("aria-label", "Code copied")
+          window.setTimeout(() => {
+            button.textContent = "Copy"
+            button.setAttribute("aria-label", "Copy code")
+          }, 1600)
+        } catch {
+          playSound("error")
+        }
       })
 
       toolbar.append(badge, button)

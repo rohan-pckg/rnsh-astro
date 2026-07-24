@@ -1,5 +1,6 @@
 ---
 import ArticleListItem from "@/components/ArticleListItem.astro"
+import FlowerDoodle from "@/components/FlowerDoodle.astro"
 import Layout from "@/layouts/main.astro"
 import PageShell from "@/components/PageShell.astro"
 import { getCollection } from "astro:content"
@@ -24,56 +25,60 @@ const inlineLinkClass = "inline-annotation"
 
 <Layout>
   <PageShell class="editorial-stack">
-    <img
-      src="/pfp.png"
-      alt="Portrait of Rohan Singh"
-      width="48"
-      height="48"
-      decoding="async"
-      fetchpriority="high"
-      class="size-10 rounded-full object-cover sm:size-12"
-    />
+    <section class="home-hero editorial-stack" aria-label="Introduction">
+      <img
+        src="/pfp.png"
+        alt="Portrait of Rohan Singh"
+        width="48"
+        height="48"
+        decoding="async"
+        fetchpriority="high"
+        class="size-10 rounded-full object-cover sm:size-12"
+      />
 
-    <h1 class="my-1 flex items-center">
-      <span class="font-medium"><span class="text-muted-foreground">Hi, I'm</span> Rohan</span>
-      <span class="ml-3 inline-flex items-center gap-2">
-        <button
-          id="theme-toggle"
-          class="surface-button group"
-          aria-label="Toggle dark mode"
-        >
-          <span
-            class="size-3 rounded-full bg-foreground transition-colors duration-150 group-hover:bg-muted-foreground"
-          ></span>
-        </button>
-        <button
-          id="sound-toggle"
-          class="surface-button"
-          aria-label="Disable UI sounds"
-          aria-pressed="true"
-        >
-          <i id="sound-toggle-icon" class="ri-volume-up-line text-base" aria-hidden="true"></i>
-        </button>
-      </span>
-    </h1>
+      <h1 class="my-1 flex items-center">
+        <span class="font-medium"><span class="text-muted-foreground">Hi, I'm</span> Rohan</span>
+        <span class="ml-3 inline-flex items-center gap-2">
+          <button
+            id="theme-toggle"
+            class="surface-button group"
+            aria-label="Toggle dark mode"
+          >
+            <span
+              class="size-3 rounded-full bg-foreground transition-colors duration-150 group-hover:bg-muted-foreground"
+            ></span>
+          </button>
+          <button
+            id="sound-toggle"
+            class="surface-button"
+            aria-label="Disable UI sounds"
+            aria-pressed="true"
+          >
+            <i id="sound-toggle-icon" class="ri-volume-up-line text-base" aria-hidden="true"></i>
+          </button>
+        </span>
+      </h1>
 
-    <p class="body-text">
-      I'm interested in interfaces, motion, systems, and the web. You can
-      explore my background and what drives my work in the
-      <a href="/about" class={inlineLinkClass} data-sound-category="navigation">about</a> section, or dive straight
-      into the
-      <a href="/projects" class={inlineLinkClass} data-sound-category="navigation">projects</a> I've been shipping.
-    </p>
+      <p class="body-text">
+        I'm interested in interfaces, motion, systems, and the web. You can
+        explore my background and what drives my work in the
+        <a href="/about" class={inlineLinkClass} data-sound-category="navigation">about</a> section, or dive straight
+        into the
+        <a href="/projects" class={inlineLinkClass} data-sound-category="navigation">projects</a> I've been shipping.
+      </p>
 
-    <p class="body-text">
-      Beyond the technical stuff, this site is a personal outlet. You can
-      explore my
-      <a href="/design" class={inlineLinkClass} data-sound-category="navigation">design</a> experiments, dive into
-      my
-      <a href="/blogs" class={inlineLinkClass} data-sound-category="navigation">thoughts</a>, or flip through my
-      <a href="/gallery" class={inlineLinkClass} data-sound-category="navigation">gallery</a> to see some of the casual
-      photography I capture along the way.
-    </p>
+      <p class="body-text">
+        Beyond the technical stuff, this site is a personal outlet. You can
+        explore my
+        <a href="/design" class={inlineLinkClass} data-sound-category="navigation">design</a> experiments, dive into
+        my
+        <a href="/blogs" class={inlineLinkClass} data-sound-category="navigation">thoughts</a>, or flip through my
+        <a href="/gallery" class={inlineLinkClass} data-sound-category="navigation">gallery</a> to see some of the casual
+        photography I capture along the way.
+      </p>
+
+      <FlowerDoodle />
+    </section>
 
     <section class="mt-8" aria-labelledby="recent-heading">
       <div class="mb-4 flex items-center justify-between">
@@ -152,5 +157,12 @@ const inlineLinkClass = "inline-annotation"
       if (enabled) playSound("theme")
       renderSoundToggle()
     })
+
   </script>
+
+  <style>
+    .home-hero {
+      position: relative;
+    }
+  </style>
 </Layout>

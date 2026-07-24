@@ -2,6 +2,7 @@ import { AnimatePresence, motion } from "motion/react"
 import { useEffect, useState } from "react"
 
 import { fadeUp, scale, spring } from "@/lib/animations"
+import { copyText } from "@/lib/clipboard"
 import { playSound } from "@/lib/sound"
 
 export default function CopyLinkButton() {
@@ -15,9 +16,13 @@ export default function CopyLinkButton() {
   }, [copied])
 
   async function copyLink() {
-    await navigator.clipboard.writeText(window.location.href)
-    playSound("copy")
-    setCopied(true)
+    try {
+      await copyText(window.location.href)
+      playSound("copy")
+      setCopied(true)
+    } catch {
+      playSound("error")
+    }
   }
 
   return (
