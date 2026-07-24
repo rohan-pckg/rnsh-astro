@@ -35,5 +35,22 @@ import "remixicon/fonts/remixicon.css"
     <main>
       <slot />
     </main>
+    <script>
+      import { isSoundCategory, playSound } from "@/lib/sound"
+      import type { SoundVariant } from "@/lib/sound"
+
+      document.addEventListener("click", (event) => {
+        const target = (event.target as Element | null)?.closest<HTMLElement>(
+          "[data-sound-category]"
+        )
+        if (!target) return
+
+        const category = target.dataset.soundCategory
+        const variant = target.dataset.soundVariant as SoundVariant | undefined
+        if (category && isSoundCategory(category)) {
+          playSound(category, { variant })
+        }
+      })
+    </script>
   </body>
 </html>

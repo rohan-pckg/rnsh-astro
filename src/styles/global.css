@@ -89,6 +89,9 @@
   --type-body-small: 0.9375rem;
   --type-metadata: 0.8125rem;
   --type-caption: 0.75rem;
+  --font-code:
+    ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo,
+    monospace;
 }
 
 .dark {

@@ -34,34 +34,44 @@ const inlineLinkClass = "inline-annotation"
       class="size-10 rounded-full object-cover sm:size-12"
     />
 
-    <h1 class="my-1 flex items-center gap-0">
+    <h1 class="my-1 flex items-center">
       <span class="font-medium"><span class="text-muted-foreground">Hi, I'm</span> Rohan</span>
-      <button
-        id="theme-toggle"
-        class="group inline-flex size-9 items-center justify-center rounded-md transition-colors duration-150 hover:bg-secondary focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none"
-        aria-label="Toggle dark mode"
-      >
-        <span
-          class="size-3 rounded-full bg-foreground transition-colors duration-150 group-hover:bg-muted-foreground"
-        ></span>
-      </button>
+      <span class="ml-3 inline-flex items-center gap-2">
+        <button
+          id="theme-toggle"
+          class="surface-button group"
+          aria-label="Toggle dark mode"
+        >
+          <span
+            class="size-3 rounded-full bg-foreground transition-colors duration-150 group-hover:bg-muted-foreground"
+          ></span>
+        </button>
+        <button
+          id="sound-toggle"
+          class="surface-button"
+          aria-label="Disable UI sounds"
+          aria-pressed="true"
+        >
+          <i id="sound-toggle-icon" class="ri-volume-up-line text-base" aria-hidden="true"></i>
+        </button>
+      </span>
     </h1>
 
     <p class="body-text">
       I'm interested in interfaces, motion, systems, and the web. You can
       explore my background and what drives my work in the
-      <a href="/about" class={inlineLinkClass}>about</a> section, or dive straight
+      <a href="/about" class={inlineLinkClass} data-sound-category="navigation">about</a> section, or dive straight
       into the
-      <a href="/projects" class={inlineLinkClass}>projects</a> I've been shipping.
+      <a href="/projects" class={inlineLinkClass} data-sound-category="navigation">projects</a> I've been shipping.
     </p>
 
     <p class="body-text">
       Beyond the technical stuff, this site is a personal outlet. You can
       explore my
-      <a href="/design" class={inlineLinkClass}>design</a> experiments, dive into
+      <a href="/design" class={inlineLinkClass} data-sound-category="navigation">design</a> experiments, dive into
       my
-      <a href="/blogs" class={inlineLinkClass}>thoughts</a>, or flip through my
-      <a href="/gallery" class={inlineLinkClass}>gallery</a> to see some of the casual
+      <a href="/blogs" class={inlineLinkClass} data-sound-category="navigation">thoughts</a>, or flip through my
+      <a href="/gallery" class={inlineLinkClass} data-sound-category="navigation">gallery</a> to see some of the casual
       photography I capture along the way.
     </p>
 
@@ -71,6 +81,7 @@ const inlineLinkClass = "inline-annotation"
 
         <a
           href="/blogs"
+          data-sound-category="navigation"
           class="metadata transition-colors duration-200 hover:text-foreground focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none"
         >
           View all →
@@ -94,9 +105,16 @@ const inlineLinkClass = "inline-annotation"
   </PageShell>
 
   <script>
+    import {
+      getUiSoundsEnabled,
+      playSound,
+      setUiSoundsEnabled,
+    } from "@/lib/sound"
+
     const toggle = document.getElementById("theme-toggle")
     if (toggle) {
       toggle.addEventListener("click", () => {
+        playSound("theme")
         const isDark = document.documentElement.classList.contains("dark")
         if (isDark) {
           document.documentElement.classList.remove("dark")
@@ -107,5 +125,32 @@ const inlineLinkClass = "inline-annotation"
         }
       })
     }
+
+    const soundToggle = document.getElementById("sound-toggle")
+    const soundToggleIcon = document.getElementById("sound-toggle-icon")
+
+    function renderSoundToggle() {
+      if (!soundToggle || !soundToggleIcon) return
+
+      const enabled = getUiSoundsEnabled()
+      soundToggle.setAttribute("aria-pressed", String(enabled))
+      soundToggle.setAttribute(
+        "aria-label",
+        enabled ? "Disable UI sounds" : "Enable UI sounds"
+      )
+      soundToggleIcon.className = enabled
+        ? "ri-volume-up-line text-base"
+        : "ri-volume-mute-line text-base"
+    }
+
+    renderSoundToggle()
+
+    soundToggle?.addEventListener("click", () => {
+      const wasEnabled = getUiSoundsEnabled()
+      if (wasEnabled) playSound("theme")
+      const enabled = setUiSoundsEnabled(!wasEnabled)
+      if (enabled) playSound("theme")
+      renderSoundToggle()
+    })
   </script>
 </Layout>

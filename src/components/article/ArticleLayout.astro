@@ -2,7 +2,7 @@
 import type { MarkdownHeading } from "astro"
 
 import ArticleContainer from "@/components/layout/ArticleContainer.astro"
-import CodeBlockEnhancer from "@/components/article/CodeBlockEnhancer"
+import CodeBlock from "@/components/article/CodeBlock"
 import ArticleReveal from "@/components/article/ArticleReveal"
 import ReadingProgress from "@/components/article/ReadingProgress"
 import TableOfContents from "@/components/article/TableOfContents"
@@ -23,7 +23,7 @@ const hasToc = tocHeadings.length > 0
 ---
 
 <ReadingProgress client:load />
-<CodeBlockEnhancer client:idle />
+<CodeBlock client:idle />
 <ArticleReveal client:idle />
 
 <ArticleContainer hasToc={hasToc}>
@@ -169,34 +169,52 @@ const hasToc = tocHeadings.length > 0
   }
 
   article :global(.article-content pre code) {
+    display: block;
     background: transparent;
     padding: 0;
     color: inherit;
+    font: inherit;
+    white-space: pre;
   }
 
   article :global(.article-content pre) {
     overflow-x: auto;
-    padding: 1.25rem 0;
+    scroll-behavior: smooth;
+    padding: 1.375rem 0;
+    color: color-mix(in oklch, var(--foreground) 86%, var(--muted-foreground));
+    font-family: var(--font-code);
     font-size: var(--type-metadata);
-    line-height: 1.7;
+    line-height: 1.75;
+    font-variant-numeric: tabular-nums;
     outline: none;
     background: transparent !important;
+  }
+
+  article :global(.article-content pre:focus-visible) {
+    outline: 1px solid var(--ring);
+    outline-offset: -1px;
+  }
+
+  article :global(.article-content pre::selection),
+  article :global(.article-content pre *::selection) {
+    background: color-mix(in oklch, var(--ring) 24%, transparent);
+    color: var(--foreground);
   }
 
   article :global(.article-content pre .line) {
     display: inline-block;
     min-width: 100%;
     padding-right: 1.25rem;
-    padding-left: 4rem;
+    padding-left: 4.5rem;
   }
 
   article :global(.article-content pre .line::before) {
     content: var(--line-number);
     display: inline-block;
     width: 2rem;
-    margin-left: -3rem;
-    padding-right: 1rem;
-    color: oklch(0.62 0.01 286 / 0.55);
+    margin-left: -3.25rem;
+    padding-right: 1.25rem;
+    color: color-mix(in oklch, var(--muted-foreground) 58%, transparent);
     text-align: right;
     user-select: none;
   }
@@ -206,39 +224,44 @@ const hasToc = tocHeadings.length > 0
     display: block;
     margin-right: 0;
     margin-left: 0;
-    padding-right: 1rem;
-    padding-left: 4rem;
-    background: oklch(1 0 0 / 6%);
+    padding-right: 1.25rem;
+    padding-left: 4.5rem;
+    background: color-mix(in oklch, var(--muted) 68%, transparent);
   }
 
   article :global(.article-code-frame) {
     margin-top: 2.25rem;
     overflow: hidden;
-    border: 1px solid var(--border);
+    border: 1px solid
+      color-mix(in oklch, var(--border) 82%, var(--muted-foreground));
     border-radius: var(--radius-lg);
-    background: oklch(0.145 0.004 286);
-    box-shadow: 0 12px 40px oklch(0 0 0 / 12%);
+    background: color-mix(in oklch, var(--muted) 62%, var(--background));
   }
 
   article :global(.article-code-toolbar) {
     display: flex;
     align-items: center;
-    justify-content: flex-end;
+    justify-content: space-between;
     gap: 0.5rem;
-    border-bottom: 1px solid oklch(1 0 0 / 10%);
-    padding: 0.625rem 0.875rem;
+    border-bottom: 1px solid var(--border);
+    background: color-mix(in oklch, var(--muted) 78%, var(--background));
+    padding: 0.625rem 0.875rem 0.625rem 1rem;
   }
 
   article :global(.article-code-badge),
   article :global(.article-code-copy) {
-    color: oklch(0.82 0.01 286);
+    color: var(--muted-foreground);
+    font-family: var(--font-code);
     font-size: var(--type-caption);
+    line-height: 1.4;
+    font-variant-numeric: tabular-nums;
   }
 
   article :global(.article-code-copy) {
     border-radius: var(--radius-md);
-    background: oklch(1 0 0 / 6%);
-    padding: 0.25rem 0.5rem;
+    background: color-mix(in oklch, var(--background) 72%, var(--muted));
+    padding: 0.3125rem 0.625rem;
+    color: color-mix(in oklch, var(--foreground) 78%, var(--muted-foreground));
     transition:
       background-color 150ms ease,
       color 150ms ease;
@@ -246,14 +269,64 @@ const hasToc = tocHeadings.length > 0
 
   article :global(.article-code-copy:hover),
   article :global(.article-code-copy:focus-visible) {
-    background: oklch(1 0 0 / 11%);
-    color: oklch(0.98 0 0);
-    outline: none;
+    background: var(--accent);
+    color: var(--foreground);
+    outline: 1px solid var(--ring);
+    outline-offset: 2px;
   }
 
   article :global(.article-code-frame .astro-code),
   article :global(.article-code-frame .astro-code span) {
     background: transparent !important;
+    color: color-mix(
+      in oklch,
+      var(--shiki-light) 88%,
+      var(--muted-foreground)
+    ) !important;
+  }
+
+  :global(.dark) article :global(.article-content pre) {
+    color: color-mix(in oklch, var(--foreground) 82%, var(--muted-foreground));
+  }
+
+  :global(.dark) article :global(.article-content pre::selection),
+  :global(.dark) article :global(.article-content pre *::selection) {
+    background: color-mix(in oklch, var(--ring) 32%, transparent);
+    color: var(--foreground);
+  }
+
+  :global(.dark) article :global(.article-content pre .line::before) {
+    color: color-mix(in oklch, var(--muted-foreground) 50%, transparent);
+  }
+
+  :global(.dark) article :global(.article-content pre .highlighted),
+  :global(.dark) article :global(.article-content pre mark) {
+    background: oklch(1 0 0 / 6%);
+  }
+
+  :global(.dark) article :global(.article-code-frame) {
+    border-color: oklch(1 0 0 / 9%);
+    background: oklch(0.145 0.004 286);
+  }
+
+  :global(.dark) article :global(.article-code-toolbar) {
+    border-bottom-color: oklch(1 0 0 / 9%);
+    background: oklch(0.165 0.005 286);
+  }
+
+  :global(.dark) article :global(.article-code-copy) {
+    background: oklch(1 0 0 / 6%);
+    color: oklch(0.82 0.01 286);
+  }
+
+  :global(.dark) article :global(.article-code-copy:hover),
+  :global(.dark) article :global(.article-code-copy:focus-visible) {
+    background: oklch(1 0 0 / 11%);
+    color: oklch(0.98 0 0);
+  }
+
+  :global(.dark) article :global(.article-code-frame .astro-code),
+  :global(.dark) article :global(.article-code-frame .astro-code span) {
     color: var(--shiki-dark) !important;
   }
 

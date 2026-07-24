@@ -1,6 +1,8 @@
 import { useEffect } from "react"
 
-export default function CodeBlockEnhancer() {
+import { playSound } from "@/lib/sound"
+
+export default function CodeBlock() {
   useEffect(() => {
     const blocks = document.querySelectorAll<HTMLElement>(
       ".article-content pre"
@@ -49,9 +51,12 @@ export default function CodeBlockEnhancer() {
 
       button.addEventListener("click", async () => {
         await navigator.clipboard.writeText(code?.textContent ?? "")
-        button.textContent = "Copied"
+        playSound("copy")
+        button.textContent = "✓ Copied"
+        button.setAttribute("aria-label", "Code copied")
         window.setTimeout(() => {
           button.textContent = "Copy"
+          button.setAttribute("aria-label", "Copy code")
         }, 1600)
       })
 

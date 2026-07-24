@@ -28,7 +28,12 @@ const belowClass = hasLeftAction ? "mt-2 pl-16" : "mt-2"
     {
       hasLeftAction ? (
         <slot name="leftAction">
-          <a href={backHref} class="surface-button" aria-label={backLabel}>
+          <a
+            href={backHref}
+            class="surface-button"
+            aria-label={backLabel}
+            data-sound-category="navigation"
+          >
             <i class="ri-arrow-left-line text-base" aria-hidden="true" />
           </a>
         </slot>

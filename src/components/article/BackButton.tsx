@@ -1,6 +1,7 @@
 import { motion } from "motion/react"
 
 import { scale, spring } from "@/lib/animations"
+import { playSound } from "@/lib/sound"
 
 type Props = {
   fallbackHref?: string
@@ -8,6 +9,8 @@ type Props = {
 
 export default function BackButton({ fallbackHref = "/writing" }: Props) {
   function goBack() {
+    playSound("navigation")
+
     if (window.history.length > 1) {
       window.history.back()
       return

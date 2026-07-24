@@ -2,6 +2,7 @@ import { AnimatePresence, motion, useReducedMotion } from "motion/react"
 import { useEffect, useMemo, useRef, useState } from "react"
 
 import { fadeUp, spring, stagger } from "@/lib/animations"
+import { playSound } from "@/lib/sound"
 
 export type TocHeading = {
   depth: number
@@ -88,7 +89,7 @@ export default function TableOfContents({ headings }: Props) {
     }, 0)
 
     function handleDialogKeydown(event: KeyboardEvent) {
-      if (event.key === "Escape") setOpen(false)
+      if (event.key === "Escape") closeSheet()
       if (event.key !== "Tab") return
 
       const focusable = [
@@ -114,13 +115,23 @@ export default function TableOfContents({ headings }: Props) {
     return () => document.removeEventListener("keydown", handleDialogKeydown)
   }, [open])
 
+  function openSheet() {
+    playSound("drawer", { variant: "open" })
+    setOpen(true)
+  }
+
+  function closeSheet() {
+    playSound("drawer", { variant: "close" })
+    setOpen(false)
+  }
+
   function scrollTo(slug: string) {
     document.getElementById(slug)?.scrollIntoView({
       behavior: reduceMotion ? "auto" : "smooth",
       block: "start",
     })
     window.history.replaceState(null, "", `#${slug}`)
-    setOpen(false)
+    if (open) closeSheet()
   }
 
   if (groups.length === 0) return null
@@ -200,7 +211,7 @@ export default function TableOfContents({ headings }: Props) {
           type="button"
           className="metadata fixed right-5 bottom-5 z-40 min-h-10 rounded-md bg-secondary px-4 py-2 text-foreground transition-colors duration-150 hover:bg-accent focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none"
           transition={spring}
-          onClick={() => setOpen(true)}
+          onClick={openSheet}
         >
           Contents
         </motion.button>
@@ -213,7 +224,7 @@ export default function TableOfContents({ headings }: Props) {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.16 }}
-              onClick={() => setOpen(false)}
+              onClick={closeSheet}
             >
               <motion.div
                 ref={sheetRef}
@@ -235,7 +246,7 @@ export default function TableOfContents({ headings }: Props) {
                 dragElastic={0.08}
                 onDragEnd={(_, info) => {
                   if (info.offset.y > 80 || info.velocity.y > 500) {
-                    setOpen(false)
+                    closeSheet()
                   }
                 }}
                 onClick={(event) => event.stopPropagation()}
@@ -245,7 +256,7 @@ export default function TableOfContents({ headings }: Props) {
                     type="button"
                     className="mx-auto mb-6 block h-1.5 w-11 rounded-full bg-muted-foreground/40 focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none"
                     aria-label="Close table of contents"
-                    onClick={() => setOpen(false)}
+                    onClick={closeSheet}
                   />
                   <p className="metadata font-medium text-foreground">
                     Contents

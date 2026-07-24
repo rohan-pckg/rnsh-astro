@@ -90,6 +90,8 @@ const photos: { src: string; alt: string }[] = [
     ></span>
   </div>
   <script>
+    import { playSound } from "@/lib/sound"
+
     const items = [
       ...document.querySelectorAll<HTMLButtonElement>(".gallery-item"),
     ]
@@ -103,13 +105,15 @@ const photos: { src: string; alt: string }[] = [
     let cur = 0
     let activeTrigger: HTMLButtonElement | null = null
 
-    function nav(i: number) {
+    function nav(i: number, withSound = false) {
+      if (withSound) playSound("navigation")
       cur = ((i % srcs.length) + srcs.length) % srcs.length
       lbImg.src = srcs[cur].src
       lbImg.alt = srcs[cur].alt
       lbCnt.textContent = `${cur + 1} / ${srcs.length}`
     }
     function open(i: number) {
+      playSound("navigation")
       activeTrigger = items[i] ?? null
       nav(i)
       lb.classList.replace("hidden", "flex")
@@ -117,6 +121,7 @@ const photos: { src: string; alt: string }[] = [
       document.getElementById("lb-close")?.focus()
     }
     function close() {
+      playSound("drawer", { variant: "close" })
       lb.classList.replace("flex", "hidden")
       document.body.style.overflow = ""
       activeTrigger?.focus()
@@ -148,18 +153,18 @@ const photos: { src: string; alt: string }[] = [
     document.getElementById("lb-close")!.addEventListener("click", close)
     document
       .getElementById("lb-prev")!
-      .addEventListener("click", () => nav(cur - 1))
+      .addEventListener("click", () => nav(cur - 1, true))
     document
       .getElementById("lb-next")!
-      .addEventListener("click", () => nav(cur + 1))
+      .addEventListener("click", () => nav(cur + 1, true))
     lb.addEventListener("click", (e) => {
       if (e.target === lb) close()
     })
     document.addEventListener("keydown", (e) => {
       if (lb.classList.contains("hidden")) return
       if (e.key === "Escape") close()
-      if (e.key === "ArrowLeft") nav(cur - 1)
-      if (e.key === "ArrowRight") nav(cur + 1)
+      if (e.key === "ArrowLeft") nav(cur - 1, true)
+      if (e.key === "ArrowRight") nav(cur + 1, true)
       trapFocus(e)
     })
 
