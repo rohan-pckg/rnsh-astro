@@ -15,20 +15,13 @@ export async function getStaticPaths() {
 
 const { design } = Astro.props
 const { Content, headings } = await render(design)
-const firstH1 = headings.find((heading) => heading.depth === 1)
-const normalizeTitle = (value: string) =>
-  value.trim().replace(/\s+/g, " ").toLowerCase()
-const hideDuplicateTitle =
-  firstH1 && normalizeTitle(firstH1.text) === normalizeTitle(design.data.title)
 ---
 
 <Layout>
   <ArticleLayout headings={headings}>
-    <ArticleHeader title={design.data.title} backHref="/design" />
+    <ArticleHeader backHref="/design" />
 
-    <div
-      class={`article-content ${hideDuplicateTitle ? "article-content--hide-first-title" : ""}`}
-    >
+    <div class="article-content">
       <Content />
     </div>
 
