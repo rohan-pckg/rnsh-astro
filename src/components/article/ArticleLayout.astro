@@ -114,6 +114,38 @@ const hasToc = tocHeadings.length > 0
     background: var(--border);
   }
 
+  article :global(.article-content .sketchbook-afterthought) {
+    margin-top: 4.75rem;
+  }
+
+  article :global(.article-content .sketchbook-afterthought a) {
+    display: inline-block;
+    background: transparent;
+    padding: 0;
+    color: color-mix(in oklch, var(--foreground) 58%, transparent);
+    font-family:
+      "Kalam", "Patrick Hand", "Caveat", "Shadows Into Light", cursive;
+    font-size: 0.9375rem;
+    font-weight: 300;
+    letter-spacing: 0.018em;
+    line-height: 1.4;
+    text-decoration: none;
+    transform: rotate(-3deg);
+    transition:
+      color 180ms ease,
+      opacity 180ms ease,
+      transform 180ms ease;
+  }
+
+  article :global(.article-content .sketchbook-afterthought a:hover),
+  article :global(.article-content .sketchbook-afterthought a:focus-visible) {
+    background: transparent;
+    color: color-mix(in oklch, var(--foreground) 76%, transparent);
+    opacity: 0.95;
+    outline: none;
+    transform: rotate(-3deg) translateY(-1px);
+  }
+
   article :global(.article-content ul),
   article :global(.article-content ol) {
     margin-top: 1.5rem;
