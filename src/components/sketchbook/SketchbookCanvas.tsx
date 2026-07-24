@@ -110,7 +110,12 @@ function makePdfFromCanvas(canvas: HTMLCanvasElement) {
     cursor += chunk.length
   }
 
-  function object(id: number, body: string | Uint8Array, prefix = "", suffix = "") {
+  function object(
+    id: number,
+    body: string | Uint8Array,
+    prefix = "",
+    suffix = ""
+  ) {
     offsets[id] = cursor
     push(`${id} 0 obj\n`)
     if (prefix) push(prefix)
@@ -134,7 +139,12 @@ function makePdfFromCanvas(canvas: HTMLCanvasElement) {
   )
 
   const content = `q\n${pageWidth} 0 0 ${pageHeight} 0 0 cm\n/Im0 Do\nQ\n`
-  object(5, content, `<< /Length ${encoder.encode(content).length} >>\nstream\n`, "endstream")
+  object(
+    5,
+    content,
+    `<< /Length ${encoder.encode(content).length} >>\nstream\n`,
+    "endstream"
+  )
 
   const xref = cursor
   push(`xref\n0 6\n0000000000 65535 f \n`)
@@ -149,10 +159,12 @@ function makePdfFromCanvas(canvas: HTMLCanvasElement) {
 export default function SketchbookCanvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const currentStrokeRef = useRef<Stroke | null>(null)
+  const exportMenuRef = useRef<HTMLDivElement>(null)
   const [tool, setTool] = useState<Tool>("pen")
   const [strokes, setStrokes] = useState<Stroke[]>([])
   const [redoStack, setRedoStack] = useState<Stroke[]>([])
   const [isDrawing, setIsDrawing] = useState(false)
+  const [isExportMenuOpen, setIsExportMenuOpen] = useState(false)
 
   const canUndo = strokes.length > 0
   const canRedo = redoStack.length > 0
@@ -259,6 +271,7 @@ export default function SketchbookCanvas() {
       }
 
       if (event.key.toLowerCase() === "p") setTool("pen")
+      if (event.key.toLowerCase() === "m") setTool("marker")
       if (event.key.toLowerCase() === "e") setTool("eraser")
       if (event.key === "Escape") setTool("pen")
     }
@@ -266,6 +279,25 @@ export default function SketchbookCanvas() {
     window.addEventListener("keydown", onKeyDown)
     return () => window.removeEventListener("keydown", onKeyDown)
   })
+
+  useEffect(() => {
+    function onPointerDown(event: PointerEvent) {
+      if (!exportMenuRef.current?.contains(event.target as Node)) {
+        setIsExportMenuOpen(false)
+      }
+    }
+
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") setIsExportMenuOpen(false)
+    }
+
+    window.addEventListener("pointerdown", onPointerDown)
+    window.addEventListener("keydown", onKeyDown)
+    return () => {
+      window.removeEventListener("pointerdown", onPointerDown)
+      window.removeEventListener("keydown", onKeyDown)
+    }
+  }, [])
 
   function pointFromEvent(event: ReactPointerEvent<HTMLCanvasElement>): Point {
     const rect = event.currentTarget.getBoundingClientRect()
@@ -380,68 +412,130 @@ export default function SketchbookCanvas() {
   }
 
   const tools = useMemo<Tool[]>(() => ["pen", "marker", "eraser"], [])
+  const toolIcons: Record<Tool, string> = {
+    pen: "ri-pencil-line",
+    marker: "ri-mark-pen-line",
+    eraser: "ri-eraser-line",
+  }
+  const toolShortcuts: Record<Tool, string> = {
+    pen: "P",
+    marker: "M",
+    eraser: "E",
+  }
+
+  function exportAndClose(exporter: () => void) {
+    exporter()
+    setIsExportMenuOpen(false)
+  }
 
   return (
     <section className="space-y-6" aria-label="Sketchbook canvas">
       <div className="sketch-toolbar" aria-label="Sketchbook tools">
-        <div
-          className="sketch-control-group sketch-tool-group"
-          aria-label="Drawing tools"
-        >
+        <div className="sketch-control-group" aria-label="Drawing tools">
           {tools.map((item) => (
             <button
               key={item}
               type="button"
-              className={`sketch-action ${
-                tool === item
-                  ? "bg-background text-foreground"
-                  : ""
-              }`}
+              className="sketch-action"
               aria-pressed={tool === item}
+              aria-label={`${toolLabels[item]} (${toolShortcuts[item]})`}
+              title={`${toolLabels[item]} (${toolShortcuts[item]})`}
+              data-tooltip={`${toolLabels[item]} (${toolShortcuts[item]})`}
               onClick={() => setTool(item)}
             >
-              {toolLabels[item]}
+              <i className={toolIcons[item]} aria-hidden="true" />
             </button>
           ))}
         </div>
 
-        <div className="sketch-control-group" aria-label="History actions">
+        <div className="sketch-toolbar-divider" aria-hidden="true" />
+
+        <div className="sketch-control-group" aria-label="Editing actions">
           <button
             type="button"
             className="sketch-action"
             disabled={!canUndo}
+            aria-label="Undo (Cmd/Ctrl+Z)"
+            title="Undo (Cmd/Ctrl+Z)"
+            data-tooltip="Undo (Cmd/Ctrl+Z)"
             onClick={undo}
           >
-            Undo
+            <i className="ri-arrow-go-back-line" aria-hidden="true" />
           </button>
           <button
             type="button"
             className="sketch-action"
             disabled={!canRedo}
+            aria-label="Redo (Shift+Cmd/Ctrl+Z)"
+            title="Redo (Shift+Cmd/Ctrl+Z)"
+            data-tooltip="Redo (Shift+Cmd/Ctrl+Z)"
             onClick={redo}
           >
-            Redo
+            <i className="ri-arrow-go-forward-line" aria-hidden="true" />
           </button>
           <button
             type="button"
             className="sketch-action"
             disabled={!canUndo}
+            aria-label="Clear"
+            title="Clear"
+            data-tooltip="Clear"
             onClick={clear}
           >
-            Clear
+            <i className="ri-delete-bin-line" aria-hidden="true" />
           </button>
         </div>
 
-        <div className="sketch-control-group sketch-export-group" aria-label="Export actions">
-          <button type="button" className="sketch-action" onClick={exportPng}>
-            PNG
-          </button>
-          <button type="button" className="sketch-action" onClick={exportSvg}>
-            SVG
-          </button>
-          <button type="button" className="sketch-action" onClick={exportPdf}>
-            PDF
-          </button>
+        <div className="sketch-toolbar-divider" aria-hidden="true" />
+
+        <div
+          className="sketch-control-group sketch-export-group"
+          aria-label="Export actions"
+        >
+          <div className="sketch-download" ref={exportMenuRef}>
+            <button
+              type="button"
+              className="sketch-action"
+              aria-label="Download"
+              aria-haspopup="menu"
+              aria-expanded={isExportMenuOpen}
+              title="Download"
+              data-tooltip="Download"
+              onClick={() => setIsExportMenuOpen((open) => !open)}
+            >
+              <i className="ri-download-line" aria-hidden="true" />
+            </button>
+
+            {isExportMenuOpen ? (
+              <div className="sketch-download-menu" role="menu">
+                <div className="sketch-download-title">Download</div>
+                <button
+                  type="button"
+                  className="sketch-download-item"
+                  role="menuitem"
+                  onClick={() => exportAndClose(exportPng)}
+                >
+                  PNG
+                </button>
+                <button
+                  type="button"
+                  className="sketch-download-item"
+                  role="menuitem"
+                  onClick={() => exportAndClose(exportSvg)}
+                >
+                  SVG
+                </button>
+                <button
+                  type="button"
+                  className="sketch-download-item"
+                  role="menuitem"
+                  onClick={() => exportAndClose(exportPdf)}
+                >
+                  PDF
+                </button>
+              </div>
+            ) : null}
+          </div>
         </div>
       </div>
 
@@ -459,7 +553,8 @@ export default function SketchbookCanvas() {
       />
 
       <p className="caption">
-        P for pen, E for eraser, Cmd/Ctrl+Z to undo, Cmd/Ctrl+Shift+Z to redo.
+        P for pen, M for marker, E for eraser, Cmd/Ctrl+Z to undo,
+        Cmd/Ctrl+Shift+Z to redo.
       </p>
     </section>
   )

@@ -26,15 +26,7 @@ const inlineLinkClass = "inline-annotation"
 <Layout>
   <PageShell class="editorial-stack">
     <section class="home-hero editorial-stack" aria-label="Introduction">
-      <img
-        src="/pfp.png"
-        alt="Portrait of Rohan Singh"
-        width="48"
-        height="48"
-        decoding="async"
-        fetchpriority="high"
-        class="size-10 rounded-full object-cover sm:size-12"
-      />
+      <FlowerDoodle variant="avatar" />
 
       <h1 class="my-1 flex items-center">
         <span class="font-medium"><span class="text-muted-foreground">Hi, I'm</span> Rohan</span>
@@ -76,8 +68,6 @@ const inlineLinkClass = "inline-annotation"
         <a href="/gallery" class={inlineLinkClass} data-sound-category="navigation">gallery</a> to see some of the casual
         photography I capture along the way.
       </p>
-
-      <FlowerDoodle />
     </section>
 
     <section class="mt-8" aria-labelledby="recent-heading">
