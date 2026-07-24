@@ -328,22 +328,28 @@
     position: relative;
   }
 
+  .sketch-download-backdrop {
+    display: none;
+  }
+
   .sketch-download-menu {
     position: absolute;
     top: calc(100% + 0.5rem);
     right: 0;
     z-index: 20;
-    min-width: 8rem;
+    width: 10.5rem;
     border: 1px solid var(--border);
     border-radius: var(--radius-md);
     background: var(--background);
-    padding: 0.25rem;
+    padding: 0.5rem;
     box-shadow: 0 10px 30px
       color-mix(in oklch, var(--foreground) 10%, transparent);
+    transform-origin: top right;
+    animation: sketch-menu-in 140ms ease-out both;
   }
 
   .sketch-download-title {
-    padding: 0.375rem 0.5rem;
+    padding: 0.375rem 0.5rem 0.5rem;
     color: var(--muted-foreground);
     font-size: var(--type-caption);
     line-height: 1.45;
@@ -352,6 +358,7 @@
   .sketch-download-item {
     display: flex;
     width: 100%;
+    min-height: 2.75rem;
     align-items: center;
     border-radius: var(--radius-sm);
     padding: 0.5rem;
@@ -362,6 +369,10 @@
     transition:
       background-color 150ms ease,
       color 150ms ease;
+  }
+
+  .sketch-download-item + .sketch-download-item {
+    margin-top: 0.5rem;
   }
 
   .sketch-download-item:hover {
@@ -375,6 +386,17 @@
 
   .sketch-export-group {
     position: relative;
+  }
+
+  @keyframes sketch-menu-in {
+    0% {
+      opacity: 0;
+      transform: scale(0.96) translateY(-0.25rem);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
   }
 
   @media (max-width: 479px) {
@@ -399,6 +421,31 @@
     }
   }
 
+  @media (max-width: 639px) {
+    .sketch-download-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 40;
+      display: block;
+      background: color-mix(in oklch, var(--background) 24%, transparent);
+    }
+
+    .sketch-download-menu {
+      position: fixed;
+      top: auto;
+      right: 1rem;
+      bottom: max(1rem, env(safe-area-inset-bottom));
+      left: 1rem;
+      z-index: 50;
+      width: auto;
+      max-width: none;
+      border-radius: var(--radius-lg);
+      padding: 0.5rem;
+      transform-origin: bottom center;
+      animation: sketch-sheet-in 160ms ease-out both;
+    }
+  }
+
   @media (min-width: 768px) {
     .sketch-toolbar {
       flex-wrap: wrap;
@@ -407,6 +454,17 @@
 
     .sketch-export-group {
       margin-left: 0;
+    }
+  }
+
+  @keyframes sketch-sheet-in {
+    0% {
+      opacity: 0;
+      transform: translateY(0.75rem) scale(0.98);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0) scale(1);
     }
   }
 }

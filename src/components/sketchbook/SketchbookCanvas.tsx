@@ -5,6 +5,7 @@ import {
   useMemo,
   useRef,
   useState,
+  type KeyboardEvent as ReactKeyboardEvent,
   type PointerEvent as ReactPointerEvent,
 } from "react"
 
@@ -160,6 +161,7 @@ export default function SketchbookCanvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const currentStrokeRef = useRef<Stroke | null>(null)
   const exportMenuRef = useRef<HTMLDivElement>(null)
+  const downloadButtonRef = useRef<HTMLButtonElement>(null)
   const [tool, setTool] = useState<Tool>("pen")
   const [strokes, setStrokes] = useState<Stroke[]>([])
   const [redoStack, setRedoStack] = useState<Stroke[]>([])
@@ -281,23 +283,36 @@ export default function SketchbookCanvas() {
   })
 
   useEffect(() => {
+    if (!isExportMenuOpen) return
+
+    function closeExportMenu() {
+      setIsExportMenuOpen(false)
+      window.requestAnimationFrame(() => downloadButtonRef.current?.focus())
+    }
+
     function onPointerDown(event: PointerEvent) {
       if (!exportMenuRef.current?.contains(event.target as Node)) {
-        setIsExportMenuOpen(false)
+        closeExportMenu()
       }
     }
 
     function onKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") setIsExportMenuOpen(false)
+      if (event.key === "Escape") closeExportMenu()
     }
 
     window.addEventListener("pointerdown", onPointerDown)
     window.addEventListener("keydown", onKeyDown)
+    window.requestAnimationFrame(() =>
+      exportMenuRef.current
+        ?.querySelector<HTMLButtonElement>(".sketch-download-item")
+        ?.focus()
+    )
+
     return () => {
       window.removeEventListener("pointerdown", onPointerDown)
       window.removeEventListener("keydown", onKeyDown)
     }
-  }, [])
+  }, [isExportMenuOpen])
 
   function pointFromEvent(event: ReactPointerEvent<HTMLCanvasElement>): Point {
     const rect = event.currentTarget.getBoundingClientRect()
@@ -426,6 +441,38 @@ export default function SketchbookCanvas() {
   function exportAndClose(exporter: () => void) {
     exporter()
     setIsExportMenuOpen(false)
+    window.requestAnimationFrame(() => downloadButtonRef.current?.focus())
+  }
+
+  function onDownloadMenuKeyDown(event: ReactKeyboardEvent<HTMLDivElement>) {
+    const items = Array.from(
+      event.currentTarget.querySelectorAll<HTMLButtonElement>(
+        ".sketch-download-item"
+      )
+    )
+    const currentIndex = items.indexOf(
+      document.activeElement as HTMLButtonElement
+    )
+
+    if (event.key === "ArrowDown") {
+      event.preventDefault()
+      items[(currentIndex + 1) % items.length]?.focus()
+    }
+
+    if (event.key === "ArrowUp") {
+      event.preventDefault()
+      items[(currentIndex - 1 + items.length) % items.length]?.focus()
+    }
+
+    if (event.key === "Home") {
+      event.preventDefault()
+      items[0]?.focus()
+    }
+
+    if (event.key === "End") {
+      event.preventDefault()
+      items[items.length - 1]?.focus()
+    }
   }
 
   return (
@@ -494,6 +541,7 @@ export default function SketchbookCanvas() {
         >
           <div className="sketch-download" ref={exportMenuRef}>
             <button
+              ref={downloadButtonRef}
               type="button"
               className="sketch-action"
               aria-label="Download"
@@ -507,33 +555,56 @@ export default function SketchbookCanvas() {
             </button>
 
             {isExportMenuOpen ? (
-              <div className="sketch-download-menu" role="menu">
-                <div className="sketch-download-title">Download</div>
+              <>
                 <button
                   type="button"
-                  className="sketch-download-item"
-                  role="menuitem"
-                  onClick={() => exportAndClose(exportPng)}
+                  className="sketch-download-backdrop"
+                  aria-label="Close download menu"
+                  onClick={() => {
+                    setIsExportMenuOpen(false)
+                    window.requestAnimationFrame(() =>
+                      downloadButtonRef.current?.focus()
+                    )
+                  }}
+                />
+                <div
+                  className="sketch-download-menu"
+                  role="menu"
+                  aria-labelledby="sketch-download-title"
+                  onKeyDown={onDownloadMenuKeyDown}
                 >
-                  PNG
-                </button>
-                <button
-                  type="button"
-                  className="sketch-download-item"
-                  role="menuitem"
-                  onClick={() => exportAndClose(exportSvg)}
-                >
-                  SVG
-                </button>
-                <button
-                  type="button"
-                  className="sketch-download-item"
-                  role="menuitem"
-                  onClick={() => exportAndClose(exportPdf)}
-                >
-                  PDF
-                </button>
-              </div>
+                  <div
+                    id="sketch-download-title"
+                    className="sketch-download-title"
+                  >
+                    Download
+                  </div>
+                  <button
+                    type="button"
+                    className="sketch-download-item"
+                    role="menuitem"
+                    onClick={() => exportAndClose(exportPng)}
+                  >
+                    PNG
+                  </button>
+                  <button
+                    type="button"
+                    className="sketch-download-item"
+                    role="menuitem"
+                    onClick={() => exportAndClose(exportSvg)}
+                  >
+                    SVG
+                  </button>
+                  <button
+                    type="button"
+                    className="sketch-download-item"
+                    role="menuitem"
+                    onClick={() => exportAndClose(exportPdf)}
+                  >
+                    PDF
+                  </button>
+                </div>
+              </>
             ) : null}
           </div>
         </div>
