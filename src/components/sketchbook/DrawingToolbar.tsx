@@ -86,7 +86,7 @@ export default function DrawingToolbar({
     window.requestAnimationFrame(() =>
       exportMenuRef.current
         ?.querySelector<HTMLButtonElement>(".sketch-download-item")
-        ?.focus(),
+        ?.focus()
     )
 
     return () => {
@@ -101,16 +101,14 @@ export default function DrawingToolbar({
     window.requestAnimationFrame(() => downloadButtonRef.current?.focus())
   }
 
-  function onDownloadMenuKeyDown(
-    event: ReactKeyboardEvent<HTMLDivElement>,
-  ) {
+  function onDownloadMenuKeyDown(event: ReactKeyboardEvent<HTMLDivElement>) {
     const items = Array.from(
       event.currentTarget.querySelectorAll<HTMLButtonElement>(
-        ".sketch-download-item",
-      ),
+        ".sketch-download-item"
+      )
     )
     const currentIndex = items.indexOf(
-      document.activeElement as HTMLButtonElement,
+      document.activeElement as HTMLButtonElement
     )
 
     if (event.key === "ArrowDown") {
@@ -221,7 +219,7 @@ export default function DrawingToolbar({
                 onClick={() => {
                   setIsExportMenuOpen(false)
                   window.requestAnimationFrame(() =>
-                    downloadButtonRef.current?.focus(),
+                    downloadButtonRef.current?.focus()
                   )
                 }}
               />
