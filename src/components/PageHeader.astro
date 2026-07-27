@@ -34,7 +34,9 @@ const belowClass = hasLeftAction ? "mt-2 pl-16" : "mt-2"
             aria-label={backLabel}
             data-sound-category="navigation"
           >
-            <i class="ri-arrow-left-line text-base" aria-hidden="true" />
+            <svg class="doodle-icon" aria-hidden="true">
+              <use href="#doodle-arrow-left"></use>
+            </svg>
           </a>
         </slot>
       ) : null

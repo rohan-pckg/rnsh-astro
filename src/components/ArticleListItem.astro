@@ -14,14 +14,14 @@ const { title, href, date, active = false } = Astro.props
   href={href}
   aria-current={active ? "page" : undefined}
   data-sound-category="navigation"
-  class="group -mx-3 flex min-h-16 flex-col justify-center rounded-xl px-3 py-5 transition-colors duration-200 hover:bg-muted/40 focus-visible:bg-muted/40 focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none sm:min-h-0 sm:flex-row sm:items-center sm:gap-4 sm:py-5"
+  class="group -mx-3 flex min-h-16 flex-col justify-center rounded-xl px-3 py-5 transition-colors duration-200 ease-in-out hover:bg-muted/40 focus-visible:bg-muted/40 focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none sm:min-h-0 sm:flex-row sm:items-center sm:gap-4 sm:py-5"
 >
-  <span class=" transition-colors duration-200">
+  <span class="transition-colors duration-200 ease-in-out">
     {title}
   </span>
 
   <span
-    class="hidden h-px flex-1 bg-border transition-colors duration-200 group-hover:bg-muted-foreground/35 sm:block"
+    class="hidden h-px flex-1 bg-border transition-colors duration-200 ease-in-out group-hover:bg-muted-foreground/35 sm:block"
     aria-hidden="true"></span>
 
   <time class="metadata mt-2 shrink-0 sm:mt-0">{date}</time>

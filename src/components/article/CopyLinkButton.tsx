@@ -49,7 +49,9 @@ export default function CopyLinkButton() {
             exit="hidden"
             transition={{ duration: 0.14 }}
           >
-            <i className="ri-check-line" aria-hidden="true" />
+            <svg className="doodle-icon" aria-hidden="true">
+              <use href="#doodle-check" />
+            </svg>
             <span className="sr-only">Link copied</span>
           </motion.span>
         ) : (
@@ -62,7 +64,9 @@ export default function CopyLinkButton() {
             exit="hidden"
             transition={{ duration: 0.14 }}
           >
-            <i className="ri-link" aria-hidden="true" />
+            <svg className="doodle-icon" aria-hidden="true">
+              <use href="#doodle-link" />
+            </svg>
             <span className="sr-only">Copy link</span>
           </motion.span>
         )}

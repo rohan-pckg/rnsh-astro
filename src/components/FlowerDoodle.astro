@@ -101,7 +101,7 @@ const viewBox = isAvatar ? "108 38 96 138" : "0 0 230 190"
     opacity: 0.72;
     cursor: pointer;
     transition:
-      color 180ms ease,
+      color var(--theme-transition-duration) var(--theme-transition-easing),
       opacity 180ms ease;
   }
 
@@ -123,7 +123,7 @@ const viewBox = isAvatar ? "108 38 96 138" : "0 0 230 190"
     cursor: pointer;
     overflow: visible;
     transition:
-      color 180ms ease,
+      color var(--theme-transition-duration) var(--theme-transition-easing),
       opacity 180ms ease;
   }
 
@@ -212,7 +212,8 @@ const viewBox = isAvatar ? "108 38 96 138" : "0 0 230 190"
     .flower-doodle *,
     .flower-doodle__avatar-link * {
       animation: none;
-      transition: color 150ms ease;
+      transition: color var(--theme-transition-duration)
+        var(--theme-transition-easing);
     }
   }
 </style>

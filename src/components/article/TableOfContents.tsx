@@ -173,7 +173,7 @@ export default function TableOfContents({ headings }: Props) {
           <motion.li key={group.slug} variants={fadeUp}>
             <button
               type="button"
-              className="metadata group relative flex min-h-11 w-full items-center py-2 pr-2 pl-5 text-left transition-colors duration-150 hover:text-foreground focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none lg:min-h-0 lg:py-1.5 lg:pl-4"
+              className="metadata group relative flex min-h-11 w-full items-center py-2 pr-2 pl-5 text-left transition-colors duration-200 ease-in-out hover:text-foreground focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none lg:min-h-0 lg:py-1.5 lg:pl-4"
               onClick={() => scrollTo(group.slug)}
             >
               {isActiveGroup && (
@@ -201,7 +201,7 @@ export default function TableOfContents({ headings }: Props) {
                     <li key={child.slug}>
                       <button
                         type="button"
-                        className={`metadata block min-h-11 w-full py-2 pr-2 pl-5 text-left transition-colors duration-150 focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none lg:min-h-0 lg:py-1 lg:pl-4 ${
+                        className={`metadata block min-h-11 w-full py-2 pr-2 pl-5 text-left transition-colors duration-200 ease-in-out focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none lg:min-h-0 lg:py-1 lg:pl-4 ${
                           activeSlug === child.slug
                             ? "text-foreground"
                             : "text-muted-foreground hover:text-foreground"
@@ -231,7 +231,7 @@ export default function TableOfContents({ headings }: Props) {
       <div className="lg:hidden">
         <motion.button
           type="button"
-          className="metadata fixed right-5 bottom-5 z-40 min-h-10 rounded-md bg-secondary px-4 py-2 text-foreground transition-colors duration-150 hover:bg-accent focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none"
+          className="metadata fixed right-5 bottom-5 z-40 min-h-10 rounded-md bg-secondary px-4 py-2 text-foreground transition-colors duration-200 ease-in-out hover:bg-accent focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none"
           transition={spring}
           onClick={openSheet}
         >

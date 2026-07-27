@@ -31,7 +31,9 @@ export default function BackButton({ fallbackHref = "/writing" }: Props) {
       transition={spring}
       onClick={goBack}
     >
-      <i className="ri-arrow-left-line" aria-hidden="true" />
+      <svg className="doodle-icon" aria-hidden="true">
+        <use href="#doodle-arrow-left" />
+      </svg>
     </motion.button>
   )
 }

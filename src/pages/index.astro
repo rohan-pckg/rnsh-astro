@@ -40,7 +40,7 @@ const inlineLinkClass = "inline-annotation"
             aria-label="Toggle dark mode"
           >
             <span
-              class="size-3 rounded-full bg-foreground transition-colors duration-150 group-hover:bg-muted-foreground"
+              class="size-3 rounded-full bg-foreground transition-colors duration-200 ease-in-out group-hover:bg-muted-foreground"
             ></span>
           </button>
           <button
@@ -49,10 +49,13 @@ const inlineLinkClass = "inline-annotation"
             aria-label="Disable UI sounds"
             aria-pressed="true"
           >
-            <i
+            <svg
               id="sound-toggle-icon"
-              class="ri-volume-up-line text-base"
-              aria-hidden="true"></i>
+              class="doodle-icon"
+              aria-hidden="true"
+            >
+              <use href="#doodle-volume-up"></use>
+            </svg>
           </button>
         </span>
       </h1>
@@ -112,7 +115,7 @@ const inlineLinkClass = "inline-annotation"
         <a
           href="/blogs"
           data-sound-category="navigation"
-          class="metadata transition-colors duration-200 hover:text-foreground focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none"
+          class="metadata transition-colors duration-200 ease-in-out hover:text-foreground focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none"
         >
           View all →
         </a>
@@ -168,9 +171,12 @@ const inlineLinkClass = "inline-annotation"
         "aria-label",
         enabled ? "Disable UI sounds" : "Enable UI sounds"
       )
-      soundToggleIcon.className = enabled
-        ? "ri-volume-up-line text-base"
-        : "ri-volume-mute-line text-base"
+      soundToggleIcon
+        .querySelector("use")
+        ?.setAttribute(
+          "href",
+          enabled ? "#doodle-volume-up" : "#doodle-volume-mute"
+        )
     }
 
     renderSoundToggle()
@@ -203,8 +209,9 @@ const inlineLinkClass = "inline-annotation"
       text-decoration-color: transparent;
       text-underline-offset: 0.18em;
       transition:
-        color 180ms ease,
-        text-decoration-color 180ms ease;
+        color var(--theme-transition-duration) var(--theme-transition-easing),
+        text-decoration-color var(--theme-transition-duration)
+          var(--theme-transition-easing);
     }
 
     .home-contact__link:hover {

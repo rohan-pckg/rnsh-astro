@@ -20,6 +20,15 @@ type Stroke = {
   points: Point[]
 }
 
+type DoodleIconName =
+  | "pen"
+  | "marker"
+  | "eraser"
+  | "undo"
+  | "redo"
+  | "trash"
+  | "download"
+
 const STORAGE_KEY = "sketchbook-strokes"
 const DEFAULT_SIZE = { width: 760, height: 540 }
 
@@ -79,6 +88,14 @@ function downloadBlob(blob: Blob, filename: string) {
   anchor.download = filename
   anchor.click()
   URL.revokeObjectURL(url)
+}
+
+function DoodleIcon({ name }: { name: DoodleIconName }) {
+  return (
+    <svg className="doodle-icon doodle-icon--lg" aria-hidden="true">
+      <use href={`#doodle-${name}`} />
+    </svg>
+  )
 }
 
 function makePdfFromCanvas(canvas: HTMLCanvasElement) {
@@ -427,10 +444,10 @@ export default function SketchbookCanvas() {
   }
 
   const tools = useMemo<Tool[]>(() => ["pen", "marker", "eraser"], [])
-  const toolIcons: Record<Tool, string> = {
-    pen: "ri-pencil-line",
-    marker: "ri-mark-pen-line",
-    eraser: "ri-eraser-line",
+  const toolIcons: Record<Tool, DoodleIconName> = {
+    pen: "pen",
+    marker: "marker",
+    eraser: "eraser",
   }
   const toolShortcuts: Record<Tool, string> = {
     pen: "P",
@@ -490,7 +507,7 @@ export default function SketchbookCanvas() {
               data-tooltip={`${toolLabels[item]} (${toolShortcuts[item]})`}
               onClick={() => setTool(item)}
             >
-              <i className={toolIcons[item]} aria-hidden="true" />
+              <DoodleIcon name={toolIcons[item]} />
             </button>
           ))}
         </div>
@@ -507,7 +524,7 @@ export default function SketchbookCanvas() {
             data-tooltip="Undo (Cmd/Ctrl+Z)"
             onClick={undo}
           >
-            <i className="ri-arrow-go-back-line" aria-hidden="true" />
+            <DoodleIcon name="undo" />
           </button>
           <button
             type="button"
@@ -518,7 +535,7 @@ export default function SketchbookCanvas() {
             data-tooltip="Redo (Shift+Cmd/Ctrl+Z)"
             onClick={redo}
           >
-            <i className="ri-arrow-go-forward-line" aria-hidden="true" />
+            <DoodleIcon name="redo" />
           </button>
           <button
             type="button"
@@ -529,7 +546,7 @@ export default function SketchbookCanvas() {
             data-tooltip="Clear"
             onClick={clear}
           >
-            <i className="ri-delete-bin-line" aria-hidden="true" />
+            <DoodleIcon name="trash" />
           </button>
         </div>
 
@@ -551,7 +568,7 @@ export default function SketchbookCanvas() {
               data-tooltip="Download"
               onClick={() => setIsExportMenuOpen((open) => !open)}
             >
-              <i className="ri-download-line" aria-hidden="true" />
+              <DoodleIcon name="download" />
             </button>
 
             {isExportMenuOpen ? (

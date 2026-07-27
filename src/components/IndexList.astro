@@ -30,7 +30,7 @@ const formatDate = (date: Date) =>
           <a
             href={item.href}
             data-sound-category="navigation"
-            class="group -mx-3 grid gap-5 rounded-lg px-3 py-3 transition-colors duration-200 hover:bg-muted/40 focus-visible:bg-muted/40 focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none"
+            class="group -mx-3 grid gap-5 rounded-lg px-3 py-3 transition-colors duration-200 ease-in-out hover:bg-muted/40 focus-visible:bg-muted/40 focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none"
           >
             {item.thumbnail && (
               <div class="overflow-hidden rounded-md border border-border bg-muted">
@@ -45,7 +45,7 @@ const formatDate = (date: Date) =>
             )}
 
             <div class="flex items-baseline justify-between gap-4">
-              <span class="card-title transition-colors duration-200 group-hover:text-foreground">
+              <span class="card-title transition-colors duration-200 ease-in-out group-hover:text-foreground">
                 {item.title}
               </span>
               {item.date && (

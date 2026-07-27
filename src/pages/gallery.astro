@@ -62,14 +62,18 @@ const photos: { src: string; alt: string }[] = [
       class="surface-button absolute top-5 right-5"
       aria-label="Close"
     >
-      <i class="ri-close-line text-xl"></i>
+      <svg class="doodle-icon doodle-icon--lg" aria-hidden="true">
+        <use href="#doodle-close"></use>
+      </svg>
     </button>
     <button
       id="lb-prev"
       class="surface-button absolute top-1/2 left-4 -translate-y-1/2"
       aria-label="Previous"
     >
-      <i class="ri-arrow-left-s-line text-xl"></i>
+      <svg class="doodle-icon doodle-icon--lg" aria-hidden="true">
+        <use href="#doodle-chevron-left"></use>
+      </svg>
     </button>
     <img
       id="lb-img"
@@ -82,7 +86,9 @@ const photos: { src: string; alt: string }[] = [
       class="surface-button absolute top-1/2 right-4 -translate-y-1/2"
       aria-label="Next"
     >
-      <i class="ri-arrow-right-s-line text-xl"></i>
+      <svg class="doodle-icon doodle-icon--lg" aria-hidden="true">
+        <use href="#doodle-chevron-right"></use>
+      </svg>
     </button>
     <span
       id="lb-count"
