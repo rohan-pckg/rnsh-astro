@@ -1,0 +1,28 @@
+---
+import PageHeader from "@/components/PageHeader.astro"
+import PageShell from "@/components/PageShell.astro"
+import PostcardCanvas from "@/components/postcard/PostcardCanvas"
+import Layout from "@/layouts/main.astro"
+---
+
+<Layout>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600&display=swap"
+    rel="stylesheet"
+  />
+
+  <PageShell>
+    <PageHeader title="Postcards" backHref="/" />
+
+    <div class="editorial-stack">
+      <p class="body-text">
+        Draw and write a postcard. Export as PNG, PDF, or an animated HTML
+        keepsake.
+      </p>
+
+      <PostcardCanvas client:load />
+    </div>
+  </PageShell>
+</Layout>
