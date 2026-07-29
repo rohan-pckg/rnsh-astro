@@ -7,15 +7,7 @@ import {
 
 import type { Tool } from "@/lib/drawing"
 import { toolLabels, toolShortcuts } from "@/lib/drawing"
-
-type DoodleIconName =
-  | "pen"
-  | "marker"
-  | "eraser"
-  | "undo"
-  | "redo"
-  | "trash"
-  | "download"
+import { sound } from "@/lib/sound"
 
 type ExportItem = {
   label: string
@@ -34,20 +26,6 @@ type DrawingToolbarProps = {
 }
 
 const tools: Tool[] = ["pen", "marker", "eraser"]
-
-const toolIcons: Record<Tool, DoodleIconName> = {
-  pen: "pen",
-  marker: "marker",
-  eraser: "eraser",
-}
-
-function DoodleIcon({ name }: { name: DoodleIconName }) {
-  return (
-    <svg className="doodle-icon doodle-icon--lg" aria-hidden="true">
-      <use href={`#doodle-${name}`} />
-    </svg>
-  )
-}
 
 export default function DrawingToolbar({
   tool,
@@ -96,6 +74,7 @@ export default function DrawingToolbar({
   }, [isExportMenuOpen])
 
   function exportAndClose(exporter: () => void) {
+    sound.play("open")
     exporter()
     setIsExportMenuOpen(false)
     window.requestAnimationFrame(() => downloadButtonRef.current?.focus())
@@ -120,81 +99,66 @@ export default function DrawingToolbar({
       event.preventDefault()
       items[(currentIndex - 1 + items.length) % items.length]?.focus()
     }
-
-    if (event.key === "Home") {
-      event.preventDefault()
-      items[0]?.focus()
-    }
-
-    if (event.key === "End") {
-      event.preventDefault()
-      items[items.length - 1]?.focus()
-    }
   }
 
   return (
     <div className="sketch-toolbar" aria-label="Drawing tools">
-      <div className="sketch-control-group" aria-label="Drawing tools">
+      <div className="sketch-control-group hover-list" aria-label="Drawing tools">
         {tools.map((item) => (
           <button
             key={item}
             type="button"
-            className="sketch-action"
+            className="sketch-action hover-item"
             aria-pressed={tool === item}
             aria-label={`${toolLabels[item]} (${toolShortcuts[item]})`}
             title={`${toolLabels[item]} (${toolShortcuts[item]})`}
-            data-tooltip={`${toolLabels[item]} (${toolShortcuts[item]})`}
-            onClick={() => onToolChange(item)}
+            onClick={() => {
+              sound.play("tool-switch")
+              onToolChange(item)
+            }}
           >
-            <DoodleIcon name={toolIcons[item]} />
+            {toolLabels[item]}
           </button>
         ))}
       </div>
 
-      <div className="sketch-toolbar-divider" aria-hidden="true" />
-
-      <div className="sketch-control-group" aria-label="Editing actions">
+      <div className="sketch-control-group hover-list" aria-label="Editing actions">
         <button
           type="button"
-          className="sketch-action"
+          className="sketch-action hover-item"
           disabled={!canUndo}
           aria-label="Undo (Cmd/Ctrl+Z)"
           title="Undo (Cmd/Ctrl+Z)"
-          data-tooltip="Undo (Cmd/Ctrl+Z)"
           onClick={onUndo}
         >
-          <DoodleIcon name="undo" />
+          Undo
         </button>
         <button
           type="button"
-          className="sketch-action"
+          className="sketch-action hover-item"
           disabled={!canRedo}
           aria-label="Redo (Shift+Cmd/Ctrl+Z)"
           title="Redo (Shift+Cmd/Ctrl+Z)"
-          data-tooltip="Redo (Shift+Cmd/Ctrl+Z)"
           onClick={onRedo}
         >
-          <DoodleIcon name="redo" />
+          Redo
         </button>
         <button
           type="button"
-          className="sketch-action"
+          className="sketch-action hover-item"
           disabled={!canUndo}
           aria-label="Clear"
           title="Clear"
-          data-tooltip="Clear"
-          onClick={onClear}
+          onClick={() => {
+            sound.play("clear")
+            onClear()
+          }}
         >
-          <DoodleIcon name="trash" />
+          Clear
         </button>
       </div>
 
-      <div className="sketch-toolbar-divider" aria-hidden="true" />
-
-      <div
-        className="sketch-control-group sketch-export-group"
-        aria-label="Export actions"
-      >
+      <div className="sketch-control-group" aria-label="Export actions">
         <div className="sketch-download" ref={exportMenuRef}>
           <button
             ref={downloadButtonRef}
@@ -204,10 +168,9 @@ export default function DrawingToolbar({
             aria-haspopup="menu"
             aria-expanded={isExportMenuOpen}
             title="Download"
-            data-tooltip="Download"
             onClick={() => setIsExportMenuOpen((open) => !open)}
           >
-            <DoodleIcon name="download" />
+            Download
           </button>
 
           {isExportMenuOpen ? (

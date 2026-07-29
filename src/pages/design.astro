@@ -1,6 +1,6 @@
 ---
 import IndexList from "@/components/IndexList.astro"
-import PageHeader from "@/components/PageHeader.astro"
+import NavigationMenu from "@/components/NavigationMenu"
 import PageShell from "@/components/PageShell.astro"
 import Layout from "@/layouts/main.astro"
 import { getCollection } from "astro:content"
@@ -18,7 +18,9 @@ const designs = (await getCollection("design"))
 
 <Layout>
   <PageShell>
-    <PageHeader title="Design" backHref="/" />
+    <NavigationMenu segments={[{ label: "Projects" }]} client:load />
+    <div class="page-content">
     <IndexList items={designs} />
+    </div>
   </PageShell>
 </Layout>

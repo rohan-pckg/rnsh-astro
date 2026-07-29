@@ -1,56 +1,85 @@
 ---
 import "@/styles/global.css"
-import DoodleIconSprite from "@/components/DoodleIconSprite.astro"
+import ClientRouter from "astro/components/ClientRouter.astro"
+import SoundToggle from "@/components/SoundToggle.tsx"
 ---
 
 <html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width" />
-    <link rel="icon" type="image/svg+xml" href="/pfp.png" />
+    <link rel="icon" href="/pfp.png" />
     <title>\(^-^)/</title>
-    <script is:inline>
-      const theme = (() => {
-        if (
-          typeof localStorage !== "undefined" &&
-          localStorage.getItem("theme")
-        ) {
-          return localStorage.getItem("theme")
-        }
-        if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
-          return "dark"
-        }
-        return "light"
-      })()
+    <ClientRouter />
 
-      if (theme === "dark") {
-        document.documentElement.classList.add("dark")
-      } else {
-        document.documentElement.classList.remove("dark")
+    <style is:global>
+      @keyframes page-fade-in {
+        from {
+          opacity: 0;
+          transform: translateY(4px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
       }
-      window.localStorage.setItem("theme", theme)
-    </script>
+
+      @keyframes page-fade-out {
+        from {
+          opacity: 1;
+        }
+        to {
+          opacity: 0;
+        }
+      }
+
+      ::view-transition-old(root) {
+        animation: page-fade-out 200ms ease-out;
+      }
+
+      ::view-transition-new(root) {
+        animation: page-fade-in 220ms ease-out;
+      }
+
+      @media (prefers-reduced-motion) {
+        ::view-transition-old(root),
+        ::view-transition-new(root) {
+          animation: none !important;
+        }
+
+        [data-astro-transition-scope] {
+          animation: none !important;
+        }
+      }
+    </style>
   </head>
-  <body class="bg-background text-foreground">
-    <DoodleIconSprite />
-    <main>
+  <body>
+    <a href="#main-content" class="skip-link">Skip to content</a>
+    <main id="main-content">
       <slot />
     </main>
+
+    <div class="fixed right-6 bottom-6 z-50">
+      <SoundToggle client:load />
+    </div>
+
     <script>
-      import { isSoundCategory, playSound } from "@/lib/sound"
-      import type { SoundVariant } from "@/lib/sound"
+      import { sound } from "@/lib/sound"
 
-      document.addEventListener("click", (event) => {
-        const target = (event.target as Element | null)?.closest<HTMLElement>(
-          "[data-sound-category]"
-        )
-        if (!target) return
+      function onFirstInteraction() {
+        sound.init()
+        window.dispatchEvent(new Event("storage"))
+        document.removeEventListener("pointerdown", onFirstInteraction)
+        document.removeEventListener("keydown", onFirstInteraction)
+      }
+      document.addEventListener("pointerdown", onFirstInteraction, { once: true })
+      document.addEventListener("keydown", onFirstInteraction, { once: true })
 
-        const category = target.dataset.soundCategory
-        const variant = target.dataset.soundVariant as SoundVariant | undefined
-        if (category && isSoundCategory(category)) {
-          playSound(category, { variant })
-        }
+      document.addEventListener("click", (e) => {
+        const el = (e.target as Element).closest("[data-sound]") as HTMLElement | null
+        if (!el) return
+        const name = el.dataset.sound as string
+        if (name) sound.play(name as any)
       })
     </script>
   </body>

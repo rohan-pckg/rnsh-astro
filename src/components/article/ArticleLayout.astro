@@ -1,60 +1,37 @@
 ---
-import type { MarkdownHeading } from "astro"
-
 import ArticleContainer from "@/components/layout/ArticleContainer.astro"
 import CodeBlock from "@/components/article/CodeBlock"
-import ArticleReveal from "@/components/article/ArticleReveal"
-import ReadingProgress from "@/components/article/ReadingProgress"
-import TableOfContents from "@/components/article/TableOfContents"
 
 export interface Props {
-  headings: MarkdownHeading[]
+  headings?: unknown[]
 }
-
-const { headings } = Astro.props
-const tocHeadings = headings
-  .filter((heading) => heading.depth === 2 || heading.depth === 3)
-  .map((heading) => ({
-    depth: heading.depth,
-    slug: heading.slug,
-    text: heading.text,
-  }))
-const hasToc = tocHeadings.length > 0
 ---
 
-<ReadingProgress client:load />
 <CodeBlock client:idle />
-<ArticleReveal client:idle />
 
-<ArticleContainer hasToc={hasToc}>
-  {hasToc && <div aria-hidden="true" class="hidden lg:block" />}
+<ArticleContainer>
+  <slot name="nav" />
 
-  <article class="max-w-full min-w-0 lg:w-full">
-    <slot />
-  </article>
-
-  {
-    hasToc && (
-      <aside class="contents lg:sticky lg:top-20 lg:block lg:h-fit">
-        <TableOfContents headings={tocHeadings} client:load />
-      </aside>
-    )
-  }
+  <div class="page-content">
+    <article class="max-w-full min-w-0">
+      <slot />
+    </article>
+  </div>
 </ArticleContainer>
 
 <style>
-  article :global(.article-shell) {
-    width: 100%;
-  }
-
   article :global(.article-content) {
-    color: var(--muted-foreground);
+    color: var(--body);
     font-size: var(--type-body);
-    line-height: 1.8;
+    line-height: 1.7;
   }
 
   article :global(.article-content > * + *) {
     margin-top: 1.625rem;
+  }
+
+  article :global(.article-content > :first-child) {
+    margin-top: 0;
   }
 
   article :global(.article-content h1),
@@ -64,55 +41,44 @@ const hasToc = tocHeadings.length > 0
   article :global(.article-content h5),
   article :global(.article-content h6) {
     scroll-margin-top: 6rem;
-    color: var(--foreground);
+    color: var(--heading);
+    font-size: var(--type-body);
     font-weight: 500;
-    line-height: 1.3;
+    line-height: 1.5;
   }
 
   article :global(.article-content h1) {
-    margin-top: 0;
-    font-size: var(--type-page-title);
+    font-size: var(--type-primary-heading);
   }
 
   article :global(.article-content h2) {
     margin-top: 4.75rem;
-    font-size: var(--type-section-title);
   }
 
   article :global(.article-content h3) {
     margin-top: 3.25rem;
-    font-size: var(--type-card-title);
   }
 
   article :global(.article-content h4) {
     margin-top: 2.5rem;
-    font-size: var(--type-body);
-  }
-
-  article :global(.article-content > :first-child) {
-    margin-top: 0;
-  }
-
-  article :global(.article-content h1 + p) {
-    margin-top: 2.25rem;
   }
 
   article :global(.article-content p) {
     margin-top: 1.45rem;
   }
 
-  article :global(.article-content a) {
-    border-radius: var(--radius-md);
-    background: var(--muted);
-    padding: 0.125rem 0.375rem;
-    color: var(--foreground);
-    text-decoration: none;
-    transition: background-color var(--theme-transition-duration)
-      var(--theme-transition-easing);
+  article :global(.article-content h1 + p) {
+    margin-top: 2.25rem;
   }
 
-  article :global(.article-content a:hover) {
-    background: var(--border);
+  article :global(.article-content a) {
+    color: var(--heading);
+    text-decoration: none;
+  }
+
+  article :global(.article-content a:hover),
+  article :global(.article-content a:focus-visible) {
+    color: var(--body);
   }
 
   article :global(.article-content .sketchbook-afterthought) {
@@ -120,31 +86,13 @@ const hasToc = tocHeadings.length > 0
   }
 
   article :global(.article-content .sketchbook-afterthought a) {
-    display: inline-block;
-    background: transparent;
-    padding: 0;
-    color: color-mix(in oklch, var(--foreground) 58%, transparent);
-    font-family:
-      "Kalam", "Patrick Hand", "Caveat", "Shadows Into Light", cursive;
-    font-size: 0.9375rem;
-    font-weight: 300;
-    letter-spacing: 0.018em;
-    line-height: 1.4;
-    text-decoration: none;
-    transform: rotate(-3deg);
-    transition:
-      color var(--theme-transition-duration) var(--theme-transition-easing),
-      opacity 180ms ease,
-      transform 180ms ease;
+    color: var(--inactive);
+    font-size: var(--type-body);
   }
 
   article :global(.article-content .sketchbook-afterthought a:hover),
   article :global(.article-content .sketchbook-afterthought a:focus-visible) {
-    background: transparent;
-    color: color-mix(in oklch, var(--foreground) 76%, transparent);
-    opacity: 0.95;
-    outline: none;
-    transform: rotate(-3deg) translateY(-1px);
+    color: var(--body);
   }
 
   article :global(.article-content ul),
@@ -166,39 +114,34 @@ const hasToc = tocHeadings.length > 0
   }
 
   article :global(.article-content li::marker) {
-    color: var(--muted-foreground);
+    color: var(--inactive);
   }
 
   article :global(.article-content blockquote) {
     margin: 2.5rem 0;
     border-left: 1px solid var(--border);
     padding-left: 1.5rem;
-    color: var(--foreground);
-    font-size: 1.0625rem;
-    line-height: 1.8;
+    color: var(--heading);
+    font-size: var(--type-body);
+    line-height: 1.7;
   }
 
   article :global(.article-content img) {
     width: 100%;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-md);
   }
 
   article :global(.article-content em:has(+ br)),
   article :global(.article-content img + em) {
     display: block;
     margin-top: 0.5rem;
+    color: var(--inactive);
+    font-size: var(--type-body);
     text-align: center;
-    color: var(--muted-foreground);
-    font-size: var(--type-caption);
   }
 
   article :global(.article-content code) {
-    border-radius: var(--radius-sm);
-    background: var(--muted);
-    padding: 0.125rem 0.375rem;
-    color: var(--foreground);
-    font-size: var(--type-metadata);
+    color: var(--heading);
+    font-size: var(--type-body);
   }
 
   article :global(.article-content pre code) {
@@ -212,42 +155,29 @@ const hasToc = tocHeadings.length > 0
 
   article :global(.article-content pre) {
     overflow-x: auto;
-    scroll-behavior: smooth;
-    padding: 1.375rem 0;
-    color: color-mix(in oklch, var(--foreground) 86%, var(--muted-foreground));
-    font-family: var(--font-code);
-    font-size: var(--type-metadata);
+    padding: 1.25rem 0;
+    background: transparent !important;
+    color: var(--body);
+    font-family: var(--font-mono);
+    font-size: var(--type-body);
     line-height: 1.75;
     font-variant-numeric: tabular-nums;
-    outline: none;
-    background: transparent !important;
-  }
-
-  article :global(.article-content pre:focus-visible) {
-    outline: 1px solid var(--ring);
-    outline-offset: -1px;
-  }
-
-  article :global(.article-content pre::selection),
-  article :global(.article-content pre *::selection) {
-    background: color-mix(in oklch, var(--ring) 24%, transparent);
-    color: var(--foreground);
   }
 
   article :global(.article-content pre .line) {
     display: inline-block;
     min-width: 100%;
-    padding-right: 1.25rem;
-    padding-left: 4.5rem;
+    padding-right: 1rem;
+    padding-left: 3.75rem;
   }
 
   article :global(.article-content pre .line::before) {
     content: var(--line-number);
     display: inline-block;
     width: 2rem;
-    margin-left: -3.25rem;
-    padding-right: 1.25rem;
-    color: color-mix(in oklch, var(--muted-foreground) 58%, transparent);
+    margin-left: -3rem;
+    padding-right: 1rem;
+    color: var(--inactive);
     text-align: right;
     user-select: none;
   }
@@ -257,116 +187,48 @@ const hasToc = tocHeadings.length > 0
     display: block;
     margin-right: 0;
     margin-left: 0;
-    padding-right: 1.25rem;
-    padding-left: 4.5rem;
-    background: color-mix(in oklch, var(--muted) 68%, transparent);
+    padding-right: 1rem;
+    padding-left: 3.75rem;
+    background: transparent;
+    color: var(--heading);
   }
 
   article :global(.article-code-frame) {
     margin-top: 2.25rem;
     overflow: hidden;
-    border: 1px solid
-      color-mix(in oklch, var(--border) 82%, var(--muted-foreground));
-    border-radius: var(--radius-lg);
-    background: color-mix(in oklch, var(--muted) 62%, var(--background));
   }
 
   article :global(.article-code-toolbar) {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 0.5rem;
-    border-bottom: 1px solid var(--border);
-    background: color-mix(in oklch, var(--muted) 78%, var(--background));
-    padding: 0.625rem 0.875rem 0.625rem 1rem;
+    gap: 1rem;
+    padding-bottom: 0.75rem;
   }
 
   article :global(.article-code-badge),
   article :global(.article-code-copy) {
-    color: var(--muted-foreground);
-    font-family: var(--font-code);
-    font-size: var(--type-caption);
-    line-height: 1.4;
+    color: var(--inactive);
+    font-family: var(--font-mono);
+    font-size: var(--type-body);
+    line-height: 1.7;
     font-variant-numeric: tabular-nums;
-  }
-
-  article :global(.article-code-copy) {
-    border-radius: var(--radius-md);
-    background: color-mix(in oklch, var(--background) 72%, var(--muted));
-    padding: 0.3125rem 0.625rem;
-    color: color-mix(in oklch, var(--foreground) 78%, var(--muted-foreground));
-    transition:
-      background-color var(--theme-transition-duration)
-        var(--theme-transition-easing),
-      color var(--theme-transition-duration) var(--theme-transition-easing);
   }
 
   article :global(.article-code-copy:hover),
   article :global(.article-code-copy:focus-visible) {
-    background: var(--accent);
-    color: var(--foreground);
-    outline: 1px solid var(--ring);
-    outline-offset: 2px;
+    color: var(--body);
   }
 
   article :global(.article-code-frame .astro-code),
   article :global(.article-code-frame .astro-code span) {
     background: transparent !important;
-    color: color-mix(
-      in oklch,
-      var(--shiki-light) 88%,
-      var(--muted-foreground)
-    ) !important;
-  }
-
-  :global(.dark) article :global(.article-content pre) {
-    color: color-mix(in oklch, var(--foreground) 82%, var(--muted-foreground));
-  }
-
-  :global(.dark) article :global(.article-content pre::selection),
-  :global(.dark) article :global(.article-content pre *::selection) {
-    background: color-mix(in oklch, var(--ring) 32%, transparent);
-    color: var(--foreground);
-  }
-
-  :global(.dark) article :global(.article-content pre .line::before) {
-    color: color-mix(in oklch, var(--muted-foreground) 50%, transparent);
-  }
-
-  :global(.dark) article :global(.article-content pre .highlighted),
-  :global(.dark) article :global(.article-content pre mark) {
-    background: oklch(1 0 0 / 6%);
-  }
-
-  :global(.dark) article :global(.article-code-frame) {
-    border-color: oklch(1 0 0 / 9%);
-    background: oklch(0.145 0.004 286);
-  }
-
-  :global(.dark) article :global(.article-code-toolbar) {
-    border-bottom-color: oklch(1 0 0 / 9%);
-    background: oklch(0.165 0.005 286);
-  }
-
-  :global(.dark) article :global(.article-code-copy) {
-    background: oklch(1 0 0 / 6%);
-    color: oklch(0.82 0.01 286);
-  }
-
-  :global(.dark) article :global(.article-code-copy:hover),
-  :global(.dark) article :global(.article-code-copy:focus-visible) {
-    background: oklch(1 0 0 / 11%);
-    color: oklch(0.98 0 0);
-  }
-
-  :global(.dark) article :global(.article-code-frame .astro-code),
-  :global(.dark) article :global(.article-code-frame .astro-code span) {
-    color: var(--shiki-dark) !important;
+    color: var(--body) !important;
   }
 
   article :global(.article-content table) {
     width: 100%;
-    font-size: var(--type-body-small);
+    font-size: var(--type-body);
   }
 
   article :global(.article-content th),
@@ -376,7 +238,7 @@ const hasToc = tocHeadings.length > 0
   }
 
   article :global(.article-content th) {
-    color: var(--foreground);
+    color: var(--heading);
     font-weight: 500;
     text-align: left;
   }
@@ -385,6 +247,6 @@ const hasToc = tocHeadings.length > 0
     margin-top: 4rem;
     border-top: 1px solid var(--border);
     padding-top: 1.5rem;
-    font-size: 0.8125rem;
+    font-size: var(--type-body);
   }
 </style>

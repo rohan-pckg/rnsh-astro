@@ -1,7 +1,6 @@
 import { useEffect } from "react"
 
 import { copyText } from "@/lib/clipboard"
-import { playSound } from "@/lib/sound"
 
 export default function CodeBlock() {
   useEffect(() => {
@@ -53,15 +52,14 @@ export default function CodeBlock() {
       button.addEventListener("click", async () => {
         try {
           await copyText(code?.textContent ?? "")
-          playSound("copy")
-          button.textContent = "✓ Copied"
+          button.textContent = "Copied"
           button.setAttribute("aria-label", "Code copied")
           window.setTimeout(() => {
             button.textContent = "Copy"
             button.setAttribute("aria-label", "Copy code")
           }, 1600)
         } catch {
-          playSound("error")
+          button.textContent = "Unable to copy"
         }
       })
 

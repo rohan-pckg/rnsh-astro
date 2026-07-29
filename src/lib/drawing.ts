@@ -1,7 +1,5 @@
 import getStroke_ from "perfect-freehand"
 
-export { getStroke_ as getStroke }
-
 export type Tool = "pen" | "marker" | "eraser"
 export type Point = [number, number, number]
 export type Stroke = {
@@ -128,8 +126,8 @@ export function renderStrokesToCanvas(
 
 export function getStrokesAsSvg(
   strokes: Stroke[],
-  width: number,
-  height: number,
+  _width: number,
+  _height: number,
   paper: string,
   ink: string,
 ) {

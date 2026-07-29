@@ -1,6 +1,6 @@
 ---
 import Layout from "@/layouts/main.astro"
-import PageHeader from "@/components/PageHeader.astro"
+import NavigationMenu from "@/components/NavigationMenu"
 import PageShell from "@/components/PageShell.astro"
 
 const pfp = "/about.jpeg"
@@ -8,24 +8,25 @@ const pfp = "/about.jpeg"
 
 <Layout>
   <PageShell>
-    <PageHeader title="About" backHref="/" />
+    <NavigationMenu segments={[{ label: "About" }]} client:load />
 
+    <div class="page-content">
     <div class="editorial-stack">
       <div class="flex flex-col gap-3 pb-2">
         <img
           src={pfp}
           alt="Rohan Singh"
-          class="rounded-md border border-border"
+          class="w-full opacity-95"
         />
-        <span class="mt-5 font-medium">Rohan Singh</span>
+        <span class="section-title mt-5">Rohan Singh</span>
       </div>
 
       <p class="body-text">
         Based in Mumbai, India, I’m a 23-year-old engineer blending a formal
         background in Computer Science (B.Tech, 2024) with a passion for
         front-end architecture and interface design. I'm currently working as a
-        <span class="text-foreground">Software Engineer</span> at <span
-          class="text-foreground">Hoora</span
+        <span class="important">Software Engineer</span> at <span
+          class="important">Hoora</span
         >, where I focus on crafting high-fidelity digital experiences. I’m
         obsessed with the details that often go unnoticed sharp typography,
         macro-spacing, and intentional motion.
@@ -41,9 +42,11 @@ const pfp = "/about.jpeg"
         target="_blank"
         rel="noreferrer"
         class="inline-annotation body-small inline-flex w-fit"
+        data-sound="navigate"
       >
         View Resume
       </a>
+    </div>
     </div>
   </PageShell>
 </Layout>

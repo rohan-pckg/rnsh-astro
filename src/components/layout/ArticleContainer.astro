@@ -1,14 +1,7 @@
 ---
-export interface Props {
-  hasToc?: boolean
-}
-
-const { hasToc = false } = Astro.props
-const containerClass = hasToc
-  ? "mx-auto grid w-full max-w-[1180px] grid-cols-1 gap-y-12 px-6 py-12 sm:px-8 sm:py-16 lg:grid-cols-[minmax(0,1fr)_minmax(0,760px)_180px] lg:gap-x-16 lg:px-8 lg:py-24"
-  : "mx-auto w-full max-w-[760px] px-6 py-12 sm:px-8 sm:py-16 lg:px-8 lg:py-24"
+import SiteContainer from "@/components/SiteContainer.astro"
 ---
 
-<div class={containerClass}>
+<SiteContainer>
   <slot />
-</div>
+</SiteContainer>

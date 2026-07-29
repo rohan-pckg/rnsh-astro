@@ -1,5 +1,5 @@
 ---
-import PageHeader from "@/components/PageHeader.astro"
+import NavigationMenu from "@/components/NavigationMenu"
 import PageShell from "@/components/PageShell.astro"
 import Layout from "@/layouts/main.astro"
 
@@ -21,17 +21,19 @@ const photos: { src: string; alt: string }[] = [
 
 <Layout>
   <PageShell>
-    <PageHeader title="Gallery" backHref="/" />
+    <NavigationMenu segments={[{ label: "Gallery" }]} client:load />
+    <div class="page-content">
     <!-- Gallery -->
     {
       photos.length > 0 ? (
         <div class="grid grid-cols-2 gap-3" id="gallery">
           {photos.map((photo, i) => (
             <button
-              class="gallery-item block w-full cursor-zoom-in overflow-hidden rounded-md border border-border focus:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              class="gallery-item block w-full cursor-zoom-in overflow-hidden"
               data-src={photo.src}
               data-index={String(i)}
               aria-label={`Open photo ${i + 1}`}
+              data-sound="open"
             >
               <img
                 src={photo.src}
@@ -47,12 +49,13 @@ const photos: { src: string; alt: string }[] = [
         <p class="body-text">Nothing here yet.</p>
       )
     }
+    </div>
   </PageShell>
 
   <!-- Lightbox -->
   <div
     id="lightbox"
-    class="fixed inset-0 z-50 hidden items-center justify-center bg-background/90 backdrop-blur-sm"
+    class="fixed inset-0 z-50 hidden items-center justify-center bg-background/95"
     role="dialog"
     aria-modal="true"
     aria-label="Image preview"
@@ -62,18 +65,14 @@ const photos: { src: string; alt: string }[] = [
       class="surface-button absolute top-5 right-5"
       aria-label="Close"
     >
-      <svg class="doodle-icon doodle-icon--lg" aria-hidden="true">
-        <use href="#doodle-close"></use>
-      </svg>
+      Close
     </button>
     <button
       id="lb-prev"
-      class="surface-button absolute top-1/2 left-4 -translate-y-1/2"
+      class="surface-button absolute inset-y-0 left-4"
       aria-label="Previous"
     >
-      <svg class="doodle-icon doodle-icon--lg" aria-hidden="true">
-        <use href="#doodle-chevron-left"></use>
-      </svg>
+      Prev
     </button>
     <img
       id="lb-img"
@@ -83,21 +82,17 @@ const photos: { src: string; alt: string }[] = [
     />
     <button
       id="lb-next"
-      class="surface-button absolute top-1/2 right-4 -translate-y-1/2"
+      class="surface-button absolute inset-y-0 right-4"
       aria-label="Next"
     >
-      <svg class="doodle-icon doodle-icon--lg" aria-hidden="true">
-        <use href="#doodle-chevron-right"></use>
-      </svg>
+      Next
     </button>
     <span
       id="lb-count"
-      class="caption absolute bottom-5 left-1/2 -translate-x-1/2 font-mono tracking-widest"
+      class="caption absolute right-0 bottom-5 left-0 text-center font-mono tracking-widest"
     ></span>
   </div>
   <script>
-    import { playSound } from "@/lib/sound"
-
     const items = [
       ...document.querySelectorAll<HTMLButtonElement>(".gallery-item"),
     ]
@@ -111,15 +106,13 @@ const photos: { src: string; alt: string }[] = [
     let cur = 0
     let activeTrigger: HTMLButtonElement | null = null
 
-    function nav(i: number, withSound = false) {
-      if (withSound) playSound("navigation")
+    function nav(i: number) {
       cur = ((i % srcs.length) + srcs.length) % srcs.length
       lbImg.src = srcs[cur].src
       lbImg.alt = srcs[cur].alt
       lbCnt.textContent = `${cur + 1} / ${srcs.length}`
     }
     function open(i: number) {
-      playSound("navigation")
       activeTrigger = items[i] ?? null
       nav(i)
       lb.classList.replace("hidden", "flex")
@@ -127,7 +120,6 @@ const photos: { src: string; alt: string }[] = [
       document.getElementById("lb-close")?.focus()
     }
     function close() {
-      playSound("drawer", { variant: "close" })
       lb.classList.replace("flex", "hidden")
       document.body.style.overflow = ""
       activeTrigger?.focus()
@@ -159,22 +151,22 @@ const photos: { src: string; alt: string }[] = [
     document.getElementById("lb-close")!.addEventListener("click", close)
     document
       .getElementById("lb-prev")!
-      .addEventListener("click", () => nav(cur - 1, true))
+      .addEventListener("click", () => nav(cur - 1))
     document
       .getElementById("lb-next")!
-      .addEventListener("click", () => nav(cur + 1, true))
+      .addEventListener("click", () => nav(cur + 1))
     lb.addEventListener("click", (e) => {
       if (e.target === lb) close()
     })
     document.addEventListener("keydown", (e) => {
       if (lb.classList.contains("hidden")) return
       if (e.key === "Escape") close()
-      if (e.key === "ArrowLeft") nav(cur - 1, true)
-      if (e.key === "ArrowRight") nav(cur + 1, true)
+      if (e.key === "ArrowLeft") nav(cur - 1)
+      if (e.key === "ArrowRight") nav(cur + 1)
       trapFocus(e)
     })
 
-    // Auto-detect landscape → span full row; fade in on load
+    // Auto-detect landscape images so they span the full row.
     document
       .querySelectorAll<HTMLImageElement>(".gallery-img")
       .forEach((img) => {
@@ -183,7 +175,6 @@ const photos: { src: string; alt: string }[] = [
           if (img.naturalWidth > img.naturalHeight) {
             btn.classList.add("is-landscape")
           }
-          img.classList.add("loaded")
         }
         img.complete ? check() : img.addEventListener("load", check)
       })
@@ -193,14 +184,6 @@ const photos: { src: string; alt: string }[] = [
     /* Landscape images span both columns */
     .gallery-item.is-landscape {
       grid-column: span 2;
-    }
-
-    .gallery-img {
-      opacity: 0;
-      transition: opacity 0.3s ease;
-    }
-    .gallery-img.loaded {
-      opacity: 1;
     }
   </style>
 </Layout>

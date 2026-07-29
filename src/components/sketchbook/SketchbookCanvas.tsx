@@ -1,4 +1,3 @@
-import { playSound } from "@/lib/sound"
 import { downloadBlob, getStrokesAsSvg, makePdfFromCanvas } from "@/lib/drawing"
 import { useDrawingEngine } from "@/hooks/useDrawingEngine"
 import DrawingToolbar from "@/components/sketchbook/DrawingToolbar"
@@ -26,7 +25,6 @@ export default function SketchbookCanvas() {
   function exportPng() {
     const canvas = canvasRef.current
     if (!canvas) return
-    playSound("export")
     canvas.toBlob((blob) => {
       if (blob) downloadBlob(blob, "sketchbook.png")
     }, "image/png")
@@ -43,7 +41,6 @@ export default function SketchbookCanvas() {
 
     const svgContent = getStrokesAsSvg(strokes, rect.width, rect.height, paper, ink)
     const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${rect.width}" height="${rect.height}" viewBox="0 0 ${rect.width} ${rect.height}">${svgContent}</svg>`
-    playSound("export")
     downloadBlob(new Blob([svg], { type: "image/svg+xml" }), "sketchbook.svg")
   }
 
@@ -54,7 +51,6 @@ export default function SketchbookCanvas() {
     const pdf = makePdfFromCanvas(canvas)
     if (!pdf) return
 
-    playSound("export")
     downloadBlob(pdf, "sketchbook.pdf")
   }
 
@@ -79,7 +75,7 @@ export default function SketchbookCanvas() {
 
       <canvas
         ref={canvasRef}
-        className={`h-[68vh] max-h-[620px] min-h-[420px] w-full touch-none rounded-lg border border-border bg-card text-foreground transition-colors duration-150 ${
+        className={`h-[68vh] max-h-[620px] min-h-[420px] w-full touch-none bg-background text-foreground ${
           isDrawing ? "cursor-crosshair" : "cursor-cell"
         }`}
         aria-label="Drawing canvas"

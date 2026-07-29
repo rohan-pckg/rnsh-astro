@@ -6,7 +6,6 @@ import {
   type PointerEvent as ReactPointerEvent,
 } from "react"
 
-import { playSound } from "@/lib/sound"
 import type { Point, Stroke, Tool } from "@/lib/drawing"
 import { renderStrokesToCanvas } from "@/lib/drawing"
 
@@ -95,7 +94,6 @@ export function useDrawingEngine(options?: { storageKey?: string }) {
 
   function beginStroke(event: ReactPointerEvent<HTMLCanvasElement>) {
     event.currentTarget.setPointerCapture(event.pointerId)
-    playSound("draw")
     const point = pointFromEvent(event)
     currentStrokeRef.current = {
       id: crypto.randomUUID(),
@@ -126,14 +124,12 @@ export function useDrawingEngine(options?: { storageKey?: string }) {
     if (strokes.length === 0 && clearSnapshotRef.current) {
       setStrokes(clearSnapshotRef.current)
       clearSnapshotRef.current = null
-      playSound("edit")
       return
     }
     const last = strokes[strokes.length - 1]
     if (!last) return
     setStrokes(strokes.slice(0, -1))
     setRedoStack((r) => [last, ...r])
-    playSound("edit")
   }
 
   function redo() {
@@ -141,13 +137,11 @@ export function useDrawingEngine(options?: { storageKey?: string }) {
     if (!restored) return
     setRedoStack((r) => r.slice(1))
     setStrokes((s) => [...s, restored])
-    playSound("edit")
   }
 
   function clear() {
     if (!strokes.length) return
     clearSnapshotRef.current = strokes
-    playSound("clear")
     setRedoStack([])
     setStrokes([])
   }

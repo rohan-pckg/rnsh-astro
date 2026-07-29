@@ -1,7 +1,6 @@
 ---
-import ArticleFooter from "@/components/article/ArticleFooter.astro"
-import ArticleHeader from "@/components/article/ArticleHeader.astro"
 import ArticleLayout from "@/components/article/ArticleLayout.astro"
+import NavigationMenu from "@/components/NavigationMenu"
 import Layout from "@/layouts/main.astro"
 import { getCollection, render } from "astro:content"
 
@@ -19,12 +18,15 @@ const { Content, headings } = await render(post)
 
 <Layout>
   <ArticleLayout headings={headings}>
-    <ArticleHeader backHref="/blogs" />
+    <div slot="nav">
+      <NavigationMenu
+        segments={[{ label: "Thoughts", href: "/blogs" }, { label: post.data.title }]}
+        client:load
+      />
+    </div>
 
     <div class="article-content">
       <Content />
     </div>
-
-    <ArticleFooter backHref="/blogs" backLabel="Back to writing" />
   </ArticleLayout>
 </Layout>
