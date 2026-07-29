@@ -115,9 +115,12 @@ const inlineLinkClass = "inline-annotation"
         <a
           href="/blogs"
           data-sound-category="navigation"
-          class="metadata transition-colors duration-200 ease-in-out hover:text-foreground focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none"
+          class="metadata inline-flex items-center gap-1 transition-colors duration-200 ease-in-out hover:text-foreground focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none"
         >
-          View all →
+          View all
+          <svg class="doodle-icon doodle-icon--sm" aria-hidden="true">
+            <use href="#doodle-arrow-right"></use>
+          </svg>
         </a>
       </div>
 
@@ -191,10 +194,6 @@ const inlineLinkClass = "inline-annotation"
   </script>
 
   <style>
-    :global(.home-shell) {
-      padding-top: 4.5rem;
-    }
-
     .home-hero {
       position: relative;
     }
@@ -223,18 +222,6 @@ const inlineLinkClass = "inline-annotation"
       border-radius: var(--radius-sm);
       outline: none;
       box-shadow: 0 0 0 1px var(--ring);
-    }
-
-    @media (min-width: 640px) {
-      :global(.home-shell) {
-        padding-top: 5.5rem;
-      }
-    }
-
-    @media (min-width: 1024px) {
-      :global(.home-shell) {
-        padding-top: 7rem;
-      }
     }
   </style>
 </Layout>

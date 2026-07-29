@@ -1,11 +1,8 @@
-import { useCallback, useEffect, useRef, useState } from "react"
-
 import { playSound } from "@/lib/sound"
 import { downloadBlob, getStrokesAsSvg, makePdfFromCanvas } from "@/lib/drawing"
 import { useDrawingEngine } from "@/hooks/useDrawingEngine"
 import DrawingToolbar from "@/components/sketchbook/DrawingToolbar"
 import { DrawingEditorLayout } from "@/components/DrawingEditorLayout"
-import { SketchbookFooterCallout } from "@/components/sketchbook/SketchbookFooterCallout"
 
 const STORAGE_KEY = "sketchbook-strokes"
 
@@ -92,8 +89,6 @@ export default function SketchbookCanvas() {
         onPointerUp={finishStroke}
         onPointerCancel={finishStroke}
       />
-
-      <SketchbookFooterCallout />
 
       <p className="caption">
         P for pen, M for marker, E for eraser, Cmd/Ctrl+Z to undo,

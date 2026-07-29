@@ -3,7 +3,6 @@ import {
   useEffect,
   useRef,
   useState,
-  type KeyboardEvent as ReactKeyboardEvent,
   type PointerEvent as ReactPointerEvent,
 } from "react"
 
@@ -11,25 +10,27 @@ import { playSound } from "@/lib/sound"
 import type { Point, Stroke, Tool } from "@/lib/drawing"
 import { renderStrokesToCanvas } from "@/lib/drawing"
 
+function loadStrokes(storageKey: string | undefined): Stroke[] {
+  if (!storageKey) return []
+  try {
+    const saved = window.localStorage.getItem(storageKey)
+    if (saved) return JSON.parse(saved) as Stroke[]
+  } catch {
+    // ignore
+  }
+  return []
+}
+
 export function useDrawingEngine(options?: { storageKey?: string }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const currentStrokeRef = useRef<Stroke | null>(null)
+  const clearSnapshotRef = useRef<Stroke[] | null>(null)
   const [tool, setTool] = useState<Tool>("pen")
-  const [strokes, setStrokes] = useState<Stroke[]>([])
+  const [strokes, setStrokes] = useState<Stroke[]>(() => loadStrokes(options?.storageKey))
   const [redoStack, setRedoStack] = useState<Stroke[]>([])
   const [isDrawing, setIsDrawing] = useState(false)
 
   const storageKey = options?.storageKey
-
-  useEffect(() => {
-    if (!storageKey) return
-    try {
-      const saved = window.localStorage.getItem(storageKey)
-      if (saved) setStrokes(JSON.parse(saved) as Stroke[])
-    } catch {
-      setStrokes([])
-    }
-  }, [storageKey])
 
   useEffect(() => {
     if (!storageKey) return
@@ -122,34 +123,36 @@ export function useDrawingEngine(options?: { storageKey?: string }) {
   }
 
   function undo() {
-    setStrokes((current) => {
-      const next = current.slice(0, -1)
-      const removed = current[current.length - 1]
-      if (removed) setRedoStack((redo) => [removed, ...redo])
-      if (removed) playSound("edit")
-      return next
-    })
+    if (strokes.length === 0 && clearSnapshotRef.current) {
+      setStrokes(clearSnapshotRef.current)
+      clearSnapshotRef.current = null
+      playSound("edit")
+      return
+    }
+    const last = strokes[strokes.length - 1]
+    if (!last) return
+    setStrokes(strokes.slice(0, -1))
+    setRedoStack((r) => [last, ...r])
+    playSound("edit")
   }
 
   function redo() {
-    setRedoStack((current) => {
-      const [restored, ...rest] = current
-      if (restored) {
-        setStrokes((existing) => [...existing, restored])
-        playSound("edit")
-      }
-      return rest
-    })
+    const restored = redoStack[0]
+    if (!restored) return
+    setRedoStack((r) => r.slice(1))
+    setStrokes((s) => [...s, restored])
+    playSound("edit")
   }
 
   function clear() {
     if (!strokes.length) return
+    clearSnapshotRef.current = strokes
     playSound("clear")
     setRedoStack([])
     setStrokes([])
   }
 
-  const canUndo = strokes.length > 0
+  const canUndo = strokes.length > 0 || clearSnapshotRef.current !== null
   const canRedo = redoStack.length > 0
 
   return {

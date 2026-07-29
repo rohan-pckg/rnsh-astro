@@ -16,7 +16,7 @@ const {
   metadata,
   spacing = "default",
 } = Astro.props
-const headerClass = spacing === "compact" ? "mb-10" : "mb-10"
+const headerClass = spacing === "compact" ? "mb-6" : "mb-10"
 const hasLeftAction = Astro.slots.has("leftAction") || Boolean(backHref)
 const hasRightAction = Astro.slots.has("rightAction")
 const hasBelow = subtitle || metadata || Astro.slots.has("metadata")
