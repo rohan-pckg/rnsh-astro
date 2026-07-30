@@ -34,8 +34,12 @@
   --type-primary-heading: 1.125rem;
   --type-body: 0.875rem;
   --type-caption: var(--type-body);
-  --motion-duration: 180ms;
+  --motion-duration: 130ms;
   --motion-ease: ease-out;
+  --gap-after-breadcrumb: 2rem;
+  --gap-after-title: 0.5rem;
+  --gap-after-description: 0.5rem;
+  --gap-after-meta: 2rem;
 }
 
 @layer base {
@@ -83,9 +87,12 @@
     cursor: pointer;
   }
 
+  :focus {
+    outline: none;
+  }
+
   :focus-visible {
-    outline: 1px solid var(--body);
-    outline-offset: 4px;
+    outline: none;
   }
 
   .skip-link {
@@ -247,13 +254,21 @@
     color: var(--heading);
   }
 
-  .page-content {
-    transition: opacity 0.18s ease-out;
+  .nav-link:focus-visible {
+    color: var(--heading);
   }
 
-  body.nav-open .page-content {
-    opacity: 0.15;
-    pointer-events: none;
+  .nav-home:focus-visible,
+  .nav-parent:focus-visible,
+  .nav-link.is-active:focus-visible,
+  .breadcrumb-toggle:focus-visible {
+    text-decoration: underline;
+    text-underline-offset: 0.15em;
+    text-decoration-thickness: 1px;
+  }
+
+  body.nav-open {
+    overflow: hidden;
   }
 
   .writing-list {

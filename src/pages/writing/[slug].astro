@@ -14,10 +14,20 @@ export async function getStaticPaths() {
 
 const { post } = Astro.props
 const { Content, headings } = await render(post)
+
+const wordCount = post.body ? post.body.trim().split(/\s+/).filter(Boolean).length : 0
+const readingTime = Math.max(1, Math.ceil(wordCount / 210))
 ---
 
 <Layout>
-  <ArticleLayout headings={headings}>
+  <ArticleLayout
+    headings={headings}
+    title={post.data.title}
+    description={post.data.description}
+    date={post.data.date}
+    category={post.data.category}
+    readingTime={readingTime}
+  >
     <div slot="nav">
       <NavigationMenu
         segments={[{ label: "Thoughts", href: "/blogs" }, { label: post.data.title }]}
@@ -25,8 +35,6 @@ const { Content, headings } = await render(post)
       />
     </div>
 
-    <div class="article-content">
-      <Content />
-    </div>
+    <Content />
   </ArticleLayout>
 </Layout>

@@ -9,8 +9,9 @@ type NavItem = {
 const navItems: NavItem[] = [
   { label: "About", href: "/about" },
   { label: "Thoughts", href: "/blogs" },
-  { label: "Projects", href: "/design" },
+  { label: "Projects", href: "/projects" },
   { label: "Gallery", href: "/gallery" },
+  { label: "Design", href: "/design" },
   { label: "Sketchbook", href: "/sketchbook" },
 ]
 
@@ -82,20 +83,11 @@ export default function NavigationMenu({ segments }: Props) {
   }, [isOpen, close])
 
   useEffect(() => {
-    if (!isOpen) return
-
-    function onPointer(e: PointerEvent) {
-      if (navRef.current && !navRef.current.contains(e.target as Node)) {
-        close()
-      }
+    if (isOpen) {
+      const firstLink = navRef.current?.querySelector<HTMLAnchorElement>(".nav-link")
+      window.setTimeout(() => firstLink?.focus(), 0)
     }
-
-    const id = window.setTimeout(() => window.addEventListener("pointerdown", onPointer), 0)
-    return () => {
-      window.clearTimeout(id)
-      window.removeEventListener("pointerdown", onPointer)
-    }
-  }, [isOpen, close])
+  }, [isOpen])
 
   useEffect(() => {
     function onPageLoad() {
@@ -109,8 +101,14 @@ export default function NavigationMenu({ segments }: Props) {
     close()
   }, [close])
 
+  const overlayTransition = {
+    type: "tween" as const,
+    duration: shouldReduceMotion ? 0 : 0.2,
+    ease: "easeOut" as const,
+  }
+
   return (
-    <div ref={navRef} className="mb-10">
+    <div ref={navRef} style={{ marginBottom: "var(--gap-after-breadcrumb, 2.5rem)" }}>
       <div className="nav-title">
         <a href="/" className="nav-home" data-sound="navigate" onClick={handleNavClick}>
           rnsh
@@ -148,23 +146,58 @@ export default function NavigationMenu({ segments }: Props) {
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, translateY: "-6px" }}
-            animate={{ opacity: 1, translateY: 0 }}
-            exit={{ opacity: 0, translateY: "-6px" }}
-            transition={{ duration: shouldReduceMotion ? 0 : 0.18, ease: "easeOut" }}
-            className="nav-links"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={overlayTransition}
+            className="fixed inset-0 z-40 overflow-y-auto"
+            style={{ background: "var(--background)" }}
           >
-            {navItems.map((item) => (
-              <a
-                key={item.href}
-                href={item.href}
-                className={`nav-link${activeHref === item.href ? " is-active" : ""}`}
-                data-sound="navigate"
-                onClick={handleNavClick}
-              >
-                {item.label}
-              </a>
-            ))}
+            <motion.div
+              initial={{ translateY: "-6px" }}
+              animate={{ translateY: 0 }}
+              exit={{ translateY: "-6px" }}
+              transition={overlayTransition}
+              className="mx-auto flex max-w-[640px] flex-col px-6 pt-32 pb-20 sm:px-8 sm:pt-36 lg:pt-40"
+            >
+              <div className="nav-title">
+                <a href="/" className="nav-home" data-sound="navigate" onClick={handleNavClick}>
+                  rnsh
+                </a>
+                {segments.slice(0, -1).map((seg, i) => (
+                  <span key={i}>
+                    <span className="mx-1" style={{ color: "var(--inactive)" }}>/</span>
+                    {seg.href ? (
+                      <a href={seg.href} className="nav-parent" data-sound="navigate" onClick={handleNavClick}>
+                        {seg.label}
+                      </a>
+                    ) : (
+                      <span className="nav-current">{seg.label}</span>
+                    )}
+                  </span>
+                ))}
+                <span className="mx-1" style={{ color: "var(--inactive)" }}>/</span>
+                <span className="inline-block align-top">
+                  <span className="nav-current">
+                    {segments.length > 0 ? segments[segments.length - 1].label : ""}
+                  </span>
+                  <div className="nav-links" style={{ marginTop: "14px" }}>
+                    {navItems.map((item) => (
+                      <a
+                        key={item.href}
+                        href={item.href}
+                        className={`nav-link${activeHref === item.href ? " is-active" : ""}`}
+                        data-sound="navigate"
+                        onClick={handleNavClick}
+                        style={{ marginBottom: "10px" }}
+                      >
+                        {item.label}
+                      </a>
+                    ))}
+                  </div>
+                </span>
+              </div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>

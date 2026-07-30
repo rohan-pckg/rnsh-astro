@@ -4,18 +4,50 @@ import CodeBlock from "@/components/article/CodeBlock"
 
 export interface Props {
   headings?: unknown[]
+  title: string
+  description: string
+  date: Date
+  category?: string
+  readingTime?: number
 }
+
+const { title, description, date, readingTime } = Astro.props
+
+const formatDate = (d: Date) =>
+  d.toLocaleDateString("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  })
 ---
 
 <CodeBlock client:idle />
 
 <ArticleContainer>
-  <slot name="nav" />
+  <div class="article-wrapper">
+    <slot name="nav" />
 
-  <div class="page-content">
-    <article class="max-w-full min-w-0">
-      <slot />
-    </article>
+    <div class="page-content">
+      <article class="max-w-full min-w-0">
+      <h1 class="section-title">{title}</h1>
+      <p class="body-text" style="margin-top: var(--gap-after-title)">{description}</p>
+      <div class="article-meta" style="margin-top: var(--gap-after-description)">
+        <time class="metadata" datetime={date.toISOString()}>
+          {formatDate(date)}
+        </time>
+        {readingTime ? (
+          <>
+            <span class="metadata" style="margin: 0 0.4rem">•</span>
+            <span class="metadata">{readingTime} min read</span>
+          </>
+        ) : null}
+      </div>
+
+      <div class="article-content" style="margin-top: var(--gap-after-meta)">
+        <slot />
+      </div>
+      </article>
+    </div>
   </div>
 </ArticleContainer>
 
@@ -28,10 +60,6 @@ export interface Props {
 
   article :global(.article-content > * + *) {
     margin-top: 1.625rem;
-  }
-
-  article :global(.article-content > :first-child) {
-    margin-top: 0;
   }
 
   article :global(.article-content h1),
@@ -61,6 +89,10 @@ export interface Props {
 
   article :global(.article-content h4) {
     margin-top: 2.5rem;
+  }
+
+  article :global(.article-content > :first-child) {
+    margin-top: 0;
   }
 
   article :global(.article-content p) {
