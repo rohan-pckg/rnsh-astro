@@ -20,6 +20,7 @@ export default function SketchbookCanvas() {
     canUndo,
     canRedo,
     strokes,
+    currentStrokeRef,
   } = useDrawingEngine({ storageKey: STORAGE_KEY })
 
   function exportPng() {
@@ -37,9 +38,12 @@ export default function SketchbookCanvas() {
     const rect = canvas.getBoundingClientRect()
     const styles = window.getComputedStyle(canvas)
     const paper = styles.backgroundColor
-    const ink = styles.color
 
-    const svgContent = getStrokesAsSvg(strokes, rect.width, rect.height, paper, ink)
+    const allStrokes = currentStrokeRef.current
+      ? [...strokes, currentStrokeRef.current]
+      : strokes
+
+    const svgContent = getStrokesAsSvg(allStrokes, paper)
     const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${rect.width}" height="${rect.height}" viewBox="0 0 ${rect.width} ${rect.height}">${svgContent}</svg>`
     downloadBlob(new Blob([svg], { type: "image/svg+xml" }), "sketchbook.svg")
   }
@@ -67,6 +71,7 @@ export default function SketchbookCanvas() {
         onToolChange={setTool}
         canUndo={canUndo}
         canRedo={canRedo}
+        canClear={strokes.length > 0}
         onUndo={undo}
         onRedo={redo}
         onClear={clear}
@@ -75,7 +80,7 @@ export default function SketchbookCanvas() {
 
       <canvas
         ref={canvasRef}
-        className={`h-[68vh] max-h-[620px] min-h-[420px] w-full touch-none bg-background text-foreground ${
+        className={`h-[68vh] max-h-[620px] min-h-[420px] w-full touch-none bg-[#EFEBE3] text-foreground ${
           isDrawing ? "cursor-crosshair" : "cursor-cell"
         }`}
         aria-label="Drawing canvas"

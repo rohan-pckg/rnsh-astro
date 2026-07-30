@@ -19,6 +19,7 @@ type DrawingToolbarProps = {
   onToolChange: (tool: Tool) => void
   canUndo: boolean
   canRedo: boolean
+  canClear: boolean
   onUndo: () => void
   onRedo: () => void
   onClear: () => void
@@ -32,6 +33,7 @@ export default function DrawingToolbar({
   onToolChange,
   canUndo,
   canRedo,
+  canClear,
   onUndo,
   onRedo,
   onClear,
@@ -129,7 +131,10 @@ export default function DrawingToolbar({
           disabled={!canUndo}
           aria-label="Undo (Cmd/Ctrl+Z)"
           title="Undo (Cmd/Ctrl+Z)"
-          onClick={onUndo}
+          onClick={() => {
+            sound.play("back")
+            onUndo()
+          }}
         >
           Undo
         </button>
@@ -139,14 +144,17 @@ export default function DrawingToolbar({
           disabled={!canRedo}
           aria-label="Redo (Shift+Cmd/Ctrl+Z)"
           title="Redo (Shift+Cmd/Ctrl+Z)"
-          onClick={onRedo}
+          onClick={() => {
+            sound.play("open")
+            onRedo()
+          }}
         >
           Redo
         </button>
         <button
           type="button"
           className="sketch-action hover-item"
-          disabled={!canUndo}
+          disabled={!canClear}
           aria-label="Clear"
           title="Clear"
           onClick={() => {

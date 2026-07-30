@@ -8,13 +8,16 @@ export type Stroke = {
   points: Point[]
 }
 
+const INK = "#000000"
+const MARKER = "#3a3a3a"
+
 export const toolOptions: Record<
   Tool,
-  { size: number; thinning: number; smoothing: number; streamline: number }
+  { size: number; thinning: number; smoothing: number; streamline: number; simulatePressure: boolean }
 > = {
-  pen: { size: 4, thinning: 0.45, smoothing: 0.62, streamline: 0.5 },
-  marker: { size: 14, thinning: 0.2, smoothing: 0.68, streamline: 0.56 },
-  eraser: { size: 26, thinning: 0.08, smoothing: 0.5, streamline: 0.42 },
+  pen: { size: 4, thinning: 0.45, smoothing: 0.62, streamline: 0.5, simulatePressure: true },
+  marker: { size: 20, thinning: 0.2, smoothing: 0.68, streamline: 0.56, simulatePressure: true },
+  eraser: { size: 32, thinning: 0.08, smoothing: 0.5, streamline: 0.42, simulatePressure: true },
 }
 
 export const toolLabels: Record<Tool, string> = {
@@ -29,18 +32,16 @@ export const toolShortcuts: Record<Tool, string> = {
   eraser: "E",
 }
 
-export function getStrokePath(points: number[][]) {
+function getStrokePath(points: number[][]) {
   if (points.length < 1) return ""
 
   const first = points[0]
-  if (!first) return ""
 
   const d = [`M ${first[0].toFixed(2)} ${first[1].toFixed(2)}`]
 
   for (let i = 1; i < points.length; i += 1) {
     const current = points[i]
     const next = points[i + 1]
-    if (!current) continue
 
     if (next) {
       const x = (current[0] + next[0]) / 2
@@ -68,23 +69,20 @@ export function downloadBlob(blob: Blob, filename: string) {
 export function drawStroke(
   ctx: CanvasRenderingContext2D,
   stroke: Stroke,
-  palette: { ink: string; marker: string; paper: string },
+  paper: string,
 ) {
-      const outline = getStroke_(stroke.points, {
-    ...toolOptions[stroke.tool],
-    simulatePressure: true,
-  })
+  const outline = getStroke_(stroke.points, toolOptions[stroke.tool])
   const path = new Path2D(getStrokePath(outline))
 
   ctx.save()
   if (stroke.tool === "eraser") {
-    ctx.fillStyle = palette.paper
+    ctx.fillStyle = paper
     ctx.globalAlpha = 1
   } else if (stroke.tool === "marker") {
-    ctx.fillStyle = palette.marker
-    ctx.globalAlpha = 0.32
+    ctx.fillStyle = MARKER
+    ctx.globalAlpha = 0.4
   } else {
-    ctx.fillStyle = palette.ink
+    ctx.fillStyle = INK
     ctx.globalAlpha = 0.92
   }
   ctx.fill(path)
@@ -95,15 +93,13 @@ export function renderStrokesToCanvas(
   canvas: HTMLCanvasElement,
   strokes: Stroke[],
   currentStroke: Stroke | null,
-  width?: number,
-  height?: number,
 ) {
   const rect = canvas.getBoundingClientRect()
   const dpr = window.devicePixelRatio || 1
-  const w = width ?? rect.width
-  const h = height ?? rect.height
-  canvas.width = Math.max(1, Math.round(w * dpr))
-  canvas.height = Math.max(1, Math.round(h * dpr))
+  const w = Math.max(1, rect.width)
+  const h = Math.max(1, rect.height)
+  canvas.width = Math.round(w * dpr)
+  canvas.height = Math.round(h * dpr)
 
   const ctx = canvas.getContext("2d")
   if (!ctx) return
@@ -111,34 +107,25 @@ export function renderStrokesToCanvas(
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
 
   const styles = window.getComputedStyle(canvas)
-  const palette = {
-    paper: styles.backgroundColor,
-    ink: styles.color,
-    marker: styles.color,
-  }
+  const paper = styles.backgroundColor
 
-  ctx.fillStyle = palette.paper
+  ctx.fillStyle = paper
   ctx.fillRect(0, 0, w, h)
 
-  strokes.forEach((s) => drawStroke(ctx, s, palette))
-  if (currentStroke) drawStroke(ctx, currentStroke, palette)
+  strokes.forEach((s) => drawStroke(ctx, s, paper))
+  if (currentStroke) drawStroke(ctx, currentStroke, paper)
 }
 
 export function getStrokesAsSvg(
   strokes: Stroke[],
-  _width: number,
-  _height: number,
   paper: string,
-  ink: string,
 ) {
   const paths = strokes
     .map((stroke) => {
-  const outline = getStroke_(stroke.points, {
-        ...toolOptions[stroke.tool],
-        simulatePressure: true,
-      })
-      const fill = stroke.tool === "eraser" ? paper : ink
-      const opacity = stroke.tool === "marker" ? 0.32 : 0.92
+      const outline = getStroke_(stroke.points, toolOptions[stroke.tool])
+      const fill = stroke.tool === "eraser" ? paper
+        : stroke.tool === "marker" ? MARKER : INK
+      const opacity = stroke.tool === "marker" ? 0.4 : 0.92
       return `<path d="${getStrokePath(outline)}" fill="${fill}" opacity="${opacity}" />`
     })
     .join("")

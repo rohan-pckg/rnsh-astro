@@ -58,10 +58,6 @@ const formatDate = (d: Date) =>
     line-height: 1.7;
   }
 
-  article :global(.article-content > * + *) {
-    margin-top: 1.625rem;
-  }
-
   article :global(.article-content h1),
   article :global(.article-content h2),
   article :global(.article-content h3),
@@ -73,22 +69,24 @@ const formatDate = (d: Date) =>
     font-size: var(--type-body);
     font-weight: 500;
     line-height: 1.5;
+    margin: 0;
   }
 
   article :global(.article-content h1) {
     font-size: var(--type-primary-heading);
+    margin: 4.75rem 0 2rem;
   }
 
   article :global(.article-content h2) {
-    margin-top: 4.75rem;
+    margin: 3.5rem 0 1.5rem;
   }
 
   article :global(.article-content h3) {
-    margin-top: 3.25rem;
+    margin: 2.5rem 0 1rem;
   }
 
   article :global(.article-content h4) {
-    margin-top: 2.5rem;
+    margin: 2rem 0 0.75rem;
   }
 
   article :global(.article-content > :first-child) {
@@ -96,21 +94,20 @@ const formatDate = (d: Date) =>
   }
 
   article :global(.article-content p) {
-    margin-top: 1.45rem;
-  }
-
-  article :global(.article-content h1 + p) {
-    margin-top: 2.25rem;
+    margin: 1.25rem 0 0;
   }
 
   article :global(.article-content a) {
-    color: var(--heading);
-    text-decoration: none;
+    color: var(--body);
+    text-decoration: underline;
+    text-underline-offset: 0.15em;
+    text-decoration-thickness: 1px;
+    transition: color 150ms ease-out;
   }
 
   article :global(.article-content a:hover),
   article :global(.article-content a:focus-visible) {
-    color: var(--body);
+    color: var(--heading);
   }
 
   article :global(.article-content .sketchbook-afterthought) {
@@ -129,7 +126,7 @@ const formatDate = (d: Date) =>
 
   article :global(.article-content ul),
   article :global(.article-content ol) {
-    margin-top: 1.5rem;
+    margin: 1.25rem 0;
     padding-left: 1.25rem;
   }
 
@@ -150,7 +147,7 @@ const formatDate = (d: Date) =>
   }
 
   article :global(.article-content blockquote) {
-    margin: 2.5rem 0;
+    margin: 2.25rem 0;
     border-left: 1px solid var(--border);
     padding-left: 1.5rem;
     color: var(--heading);
@@ -158,7 +155,12 @@ const formatDate = (d: Date) =>
     line-height: 1.7;
   }
 
+  article :global(.article-content p:has(img:only-child)) {
+    margin-block: 3rem;
+  }
+
   article :global(.article-content img) {
+    display: block;
     width: 100%;
   }
 
@@ -171,9 +173,13 @@ const formatDate = (d: Date) =>
     text-align: center;
   }
 
-  article :global(.article-content code) {
-    color: var(--heading);
+  article :global(.article-content code:not(pre code)) {
+    background: #EFEBE3;
+    color: var(--body);
     font-size: var(--type-body);
+    font-weight: 400;
+    padding: 2px 4px;
+    border-radius: 4px;
   }
 
   article :global(.article-content pre code) {
@@ -186,9 +192,11 @@ const formatDate = (d: Date) =>
   }
 
   article :global(.article-content pre) {
+    margin: 2rem 0;
     overflow-x: auto;
     padding: 1.25rem 0;
-    background: transparent !important;
+    background: #EFEBE3;
+    border: 1px solid var(--border);
     color: var(--body);
     font-family: var(--font-mono);
     font-size: var(--type-body);
@@ -226,8 +234,12 @@ const formatDate = (d: Date) =>
   }
 
   article :global(.article-code-frame) {
-    margin-top: 2.25rem;
+    margin: 2rem 0;
     overflow: hidden;
+  }
+
+  article :global(.article-code-frame pre) {
+    margin: 0;
   }
 
   article :global(.article-code-toolbar) {
@@ -254,7 +266,6 @@ const formatDate = (d: Date) =>
 
   article :global(.article-code-frame .astro-code),
   article :global(.article-code-frame .astro-code span) {
-    background: transparent !important;
     color: var(--body) !important;
   }
 
