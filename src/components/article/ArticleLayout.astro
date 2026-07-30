@@ -1,24 +1,22 @@
 ---
 import ArticleContainer from "@/components/layout/ArticleContainer.astro"
 import CodeBlock from "@/components/article/CodeBlock"
+import { formatDate } from "@/lib/format"
 
 export interface Props {
   headings?: unknown[]
-  title: string
   description: string
   date: Date
-  category?: string
   readingTime?: number
 }
 
-const { title, description, date, readingTime } = Astro.props
+const { description, date, readingTime, headings } = Astro.props
 
-const formatDate = (d: Date) =>
-  d.toLocaleDateString("en-US", {
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-  })
+type Heading = { depth: number; slug: string; text: string }
+const firstHeading = (headings as Heading[] | undefined)?.[0]
+const contentHasTitleH1 = firstHeading?.depth === 1
+
+const descMarginTop = contentHasTitleH1 ? "0" : "var(--gap-after-title)"
 ---
 
 <CodeBlock client:idle />
@@ -29,23 +27,31 @@ const formatDate = (d: Date) =>
 
     <div class="page-content">
       <article class="max-w-full min-w-0">
-      <h1 class="section-title">{title}</h1>
-      <p class="body-text" style="margin-top: var(--gap-after-title)">{description}</p>
-      <div class="article-meta" style="margin-top: var(--gap-after-description)">
-        <time class="metadata" datetime={date.toISOString()}>
-          {formatDate(date)}
-        </time>
-        {readingTime ? (
-          <>
-            <span class="metadata" style="margin: 0 0.4rem">•</span>
-            <span class="metadata">{readingTime} min read</span>
-          </>
-        ) : null}
-      </div>
+        <p class="body-text" style={{ marginTop: descMarginTop }}>
+          {description}
+        </p>
+        <div
+          class="article-meta"
+          style="margin-top: var(--gap-after-description)"
+        >
+          <time class="metadata" datetime={date.toISOString()}>
+            {formatDate(date)}
+          </time>
+          {
+            readingTime ? (
+              <>
+                <span class="metadata" style="margin: 0 0.4rem">
+                  •
+                </span>
+                <span class="metadata">{readingTime} min read</span>
+              </>
+            ) : null
+          }
+        </div>
 
-      <div class="article-content" style="margin-top: var(--gap-after-meta)">
-        <slot />
-      </div>
+        <div class="article-content" style="margin-top: var(--gap-after-meta)">
+          <slot />
+        </div>
       </article>
     </div>
   </div>
@@ -102,7 +108,7 @@ const formatDate = (d: Date) =>
     text-decoration: underline;
     text-underline-offset: 0.15em;
     text-decoration-thickness: 1px;
-    transition: color 150ms ease-out;
+    transition: color var(--motion-duration) var(--motion-ease);
   }
 
   article :global(.article-content a:hover),
@@ -174,7 +180,7 @@ const formatDate = (d: Date) =>
   }
 
   article :global(.article-content code:not(pre code)) {
-    background: #EFEBE3;
+    background: #efebe3;
     color: var(--body);
     font-size: var(--type-body);
     font-weight: 400;
@@ -195,7 +201,7 @@ const formatDate = (d: Date) =>
     margin: 2rem 0;
     overflow-x: auto;
     padding: 1.25rem 0;
-    background: #EFEBE3;
+    background: #efebe3;
     border: 1px solid var(--border);
     color: var(--body);
     font-family: var(--font-mono);

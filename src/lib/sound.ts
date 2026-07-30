@@ -1,7 +1,7 @@
 const STORAGE_KEY = "rnsh-sound-muted"
 const DEFAULT_VOLUME = 0.12
 
-type SoundName = "navigate" | "open" | "back" | "clear" | "tool-switch"
+export type SoundName = "navigate" | "open" | "back" | "clear" | "tool-switch"
 
 class SoundManager {
   private ctx: AudioContext | null = null
@@ -109,7 +109,7 @@ class SoundManager {
     freq: number,
     duration: number,
     type: OscillatorType = "sine",
-    volume: number = 1,
+    volume: number = 1
   ) {
     const ctx = this.getContext()
     const osc = ctx.createOscillator()

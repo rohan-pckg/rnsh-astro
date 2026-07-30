@@ -2,6 +2,7 @@
 import ArticleLayout from "@/components/article/ArticleLayout.astro"
 import NavigationMenu from "@/components/NavigationMenu"
 import Layout from "@/layouts/main.astro"
+import { getReadingTime } from "@/lib/reading-time"
 import { getCollection, render } from "astro:content"
 
 export async function getStaticPaths() {
@@ -14,23 +15,23 @@ export async function getStaticPaths() {
 
 const { design } = Astro.props
 const { Content, headings } = await render(design)
-
-const wordCount = design.body ? design.body.trim().split(/\s+/).filter(Boolean).length : 0
-const readingTime = Math.max(1, Math.ceil(wordCount / 210))
+const readingTime = getReadingTime(design.body)
 ---
 
-<Layout>
+<Layout title={design.data.title} description={design.data.description}>
   <ArticleLayout
     headings={headings}
-    title={design.data.title}
     description={design.data.description}
     date={design.data.date}
     readingTime={readingTime}
   >
     <div slot="nav">
       <NavigationMenu
-        segments={[{ label: "Design", href: "/design" }, { label: design.data.title }]}
-        client:load
+        segments={[
+          { label: "Design", href: "/design" },
+          { label: design.data.title },
+        ]}
+        client:idle
       />
     </div>
 

@@ -32,7 +32,9 @@ const separator = (
 
 export default function NavigationMenu({ segments }: Props) {
   const [menuOpen, setMenuOpen] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
   const navRef = useRef<HTMLDivElement>(null)
+  const overlayRef = useRef<HTMLDivElement>(null)
   const toggleRef = useRef<HTMLButtonElement>(null)
 
   const shouldReduceMotion = useReducedMotion()
@@ -45,6 +47,18 @@ export default function NavigationMenu({ segments }: Props) {
 
   const openMenu = useCallback(() => {
     setMenuOpen(true)
+  }, [])
+
+  useEffect(() => {
+    const media = window.matchMedia("(max-width: 767px)")
+
+    function update() {
+      setIsMobile(media.matches)
+    }
+
+    update()
+    media.addEventListener("change", update)
+    return () => media.removeEventListener("change", update)
   }, [])
 
   useEffect(() => {
@@ -66,9 +80,8 @@ export default function NavigationMenu({ segments }: Props) {
       }
       if (e.key === "ArrowDown" || e.key === "ArrowUp") {
         e.preventDefault()
-        const links = navRef.current?.querySelectorAll<HTMLAnchorElement>(
-          ".nav-link"
-        )
+        const links =
+          navRef.current?.querySelectorAll<HTMLAnchorElement>(".nav-link")
         if (!links || links.length === 0) return
         const active = document.activeElement
         const idx = Array.from(links).indexOf(active as HTMLAnchorElement)
@@ -77,6 +90,27 @@ export default function NavigationMenu({ segments }: Props) {
             ? (idx + 1) % links.length
             : (idx - 1 + links.length) % links.length
         links[next]?.focus()
+        return
+      }
+      if (e.key !== "Tab" || !overlayRef.current) return
+
+      const focusable = Array.from(
+        overlayRef.current.querySelectorAll<HTMLElement>(
+          "a[href], button:not([disabled])"
+        )
+      )
+      if (focusable.length === 0) return
+
+      const first = focusable[0]
+      const last = focusable[focusable.length - 1]
+      if (!first || !last) return
+
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault()
+        last.focus()
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault()
+        first.focus()
       }
     }
 
@@ -87,9 +121,7 @@ export default function NavigationMenu({ segments }: Props) {
   useEffect(() => {
     window.setTimeout(() => {
       if (menuOpen) {
-        navRef.current
-          ?.querySelector<HTMLAnchorElement>(".nav-link")
-          ?.focus()
+        navRef.current?.querySelector<HTMLAnchorElement>(".nav-link")?.focus()
       } else {
         toggleRef.current?.focus()
       }
@@ -113,7 +145,7 @@ export default function NavigationMenu({ segments }: Props) {
   )
   const activeHref =
     segments.length > 0
-      ? navItemByLabel.get(segments[0].label.toLowerCase()) ?? null
+      ? (navItemByLabel.get(segments[0].label.toLowerCase()) ?? null)
       : null
 
   const overlayTransition = {
@@ -122,84 +154,111 @@ export default function NavigationMenu({ segments }: Props) {
     ease: "easeOut" as const,
   }
 
+  function renderCloseButton(useOverlayToggleRef: boolean) {
+    return (
+      <span className="nav-breadcrumb-part">
+        {separator}
+        <button
+          ref={useOverlayToggleRef ? undefined : toggleRef}
+          type="button"
+          onClick={closeMenu}
+          className="nav-current"
+          aria-expanded
+          aria-label="Close navigation"
+        >
+          close
+        </button>
+      </span>
+    )
+  }
+
   function renderBreadcrumb(isOverlay: boolean) {
     if (menuOpen) {
       if (isArticle) {
         return (
-          <>
-            <span>
+          <div className="nav-breadcrumb">
+            {renderCloseButton(isOverlay)}
+            <span className="nav-breadcrumb-part nav-breadcrumb-part-leaf">
               {separator}
-              <button
-                ref={isOverlay ? undefined : toggleRef}
-                type="button"
-                onClick={closeMenu}
-                className="nav-current"
-                aria-expanded
-                aria-label="Close navigation"
-              >
-                close
-              </button>
-            </span>
-            <span>
-              {separator}
-              <span className="nav-current">
+              <span className="nav-current nav-breadcrumb-leaf">
                 {segments[segments.length - 1].label}
               </span>
             </span>
-          </>
+          </div>
         )
       }
+
       return (
-        <span>
-          {separator}
-          <button
-            ref={isOverlay ? undefined : toggleRef}
-            type="button"
-            onClick={closeMenu}
-            className="nav-current"
-            aria-expanded
-            aria-label="Close navigation"
-          >
-            close
-          </button>
-        </span>
+        <div className="nav-breadcrumb">{renderCloseButton(isOverlay)}</div>
       )
     }
 
-    return segments.map((seg, i) => (
-      <span key={i}>
-        {separator}
-        {i === 0 && isArticle ? (
-          <button
-            ref={toggleRef}
-            type="button"
-            onClick={openMenu}
-            className="nav-parent"
-            data-sound="navigate"
-            aria-expanded={false}
-            aria-label={`Open navigation — ${seg.label}`}
-          >
-            {seg.label}
-          </button>
-        ) : !isArticle ? (
-          <button
-            ref={toggleRef}
-            type="button"
-            onClick={openMenu}
-            className="nav-current"
-            data-sound="navigate"
-            aria-expanded={false}
-            aria-label={`Open navigation — ${isHome ? "menu" : seg.label}`}
-          >
-            {isHome ? "menu" : seg.label}
-          </button>
-        ) : i === segments.length - 1 ? (
-          <span className="nav-current">{seg.label}</span>
-        ) : (
-          <span style={{ color: "var(--inactive)" }}>{seg.label}</span>
-        )}
-      </span>
-    ))
+    return (
+      <div className="nav-breadcrumb">
+        {segments.map((seg, i) => {
+          const isLast = i === segments.length - 1
+
+          if (i === 0 && isArticle) {
+            return (
+              <span key={i} className="nav-breadcrumb-part">
+                {separator}
+                <button
+                  ref={isOverlay ? undefined : toggleRef}
+                  type="button"
+                  onClick={openMenu}
+                  className="nav-parent"
+                  data-sound="navigate"
+                  aria-expanded={false}
+                  aria-label={`Open navigation — ${seg.label}`}
+                >
+                  {seg.label}
+                </button>
+              </span>
+            )
+          }
+
+          if (!isArticle) {
+            return (
+              <span key={i} className="nav-breadcrumb-part">
+                {separator}
+                <button
+                  ref={isOverlay ? undefined : toggleRef}
+                  type="button"
+                  onClick={openMenu}
+                  className="nav-current"
+                  data-sound="navigate"
+                  aria-expanded={false}
+                  aria-label={`Open navigation — ${isHome ? "menu" : seg.label}`}
+                >
+                  {isHome ? "menu" : seg.label}
+                </button>
+              </span>
+            )
+          }
+
+          if (isLast) {
+            return (
+              <span
+                key={i}
+                className="nav-breadcrumb-part nav-breadcrumb-part-leaf"
+              >
+                {separator}
+                <span className="nav-current nav-breadcrumb-leaf">
+                  {seg.label}
+                </span>
+              </span>
+            )
+          }
+
+          return (
+            <span key={i} className="nav-breadcrumb-part">
+              {separator}
+              <span style={{ color: "var(--inactive)" }}>{seg.label}</span>
+            </span>
+          )
+        })}
+      </div>
+    )
   }
 
   return (
@@ -222,22 +281,36 @@ export default function NavigationMenu({ segments }: Props) {
       <AnimatePresence>
         {menuOpen && (
           <motion.div
+            ref={overlayRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Navigation menu"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={overlayTransition}
-            className="fixed inset-0 z-40 overflow-y-auto"
+            className="fixed inset-0 z-40 overflow-x-hidden overflow-y-auto"
             style={{
               background: "var(--background)",
               scrollbarGutter: "stable",
             }}
           >
             <motion.div
-              initial={{ translateY: "-4px" }}
-              animate={{ translateY: 0 }}
-              exit={{ translateY: "-4px" }}
+              initial={{
+                opacity: 0,
+                translateY: isMobile || shouldReduceMotion ? 0 : "-4px",
+              }}
+              animate={{ opacity: 1, translateY: 0 }}
+              exit={{
+                opacity: 0,
+                translateY: isMobile || shouldReduceMotion ? 0 : "-4px",
+              }}
               transition={overlayTransition}
               className="mx-auto flex max-w-[640px] flex-col px-6 pt-32 pb-20 sm:px-8 sm:pt-36 lg:pt-40"
+              style={{
+                paddingBottom:
+                  "max(5rem, calc(5rem + env(safe-area-inset-bottom, 0px)))",
+              }}
             >
               <div className="nav-title">
                 <a
@@ -263,7 +336,7 @@ export default function NavigationMenu({ segments }: Props) {
                     key={item.href}
                     href={item.href}
                     className={`nav-link${
-                      activeHref === item.href ? " is-active" : ""
+                      activeHref === item.href ? "is-active" : ""
                     }`}
                     data-sound="navigate"
                     onClick={handleNavClick}

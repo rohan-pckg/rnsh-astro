@@ -1,12 +1,8 @@
-import {
-  useRef,
-  useState,
-  useEffect,
-  type KeyboardEvent as ReactKeyboardEvent,
-} from "react"
+import { useState, type RefObject } from "react"
 
-import type { Tool } from "@/lib/drawing"
-import { toolLabels, toolShortcuts } from "@/lib/drawing"
+import DownloadMenu from "@/components/sketchbook/DownloadMenu"
+import type { Tool } from "@/lib/sketchbook/types"
+import { toolLabels, toolShortcuts } from "@/lib/sketchbook/constants"
 import { sound } from "@/lib/sound"
 
 type ExportItem = {
@@ -24,6 +20,7 @@ type DrawingToolbarProps = {
   onRedo: () => void
   onClear: () => void
   exportItems: ExportItem[]
+  editorRef: RefObject<HTMLElement | null>
 }
 
 const tools: Tool[] = ["pen", "marker", "eraser"]
@@ -38,74 +35,19 @@ export default function DrawingToolbar({
   onRedo,
   onClear,
   exportItems,
+  editorRef,
 }: DrawingToolbarProps) {
-  const [isExportMenuOpen, setIsExportMenuOpen] = useState(false)
-  const exportMenuRef = useRef<HTMLDivElement>(null)
-  const downloadButtonRef = useRef<HTMLButtonElement>(null)
-
-  useEffect(() => {
-    if (!isExportMenuOpen) return
-
-    function closeExportMenu() {
-      setIsExportMenuOpen(false)
-      window.requestAnimationFrame(() => downloadButtonRef.current?.focus())
-    }
-
-    function onPointerDown(event: PointerEvent) {
-      if (!exportMenuRef.current?.contains(event.target as Node)) {
-        closeExportMenu()
-      }
-    }
-
-    function onKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") closeExportMenu()
-    }
-
-    window.addEventListener("pointerdown", onPointerDown)
-    window.addEventListener("keydown", onKeyDown)
-    window.requestAnimationFrame(() =>
-      exportMenuRef.current
-        ?.querySelector<HTMLButtonElement>(".sketch-download-item")
-        ?.focus()
-    )
-
-    return () => {
-      window.removeEventListener("pointerdown", onPointerDown)
-      window.removeEventListener("keydown", onKeyDown)
-    }
-  }, [isExportMenuOpen])
-
-  function exportAndClose(exporter: () => void) {
-    sound.play("open")
-    exporter()
-    setIsExportMenuOpen(false)
-    window.requestAnimationFrame(() => downloadButtonRef.current?.focus())
-  }
-
-  function onDownloadMenuKeyDown(event: ReactKeyboardEvent<HTMLDivElement>) {
-    const items = Array.from(
-      event.currentTarget.querySelectorAll<HTMLButtonElement>(
-        ".sketch-download-item"
-      )
-    )
-    const currentIndex = items.indexOf(
-      document.activeElement as HTMLButtonElement
-    )
-
-    if (event.key === "ArrowDown") {
-      event.preventDefault()
-      items[(currentIndex + 1) % items.length]?.focus()
-    }
-
-    if (event.key === "ArrowUp") {
-      event.preventDefault()
-      items[(currentIndex - 1 + items.length) % items.length]?.focus()
-    }
-  }
+  const [isDownloadOpen, setIsDownloadOpen] = useState(false)
 
   return (
-    <div className="sketch-toolbar" aria-label="Drawing tools">
-      <div className="sketch-control-group hover-list" aria-label="Drawing tools">
+    <div
+      className={`sketch-toolbar${isDownloadOpen ? "is-download-open" : ""}`}
+      aria-label="Drawing tools"
+    >
+      <div
+        className="sketch-control-group hover-list"
+        aria-label="Drawing tools"
+      >
         {tools.map((item) => (
           <button
             key={item}
@@ -124,17 +66,17 @@ export default function DrawingToolbar({
         ))}
       </div>
 
-      <div className="sketch-control-group hover-list" aria-label="Editing actions">
+      <div
+        className="sketch-control-group hover-list"
+        aria-label="Editing actions"
+      >
         <button
           type="button"
           className="sketch-action hover-item"
           disabled={!canUndo}
           aria-label="Undo (Cmd/Ctrl+Z)"
           title="Undo (Cmd/Ctrl+Z)"
-          onClick={() => {
-            sound.play("back")
-            onUndo()
-          }}
+          onClick={onUndo}
         >
           Undo
         </button>
@@ -144,10 +86,7 @@ export default function DrawingToolbar({
           disabled={!canRedo}
           aria-label="Redo (Shift+Cmd/Ctrl+Z)"
           title="Redo (Shift+Cmd/Ctrl+Z)"
-          onClick={() => {
-            sound.play("open")
-            onRedo()
-          }}
+          onClick={onRedo}
         >
           Redo
         </button>
@@ -155,10 +94,10 @@ export default function DrawingToolbar({
           type="button"
           className="sketch-action hover-item"
           disabled={!canClear}
-          aria-label="Clear"
-          title="Clear"
+          aria-label="Clear all drawings"
+          title="Clear all drawings"
           onClick={() => {
-            sound.play("clear")
+            if (!window.confirm("Clear all drawings?")) return
             onClear()
           }}
         >
@@ -167,54 +106,11 @@ export default function DrawingToolbar({
       </div>
 
       <div className="sketch-control-group" aria-label="Export actions">
-        <div className="sketch-download" ref={exportMenuRef}>
-          <button
-            ref={downloadButtonRef}
-            type="button"
-            className="sketch-action"
-            aria-label="Download"
-            aria-haspopup="menu"
-            aria-expanded={isExportMenuOpen}
-            title="Download"
-            onClick={() => setIsExportMenuOpen((open) => !open)}
-          >
-            Download
-          </button>
-
-          {isExportMenuOpen ? (
-            <>
-              <button
-                type="button"
-                className="sketch-download-backdrop"
-                aria-label="Close download menu"
-                onClick={() => {
-                  setIsExportMenuOpen(false)
-                  window.requestAnimationFrame(() =>
-                    downloadButtonRef.current?.focus()
-                  )
-                }}
-              />
-              <div
-                className="sketch-download-menu"
-                role="menu"
-                onKeyDown={onDownloadMenuKeyDown}
-              >
-                <div className="sketch-download-title">Download</div>
-                {exportItems.map((item) => (
-                  <button
-                    key={item.label}
-                    type="button"
-                    className="sketch-download-item"
-                    role="menuitem"
-                    onClick={() => exportAndClose(item.onExport)}
-                  >
-                    {item.label}
-                  </button>
-                ))}
-              </div>
-            </>
-          ) : null}
-        </div>
+        <DownloadMenu
+          items={exportItems}
+          editorRef={editorRef}
+          onOpenChange={setIsDownloadOpen}
+        />
       </div>
     </div>
   )

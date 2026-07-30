@@ -1,20 +1,13 @@
 ---
-import Layout from "@/layouts/main.astro"
-import SiteContainer from "@/components/SiteContainer.astro"
+import ArticleListItem from "@/components/ArticleListItem.astro"
 import NavigationMenu from "@/components/NavigationMenu"
-import { getCollection } from "astro:content"
+import PageShell from "@/components/PageShell.astro"
+import Layout from "@/layouts/main.astro"
+import { getPublishedSorted } from "@/lib/content"
+import { formatDate } from "@/lib/format"
 import { contactLinks } from "@/lib/social-links"
 
-const formatDate = (date: Date) =>
-  date.toLocaleDateString("en-US", {
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-  })
-
-const recentPosts = (await getCollection("writing"))
-  .filter((post) => !post.data.draft)
-  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
+const recentPosts = (await getPublishedSorted("writing"))
   .slice(0, 3)
   .map((post) => ({
     title: post.data.title,
@@ -23,51 +16,49 @@ const recentPosts = (await getCollection("writing"))
   }))
 ---
 
-<Layout>
-  <SiteContainer>
-    <NavigationMenu segments={[{ label: "Menu" }]} client:load />
+<Layout
+  title="Rohan Singh"
+  description="Engineer and designer building small tools, clean interfaces, and systems that make everyday work a little simpler."
+>
+  <PageShell>
+    <NavigationMenu segments={[{ label: "Menu" }]} client:idle />
 
     <div class="page-content">
-    <header class="space-y-2">
-      <h1 class="body-text">Rohan Singh</h1>
-    </header>
+      <header class="space-y-2">
+        <h1 class="body-text">Rohan Singh</h1>
+      </header>
 
-    <section class="mt-10" aria-label="Introduction">
-      <p class="body-text max-w-[62ch]">
-        I enjoy building small tools, clean interfaces, and systems that make
-        everyday work a little simpler.
-      </p>
-    </section>
+      <section class="mt-10" aria-label="Introduction">
+        <p class="body-text max-w-[62ch]">
+          I enjoy building small tools, clean interfaces, and systems that make
+          everyday work a little simpler.
+        </p>
+      </section>
 
-    <nav class="mt-8 flex gap-6" aria-label="Contact links">
-      <a class="text-link-underlined" href={contactLinks.email.href}>Email</a>
-      <a class="text-link-underlined" href={contactLinks.github.href}
-        >Github</a
-      >
-    </nav>
+      <nav class="mt-8 flex gap-6" aria-label="Contact links">
+        <a class="text-link-underlined" href={contactLinks.email.href}>Email</a>
+        <a class="text-link-underlined" href={contactLinks.github.href}
+          >Github</a
+        >
+      </nav>
 
-    <section class="mt-20" aria-labelledby="recent-heading">
-      <h2 id="recent-heading" class="section-title">Recent writings</h2>
+      <section class="mt-20" aria-labelledby="recent-heading">
+        <h2 id="recent-heading" class="section-title">Recent writings</h2>
 
-      {
-        recentPosts.length > 0 ? (
-          <ul class="writing-list mt-8">
-            {recentPosts.map((post) => (
-              <li>
-                <a class="writing-item" href={post.href} data-sound="navigate">
-                  <span class="writing-title">{post.title}</span>
-                  <span class="writing-divider" aria-hidden="true" />
-                  <time class="writing-date">{post.date}</time>
-                </a>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p class="body-text mt-8">Nothing here yet.</p>
-        )
-      }
-    </section>
+        {
+          recentPosts.length > 0 ? (
+            <ul class="writing-list mt-8">
+              {recentPosts.map((post) => (
+                <li>
+                  <ArticleListItem {...post} />
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p class="body-text mt-8">Nothing here yet.</p>
+          )
+        }
+      </section>
     </div>
-
-  </SiteContainer>
+  </PageShell>
 </Layout>

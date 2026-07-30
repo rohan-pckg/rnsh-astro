@@ -1,6 +1,14 @@
 ---
 import "@/styles/global.css"
 import ClientRouter from "astro/components/ClientRouter.astro"
+
+export interface Props {
+  title?: string
+  description?: string
+}
+
+const { title, description } = Astro.props
+const pageTitle = title ? `${title} · rnsh` : "(^-^)/"
 ---
 
 <html lang="en">
@@ -8,7 +16,8 @@ import ClientRouter from "astro/components/ClientRouter.astro"
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width" />
     <link rel="icon" href="/pfp.png" />
-    <title>\(^-^)/</title>
+    <title>{pageTitle}</title>
+    {description ? <meta name="description" content={description} /> : null}
     <ClientRouter />
 
     <style is:global>
@@ -37,7 +46,7 @@ import ClientRouter from "astro/components/ClientRouter.astro"
       }
 
       ::view-transition-new(root) {
-        animation: page-fade-in 220ms ease-out;
+        animation: page-fade-in 200ms ease-out;
       }
 
       @media (prefers-reduced-motion) {
@@ -59,7 +68,15 @@ import ClientRouter from "astro/components/ClientRouter.astro"
     </main>
 
     <script>
-      import { sound } from "@/lib/sound"
+      import { sound, type SoundName } from "@/lib/sound"
+
+      const soundNames = new Set<SoundName>([
+        "navigate",
+        "open",
+        "back",
+        "clear",
+        "tool-switch",
+      ])
 
       function onFirstInteraction() {
         sound.init()
@@ -67,14 +84,20 @@ import ClientRouter from "astro/components/ClientRouter.astro"
         document.removeEventListener("pointerdown", onFirstInteraction)
         document.removeEventListener("keydown", onFirstInteraction)
       }
-      document.addEventListener("pointerdown", onFirstInteraction, { once: true })
+      document.addEventListener("pointerdown", onFirstInteraction, {
+        once: true,
+      })
       document.addEventListener("keydown", onFirstInteraction, { once: true })
 
       document.addEventListener("click", (e) => {
-        const el = (e.target as Element).closest("[data-sound]") as HTMLElement | null
+        const el = (e.target as Element).closest(
+          "[data-sound]"
+        ) as HTMLElement | null
         if (!el) return
-        const name = el.dataset.sound as string
-        if (name) sound.play(name as any)
+        const name = el.dataset.sound
+        if (name && soundNames.has(name as SoundName)) {
+          sound.play(name as SoundName)
+        }
       })
     </script>
   </body>

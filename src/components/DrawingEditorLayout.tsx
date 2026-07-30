@@ -1,8 +1,18 @@
-import type { ReactNode } from "react"
+import type { ReactNode, RefObject } from "react"
 
-export function DrawingEditorLayout({ children }: { children: ReactNode }) {
+export function DrawingEditorLayout({
+  children,
+  editorRef,
+}: {
+  children: ReactNode
+  editorRef?: RefObject<HTMLElement | null>
+}) {
   return (
-    <section className="space-y-6" aria-label="Drawing editor">
+    <section
+      ref={editorRef}
+      className="sketch-editor relative space-y-6"
+      aria-label="Drawing editor"
+    >
       {children}
     </section>
   )

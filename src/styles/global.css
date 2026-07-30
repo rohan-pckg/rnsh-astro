@@ -200,10 +200,35 @@
     cursor: pointer;
   }
 
+  .nav-breadcrumb {
+    display: inline-flex;
+    align-items: center;
+    min-width: 0;
+  }
+
+  .nav-breadcrumb-part {
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  .nav-breadcrumb-part-leaf {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .nav-breadcrumb-leaf {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+  }
+
   .mx-1 {
     margin-inline: 4px;
   }
-  
+
   .nav-current {
     color: var(--inactive);
   }
@@ -232,15 +257,25 @@
 
   .nav-home:focus-visible,
   .nav-parent:focus-visible,
+  .nav-link:focus-visible,
   .nav-link.is-active:focus-visible,
   button.nav-current:focus-visible,
-  button.nav-parent:focus-visible {
+  button.nav-parent:focus-visible,
+  .writing-item:focus-visible,
+  .hover-item:focus-visible,
+  .sketch-action:focus-visible,
+  .sketch-download-option:focus-visible,
+  .text-link-underlined:focus-visible {
     text-decoration: underline;
     text-underline-offset: 0.15em;
     text-decoration-thickness: 1px;
   }
 
   body.nav-open {
+    overflow: hidden;
+  }
+
+  body.sketch-download-open {
     overflow: hidden;
   }
 
@@ -323,20 +358,24 @@
     .nav-title {
       display: flex;
       align-items: center;
-      overflow: hidden;
+      min-width: 0;
+      width: 100%;
     }
 
-    .nav-title > * {
+    .nav-home {
       flex-shrink: 0;
     }
 
-    .nav-title > *:last-child {
-      flex-shrink: 1;
+    .nav-breadcrumb {
+      flex: 1;
       min-width: 0;
       overflow: hidden;
-      text-overflow: ellipsis;
       white-space: nowrap;
     }
+  }
+
+  .sketch-editor {
+    isolation: isolate;
   }
 
   .sketch-toolbar {
@@ -356,6 +395,11 @@
     color: var(--inactive);
     font-size: var(--type-body);
     line-height: 1.5;
+    background: none;
+    border: none;
+    padding: 0;
+    font-family: inherit;
+    cursor: pointer;
   }
 
   .sketch-action:hover,
@@ -369,49 +413,81 @@
     opacity: 0.45;
   }
 
-  .sketch-download {
+  .sketch-download-trigger.is-active {
     position: relative;
+    z-index: 30;
+    color: var(--body);
   }
 
-  .sketch-download-backdrop {
-    position: fixed;
+  .sketch-toolbar.is-download-open .hover-list .hover-item {
+    color: var(--inactive);
+    pointer-events: none;
+  }
+
+  .sketch-toolbar.is-download-open .sketch-action:disabled {
+    color: var(--inactive);
+    opacity: 0.45;
+    pointer-events: none;
+  }
+
+  .sketch-download-scrim {
+    position: absolute;
     inset: 0;
-    z-index: 30;
+    z-index: 10;
+    margin: 0;
+    padding: 0;
+    border: none;
+    background: var(--background);
     cursor: default;
   }
 
-  .sketch-download-menu {
-    position: absolute;
-    top: calc(100% + 0.75rem);
-    right: 0;
-    z-index: 40;
-    width: 8rem;
+  .sketch-download-panel {
+    position: fixed;
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
     background: var(--background);
-    padding: 0.25rem 0;
-    opacity: 1;
   }
 
-  .sketch-download-title {
-    padding: 0.25rem 0;
-    color: var(--inactive);
-    font-size: var(--type-body);
-  }
-
-  .sketch-download-item {
+  .sketch-download-option {
     display: block;
     width: 100%;
     padding: 0.25rem 0;
     color: var(--inactive);
     font-size: var(--type-body);
+    line-height: 1.5;
+    background: none;
+    border: none;
+    text-align: left;
+    cursor: pointer;
+    transition: color var(--motion-duration) var(--motion-ease);
   }
 
-  .sketch-download-menu:hover .sketch-download-item {
+  .sketch-download-panel:hover .sketch-download-option {
     color: var(--inactive);
   }
 
-  .sketch-download-item:hover,
-  .sketch-download-item:focus-visible {
+  .sketch-download-option:hover,
+  .sketch-download-option:focus-visible {
     color: var(--body);
+  }
+
+  @media (max-width: 767px) {
+    .sketch-download-panel {
+      left: 0;
+      right: 0;
+      bottom: 0;
+      top: auto !important;
+      width: 100%;
+      max-width: 100%;
+      padding: 0.75rem 1.5rem calc(0.75rem + env(safe-area-inset-bottom, 0px));
+    }
+
+    .sketch-download-option {
+      min-height: 44px;
+      padding: 0.625rem 0;
+    }
   }
 }
 

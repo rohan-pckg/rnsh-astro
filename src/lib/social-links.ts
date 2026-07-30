@@ -8,5 +8,3 @@ export const contactLinks = {
     href: "https://github.com/rohan-pckg",
   },
 } as const
-
-

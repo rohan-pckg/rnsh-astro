@@ -3,40 +3,36 @@ import ArticleListItem from "@/components/ArticleListItem.astro"
 import NavigationMenu from "@/components/NavigationMenu"
 import PageShell from "@/components/PageShell.astro"
 import Layout from "@/layouts/main.astro"
-import { getCollection } from "astro:content"
+import { getPublishedSorted } from "@/lib/content"
+import { formatDate } from "@/lib/format"
 
-const posts = (await getCollection("writing"))
-  .filter((p) => !p.data.draft)
-  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
-  .map((post) => ({
-    title: post.data.title,
-    href: `/writing/${post.id}`,
-    date: post.data.date.toLocaleDateString("en-US", {
-      month: "long",
-      day: "numeric",
-      year: "numeric",
-    }),
-    category: post.data.category,
-  }))
+const posts = (await getPublishedSorted("writing")).map((post) => ({
+  title: post.data.title,
+  href: `/writing/${post.id}`,
+  date: formatDate(post.data.date),
+}))
 ---
 
-<Layout>
+<Layout
+  title="Thoughts"
+  description="Essays and notes on design, engineering, and building."
+>
   <PageShell>
-    <NavigationMenu segments={[{ label: "Thoughts" }]} client:load />
+    <NavigationMenu segments={[{ label: "Thoughts" }]} client:idle />
     <div class="page-content">
-    {
-      posts.length > 0 ? (
-        <ul class="writing-list">
-          {posts.map((post) => (
-            <li>
-              <ArticleListItem {...post} />
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p class="body-text">Nothing here yet.</p>
-      )
-    }
+      {
+        posts.length > 0 ? (
+          <ul class="writing-list">
+            {posts.map((post) => (
+              <li>
+                <ArticleListItem {...post} />
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p class="body-text">Nothing here yet.</p>
+        )
+      }
     </div>
   </PageShell>
 </Layout>

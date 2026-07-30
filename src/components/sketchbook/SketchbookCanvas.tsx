@@ -1,81 +1,147 @@
-import { downloadBlob, getStrokesAsSvg, makePdfFromCanvas } from "@/lib/drawing"
-import { useDrawingEngine } from "@/hooks/useDrawingEngine"
-import DrawingToolbar from "@/components/sketchbook/DrawingToolbar"
+import { useCallback, useEffect, useRef } from "react"
+
 import { DrawingEditorLayout } from "@/components/DrawingEditorLayout"
+import DrawingToolbar from "@/components/sketchbook/DrawingToolbar"
+import { SketchbookProvider } from "@/components/sketchbook/SketchbookProvider"
+import { useSketchbook } from "@/components/sketchbook/SketchbookContext"
+import { renderStrokes } from "@/lib/sketchbook/render"
 
-const STORAGE_KEY = "sketchbook-strokes"
+function SketchbookEditor() {
+  const editorRef = useRef<HTMLElement>(null)
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const sizeRef = useRef({ width: 1, height: 1 })
+  const rafRef = useRef<number | null>(null)
 
-export default function SketchbookCanvas() {
   const {
-    canvasRef,
     tool,
-    setTool,
+    strokes,
     isDrawing,
+    canUndo,
+    canRedo,
+    canClear,
+    setTool,
     beginStroke,
     updateStroke,
     finishStroke,
     undo,
     redo,
     clear,
-    canUndo,
-    canRedo,
-    strokes,
-    currentStrokeRef,
-  } = useDrawingEngine({ storageKey: STORAGE_KEY })
+    exportPng,
+    exportSvg,
+    exportPdf,
+    getDraftStroke,
+  } = useSketchbook()
 
-  function exportPng() {
-    const canvas = canvasRef.current
-    if (!canvas) return
-    canvas.toBlob((blob) => {
-      if (blob) downloadBlob(blob, "sketchbook.png")
-    }, "image/png")
-  }
+  const strokesRef = useRef(strokes)
+  useEffect(() => {
+    strokesRef.current = strokes
+  }, [strokes])
 
-  function exportSvg() {
+  const paint = useCallback(() => {
     const canvas = canvasRef.current
     if (!canvas) return
 
     const rect = canvas.getBoundingClientRect()
-    const styles = window.getComputedStyle(canvas)
-    const paper = styles.backgroundColor
+    const width = Math.max(1, rect.width)
+    const height = Math.max(1, rect.height)
+    sizeRef.current = { width, height }
 
-    const allStrokes = currentStrokeRef.current
-      ? [...strokes, currentStrokeRef.current]
-      : strokes
+    renderStrokes(canvas, strokesRef.current, getDraftStroke(), width, height)
+    rafRef.current = null
+  }, [getDraftStroke])
 
-    const svgContent = getStrokesAsSvg(allStrokes, paper)
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${rect.width}" height="${rect.height}" viewBox="0 0 ${rect.width} ${rect.height}">${svgContent}</svg>`
-    downloadBlob(new Blob([svg], { type: "image/svg+xml" }), "sketchbook.svg")
-  }
+  const schedulePaint = useCallback(() => {
+    if (rafRef.current !== null) return
+    rafRef.current = window.requestAnimationFrame(paint)
+  }, [paint])
 
-  function exportPdf() {
+  useEffect(() => {
+    schedulePaint()
+  }, [strokes, schedulePaint])
+
+  useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
 
-    const pdf = makePdfFromCanvas(canvas)
-    if (!pdf) return
+    const observer = new ResizeObserver(() => schedulePaint())
+    observer.observe(canvas)
+    schedulePaint()
 
-    downloadBlob(pdf, "sketchbook.pdf")
+    return () => {
+      observer.disconnect()
+      if (rafRef.current !== null) {
+        window.cancelAnimationFrame(rafRef.current)
+      }
+    }
+  }, [schedulePaint])
+
+  function readCanvasSize() {
+    const canvas = canvasRef.current
+    if (!canvas) return sizeRef.current
+
+    const rect = canvas.getBoundingClientRect()
+    sizeRef.current = {
+      width: Math.max(1, rect.width),
+      height: Math.max(1, rect.height),
+    }
+    return sizeRef.current
+  }
+
+  function onPointerDown(event: React.PointerEvent<HTMLCanvasElement>) {
+    const { width, height } = readCanvasSize()
+    beginStroke(event, width, height)
+    schedulePaint()
+  }
+
+  function onPointerMove(event: React.PointerEvent<HTMLCanvasElement>) {
+    const { width, height } = readCanvasSize()
+    updateStroke(event, width, height)
+    schedulePaint()
+  }
+
+  function onPointerUp(event: React.PointerEvent<HTMLCanvasElement>) {
+    const { width, height } = readCanvasSize()
+    finishStroke(event, width, height)
+    schedulePaint()
   }
 
   const exportItems = [
-    { label: "PNG", onExport: exportPng },
-    { label: "SVG", onExport: exportSvg },
-    { label: "PDF", onExport: exportPdf },
+    {
+      label: "PNG",
+      onExport: () => {
+        const { width, height } = readCanvasSize()
+        exportPng(width, height)
+      },
+    },
+    {
+      label: "SVG",
+      onExport: () => {
+        const { width, height } = readCanvasSize()
+        exportSvg(width, height)
+      },
+    },
+    {
+      label: "PDF",
+      onExport: () => {
+        const { width, height } = readCanvasSize()
+        exportPdf(width, height)
+      },
+    },
   ]
 
   return (
-    <DrawingEditorLayout>
+    <DrawingEditorLayout editorRef={editorRef}>
       <DrawingToolbar
         tool={tool}
         onToolChange={setTool}
         canUndo={canUndo}
         canRedo={canRedo}
-        canClear={strokes.length > 0}
+        canClear={canClear}
         onUndo={undo}
         onRedo={redo}
         onClear={clear}
         exportItems={exportItems}
+        editorRef={editorRef}
       />
 
       <canvas
@@ -85,10 +151,10 @@ export default function SketchbookCanvas() {
         }`}
         aria-label="Drawing canvas"
         role="img"
-        onPointerDown={beginStroke}
-        onPointerMove={updateStroke}
-        onPointerUp={finishStroke}
-        onPointerCancel={finishStroke}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+        onPointerCancel={onPointerUp}
       />
 
       <p className="caption">
@@ -96,5 +162,13 @@ export default function SketchbookCanvas() {
         Cmd/Ctrl+Shift+Z to redo.
       </p>
     </DrawingEditorLayout>
+  )
+}
+
+export default function SketchbookCanvas() {
+  return (
+    <SketchbookProvider>
+      <SketchbookEditor />
+    </SketchbookProvider>
   )
 }
