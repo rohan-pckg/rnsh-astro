@@ -233,39 +233,44 @@
     color: var(--inactive);
   }
 
-  .nav-links:hover .nav-link:not(.is-active) {
-    color: var(--inactive);
+  .nav-links {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 14px;
+    padding-left: calc(5ch + 8px);
   }
 
-  .nav-links:hover .nav-link:not(.is-active):hover {
-    color: var(--heading);
-  }
-
-  .nav-link {
+  .nav-menu-item {
     display: block;
     color: var(--inactive);
+    font-size: var(--type-body);
+    line-height: 1.5;
+    font-weight: 400;
+    transition: color var(--motion-duration) var(--motion-ease);
   }
 
-  .nav-link:hover,
-  .nav-link:focus-visible {
+  .nav-links:hover .nav-menu-item[data-active="false"] {
+    color: var(--inactive);
+  }
+
+  .nav-links:hover .nav-menu-item[data-active="false"]:hover,
+  .nav-menu-item[data-active="false"]:focus-visible {
     color: var(--heading);
   }
 
-  .nav-link.is-active {
+  .nav-menu-item[data-active="true"] {
+    color: var(--heading);
+  }
+
+  .nav-menu-item[data-active="true"]:focus-visible {
     color: var(--heading);
   }
 
   .nav-home:focus-visible,
   .nav-parent:focus-visible,
-  .nav-link:focus-visible,
-  .nav-link.is-active:focus-visible,
   button.nav-current:focus-visible,
-  button.nav-parent:focus-visible,
-  .writing-item:focus-visible,
-  .hover-item:focus-visible,
-  .sketch-action:focus-visible,
-  .sketch-download-option:focus-visible,
-  .text-link-underlined:focus-visible {
+  button.nav-parent:focus-visible {
     text-decoration: underline;
     text-underline-offset: 0.15em;
     text-decoration-thickness: 1px;

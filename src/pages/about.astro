@@ -6,12 +6,9 @@ import PageShell from "@/components/PageShell.astro"
 const pfp = "/about.jpeg"
 ---
 
-<Layout
-  title="About"
-  description="About Rohan Singh — engineer, designer, and photographer based in Mumbai."
->
+<Layout>
   <PageShell>
-    <NavigationMenu segments={[{ label: "About" }]} client:idle />
+    <NavigationMenu segments={[{ label: "About" }]} client:load />
 
     <div class="page-content">
       <div class="editorial-stack">
@@ -41,7 +38,7 @@ const pfp = "/about.jpeg"
           href="https://drive.google.com/file/d/1-OwRzZ0MiUsGfCJodpC7bJmnpdQbaSHy/view?usp=sharing"
           target="_blank"
           rel="noreferrer"
-          class="body-small inline-flex w-fit underline"
+          class="inline-annotation body-small inline-flex w-fit underline"
           data-sound="navigate"
         >
           View Resume

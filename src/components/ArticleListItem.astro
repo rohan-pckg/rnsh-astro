@@ -3,12 +3,19 @@ export interface Props {
   title: string
   href: string
   date: string
+  active?: boolean
+  category?: string
 }
 
-const { title, href, date } = Astro.props
+const { title, href, date, active = false } = Astro.props
 ---
 
-<a href={href} class="writing-item" data-sound="navigate">
+<a
+  href={href}
+  aria-current={active ? "page" : undefined}
+  class="writing-item"
+  data-sound="navigate"
+>
   <span class="writing-title">
     {title}
   </span>

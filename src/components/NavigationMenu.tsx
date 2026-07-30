@@ -1,3 +1,4 @@
+import NavMenuItem from "@/components/NavMenuItem"
 import { useState, useEffect, useCallback, useRef } from "react"
 import { motion, AnimatePresence, useReducedMotion } from "motion/react"
 
@@ -32,9 +33,7 @@ const separator = (
 
 export default function NavigationMenu({ segments }: Props) {
   const [menuOpen, setMenuOpen] = useState(false)
-  const [isMobile, setIsMobile] = useState(false)
   const navRef = useRef<HTMLDivElement>(null)
-  const overlayRef = useRef<HTMLDivElement>(null)
   const toggleRef = useRef<HTMLButtonElement>(null)
 
   const shouldReduceMotion = useReducedMotion()
@@ -47,18 +46,6 @@ export default function NavigationMenu({ segments }: Props) {
 
   const openMenu = useCallback(() => {
     setMenuOpen(true)
-  }, [])
-
-  useEffect(() => {
-    const media = window.matchMedia("(max-width: 767px)")
-
-    function update() {
-      setIsMobile(media.matches)
-    }
-
-    update()
-    media.addEventListener("change", update)
-    return () => media.removeEventListener("change", update)
   }, [])
 
   useEffect(() => {
@@ -81,7 +68,7 @@ export default function NavigationMenu({ segments }: Props) {
       if (e.key === "ArrowDown" || e.key === "ArrowUp") {
         e.preventDefault()
         const links =
-          navRef.current?.querySelectorAll<HTMLAnchorElement>(".nav-link")
+          navRef.current?.querySelectorAll<HTMLAnchorElement>(".nav-menu-item")
         if (!links || links.length === 0) return
         const active = document.activeElement
         const idx = Array.from(links).indexOf(active as HTMLAnchorElement)
@@ -90,27 +77,6 @@ export default function NavigationMenu({ segments }: Props) {
             ? (idx + 1) % links.length
             : (idx - 1 + links.length) % links.length
         links[next]?.focus()
-        return
-      }
-      if (e.key !== "Tab" || !overlayRef.current) return
-
-      const focusable = Array.from(
-        overlayRef.current.querySelectorAll<HTMLElement>(
-          "a[href], button:not([disabled])"
-        )
-      )
-      if (focusable.length === 0) return
-
-      const first = focusable[0]
-      const last = focusable[focusable.length - 1]
-      if (!first || !last) return
-
-      if (e.shiftKey && document.activeElement === first) {
-        e.preventDefault()
-        last.focus()
-      } else if (!e.shiftKey && document.activeElement === last) {
-        e.preventDefault()
-        first.focus()
       }
     }
 
@@ -121,7 +87,7 @@ export default function NavigationMenu({ segments }: Props) {
   useEffect(() => {
     window.setTimeout(() => {
       if (menuOpen) {
-        navRef.current?.querySelector<HTMLAnchorElement>(".nav-link")?.focus()
+        navRef.current?.querySelector<HTMLAnchorElement>(".nav-menu-item")?.focus()
       } else {
         toggleRef.current?.focus()
       }
@@ -281,10 +247,6 @@ export default function NavigationMenu({ segments }: Props) {
       <AnimatePresence>
         {menuOpen && (
           <motion.div
-            ref={overlayRef}
-            role="dialog"
-            aria-modal="true"
-            aria-label="Navigation menu"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -296,17 +258,11 @@ export default function NavigationMenu({ segments }: Props) {
             }}
           >
             <motion.div
-              initial={{
-                opacity: 0,
-                translateY: isMobile || shouldReduceMotion ? 0 : "-4px",
-              }}
-              animate={{ opacity: 1, translateY: 0 }}
-              exit={{
-                opacity: 0,
-                translateY: isMobile || shouldReduceMotion ? 0 : "-4px",
-              }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
               transition={overlayTransition}
-              className="mx-auto flex max-w-[640px] flex-col px-6 pt-32 pb-20 sm:px-8 sm:pt-36 lg:pt-40"
+              className="nav-overlay-panel mx-auto flex max-w-[640px] flex-col px-6 pt-32 pb-20 sm:px-8 sm:pt-36 lg:pt-40"
               style={{
                 paddingBottom:
                   "max(5rem, calc(5rem + env(safe-area-inset-bottom, 0px)))",
@@ -324,26 +280,15 @@ export default function NavigationMenu({ segments }: Props) {
                 {renderBreadcrumb(true)}
               </div>
 
-              <div
-                className="nav-links"
-                style={{
-                  marginTop: "14px",
-                  paddingLeft: "calc(5ch + 8px)",
-                }}
-              >
+              <div className="nav-links">
                 {navItems.map((item) => (
-                  <a
+                  <NavMenuItem
                     key={item.href}
                     href={item.href}
-                    className={`nav-link${
-                      activeHref === item.href ? "is-active" : ""
-                    }`}
-                    data-sound="navigate"
+                    label={item.label}
+                    isActive={activeHref === item.href}
                     onClick={handleNavClick}
-                    style={{ marginBottom: "10px" }}
-                  >
-                    {item.label}
-                  </a>
+                  />
                 ))}
               </div>
             </motion.div>

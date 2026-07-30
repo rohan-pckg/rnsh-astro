@@ -3,21 +3,24 @@ import IndexList from "@/components/IndexList.astro"
 import NavigationMenu from "@/components/NavigationMenu"
 import PageShell from "@/components/PageShell.astro"
 import Layout from "@/layouts/main.astro"
-import { getPublishedSorted } from "@/lib/content"
+import { getCollection } from "astro:content"
 
-const designs = (await getPublishedSorted("design")).map((design) => ({
-  title: design.data.title,
-  href: `/design/${design.id}`,
-  date: design.data.date,
-  thumbnail: design.data.thumbnail,
-}))
+const designs = (await getCollection("design"))
+  .filter((d) => !d.data.draft)
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
+  .map((design) => ({
+    title: design.data.title,
+    href: `/design/${design.id}`,
+    date: design.data.date,
+    thumbnail: design.data.thumbnail,
+  }))
 ---
 
-<Layout title="Design" description="Selected design work and case studies.">
+<Layout>
   <PageShell>
-    <NavigationMenu segments={[{ label: "Design" }]} client:idle />
+    <NavigationMenu segments={[{ label: "Design" }]} client:load />
     <div class="page-content">
-      <IndexList items={designs} />
+    <IndexList items={designs} />
     </div>
   </PageShell>
 </Layout>

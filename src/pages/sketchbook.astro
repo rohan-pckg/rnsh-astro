@@ -5,12 +5,9 @@ import SketchbookCanvas from "@/components/sketchbook/SketchbookCanvas"
 import Layout from "@/layouts/main.astro"
 ---
 
-<Layout
-  title="Sketchbook"
-  description="A quiet notebook for loose lines, quick shapes, and ideas that do not need to become anything yet."
->
+<Layout>
   <PageShell>
-    <NavigationMenu segments={[{ label: "Sketchbook" }]} client:idle />
+    <NavigationMenu segments={[{ label: "Sketchbook" }]} client:load />
 
     <div class="page-content">
       <div class="editorial-stack">
@@ -19,7 +16,7 @@ import Layout from "@/layouts/main.astro"
           need to become anything yet.
         </p>
 
-        <SketchbookCanvas client:visible />
+        <SketchbookCanvas client:load />
       </div>
     </div>
   </PageShell>

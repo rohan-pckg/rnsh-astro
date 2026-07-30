@@ -19,65 +19,79 @@ const photos: { src: string; alt: string }[] = [
 ]
 ---
 
-<Layout title="Gallery" description="Photographs by Rohan Singh.">
+<Layout>
   <PageShell>
-    <NavigationMenu segments={[{ label: "Gallery" }]} client:idle />
+    <NavigationMenu segments={[{ label: "Gallery" }]} client:load />
     <div class="page-content">
-      <!-- Gallery -->
-      {
-        photos.length > 0 ? (
-          <div class="grid grid-cols-2 gap-3" id="gallery">
-            {photos.map((photo, i) => (
-              <button
-                class="gallery-item block w-full cursor-zoom-in overflow-hidden"
-                data-src={photo.src}
-                data-index={String(i)}
-                aria-label={`Open photo ${i + 1}`}
-                data-sound="open"
-              >
-                <img
-                  src={photo.src}
-                  alt={photo.alt}
-                  loading="lazy"
-                  decoding="async"
-                  class="gallery-img block h-auto w-full"
-                />
-              </button>
-            ))}
-          </div>
-        ) : (
-          <p class="body-text">Nothing here yet.</p>
-        )
-      }
+    <!-- Gallery -->
+    {
+      photos.length > 0 ? (
+        <div class="grid grid-cols-2 gap-3" id="gallery">
+          {photos.map((photo, i) => (
+            <button
+              class="gallery-item block w-full cursor-zoom-in overflow-hidden"
+              data-src={photo.src}
+              data-index={String(i)}
+              aria-label={`Open photo ${i + 1}`}
+              data-sound="open"
+            >
+              <img
+                src={photo.src}
+                alt={photo.alt}
+                loading="lazy"
+                decoding="async"
+                class="gallery-img block h-auto w-full"
+              />
+            </button>
+          ))}
+        </div>
+      ) : (
+        <p class="body-text">Nothing here yet.</p>
+      )
+    }
     </div>
   </PageShell>
 
   <!-- Lightbox -->
   <div
     id="lightbox"
-    class="fixed inset-0 z-50"
+    class="fixed inset-0 z-50 hidden items-center justify-center bg-background/95"
     role="dialog"
     aria-modal="true"
     aria-label="Image preview"
   >
-    <button id="lb-close" class="lb-close-btn" aria-label="Close">
+    <button
+      id="lb-close"
+      class="surface-button absolute top-5 right-5"
+      aria-label="Close"
+    >
       Close
     </button>
-
-    <img id="lb-img" src="" alt="" />
-
-    <span id="lb-count" class="lb-count"></span>
-
-    <div id="lb-nav" class="lb-nav">
-      <button id="lb-prev" class="lb-nav-btn" aria-label="Previous image">
-        Prev
-      </button>
-      <button id="lb-next" class="lb-nav-btn" aria-label="Next image">
-        Next
-      </button>
-    </div>
+    <button
+      id="lb-prev"
+      class="surface-button absolute inset-y-0 left-4"
+      aria-label="Previous"
+    >
+      Prev
+    </button>
+    <img
+      id="lb-img"
+      src=""
+      alt=""
+      class="max-h-[88vh] max-w-[88vw] object-contain"
+    />
+    <button
+      id="lb-next"
+      class="surface-button absolute inset-y-0 right-4"
+      aria-label="Next"
+    >
+      Next
+    </button>
+    <span
+      id="lb-count"
+      class="caption absolute right-0 bottom-5 left-0 text-center font-mono tracking-widest"
+    ></span>
   </div>
-
   <script>
     const items = [
       ...document.querySelectorAll<HTMLButtonElement>(".gallery-item"),
@@ -85,8 +99,6 @@ const photos: { src: string; alt: string }[] = [
     const lb = document.getElementById("lightbox")!
     const lbImg = document.getElementById("lb-img") as HTMLImageElement
     const lbCnt = document.getElementById("lb-count")!
-    const lbPrev = document.getElementById("lb-prev")!
-    const lbNext = document.getElementById("lb-next")!
     const srcs = items.map((el) => ({
       src: el.dataset.src ?? "",
       alt: el.querySelector("img")?.alt ?? "",
@@ -94,55 +106,33 @@ const photos: { src: string; alt: string }[] = [
     let cur = 0
     let activeTrigger: HTMLButtonElement | null = null
 
-    function updateNavVisibility() {
-      const isMobile = window.innerWidth < 768
-      if (isMobile) {
-        lbPrev.classList.toggle("lb-hidden", cur <= 0)
-        lbNext.classList.toggle("lb-hidden", cur >= srcs.length - 1)
-      } else {
-        lbPrev.classList.remove("lb-hidden")
-        lbNext.classList.remove("lb-hidden")
-      }
-    }
-
     function nav(i: number) {
-      const isMobile = window.innerWidth < 768
-      if (isMobile) {
-        cur = Math.max(0, Math.min(srcs.length - 1, i))
-      } else {
-        cur = ((i % srcs.length) + srcs.length) % srcs.length
-      }
+      cur = ((i % srcs.length) + srcs.length) % srcs.length
       lbImg.src = srcs[cur].src
       lbImg.alt = srcs[cur].alt
       lbCnt.textContent = `${cur + 1} / ${srcs.length}`
-      updateNavVisibility()
     }
-
     function open(i: number) {
       activeTrigger = items[i] ?? null
       nav(i)
-      lb.classList.add("lb-visible")
+      lb.classList.replace("hidden", "flex")
       document.body.style.overflow = "hidden"
       document.getElementById("lb-close")?.focus()
     }
-
     function close() {
-      lb.classList.remove("lb-visible")
+      lb.classList.replace("flex", "hidden")
       document.body.style.overflow = ""
       activeTrigger?.focus()
     }
 
     function trapFocus(e: KeyboardEvent) {
-      if (e.key !== "Tab" || !lb.classList.contains("lb-visible")) return
+      if (e.key !== "Tab" || lb.classList.contains("hidden")) return
 
       const focusable = [
         ...lb.querySelectorAll<HTMLElement>(
           'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
         ),
-      ].filter(
-        (el) =>
-          !el.hasAttribute("disabled") && !el.classList.contains("lb-hidden")
-      )
+      ].filter((el) => !el.hasAttribute("disabled"))
 
       const first = focusable[0]
       const last = focusable[focusable.length - 1]
@@ -159,13 +149,17 @@ const photos: { src: string; alt: string }[] = [
 
     items.forEach((el, i) => el.addEventListener("click", () => open(i)))
     document.getElementById("lb-close")!.addEventListener("click", close)
-    lbPrev.addEventListener("click", () => nav(cur - 1))
-    lbNext.addEventListener("click", () => nav(cur + 1))
+    document
+      .getElementById("lb-prev")!
+      .addEventListener("click", () => nav(cur - 1))
+    document
+      .getElementById("lb-next")!
+      .addEventListener("click", () => nav(cur + 1))
     lb.addEventListener("click", (e) => {
       if (e.target === lb) close()
     })
     document.addEventListener("keydown", (e) => {
-      if (!lb.classList.contains("lb-visible")) return
+      if (lb.classList.contains("hidden")) return
       if (e.key === "Escape") close()
       if (e.key === "ArrowLeft") nav(cur - 1)
       if (e.key === "ArrowRight") nav(cur + 1)
@@ -184,149 +178,12 @@ const photos: { src: string; alt: string }[] = [
         }
         img.complete ? check() : img.addEventListener("load", check)
       })
-
-    // Re-check nav visibility on resize (handles device rotation).
-    window.addEventListener("resize", updateNavVisibility)
   </script>
 
   <style>
     /* Landscape images span both columns */
     .gallery-item.is-landscape {
       grid-column: span 2;
-    }
-
-    /* Lightbox base (mobile-first, <768px) */
-    #lightbox {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      background: color-mix(in oklab, var(--color-background) 95%, transparent);
-      opacity: 0;
-      visibility: hidden;
-      transition:
-        opacity 200ms ease-out,
-        visibility 200ms ease-out;
-      pointer-events: none;
-      padding-top: env(safe-area-inset-top, 0px);
-      padding-bottom: env(safe-area-inset-bottom, 0px);
-    }
-
-    #lightbox.lb-visible {
-      opacity: 1;
-      visibility: visible;
-      pointer-events: auto;
-    }
-
-    .lb-close-btn {
-      position: fixed;
-      z-index: 60;
-      top: calc(env(safe-area-inset-top, 0px) + 0.5rem);
-      right: 0.5rem;
-      width: 44px;
-      height: 44px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--heading);
-      touch-action: manipulation;
-    }
-
-    #lb-img {
-      width: 100%;
-      max-width: calc(100vw - 2rem);
-      object-fit: contain;
-    }
-
-    .lb-count {
-      display: block;
-      text-align: center;
-      margin-top: 1rem;
-      color: var(--inactive);
-      font-size: var(--type-body);
-      line-height: 1.7;
-      font-family: var(--font-mono);
-      letter-spacing: 0.05em;
-    }
-
-    .lb-nav {
-      display: flex;
-      justify-content: space-between;
-      width: calc(100% - 2rem);
-      margin-top: 0.75rem;
-    }
-
-    .lb-nav-btn {
-      flex: 1;
-      min-height: 44px;
-      color: var(--heading);
-      touch-action: manipulation;
-    }
-
-    .lb-nav-btn:first-child {
-      text-align: left;
-    }
-
-    .lb-nav-btn:last-child {
-      text-align: right;
-    }
-
-    .lb-nav-btn.lb-hidden {
-      visibility: hidden;
-      pointer-events: none;
-    }
-
-    /* Desktop (>=768px) — unchanged behavior */
-    @media (min-width: 768px) {
-      #lightbox {
-        padding: 0;
-      }
-
-      .lb-close-btn {
-        position: absolute;
-        top: 1.25rem;
-        right: 1.25rem;
-        width: auto;
-        height: auto;
-      }
-
-      #lb-img {
-        max-width: 88vw;
-        max-height: 88vh;
-        width: auto;
-      }
-
-      .lb-count {
-        position: absolute;
-        bottom: 1.25rem;
-        left: 0;
-        right: 0;
-        margin-top: 0;
-        text-align: center;
-      }
-
-      .lb-nav {
-        position: absolute;
-        inset: 0;
-        width: 100%;
-        margin-top: 0;
-        align-items: center;
-        pointer-events: none;
-      }
-
-      .lb-nav-btn {
-        flex: none;
-        min-height: auto;
-        pointer-events: auto;
-      }
-
-      .lb-nav-btn:first-child {
-        margin-left: 1rem;
-      }
-
-      .lb-nav-btn:last-child {
-        margin-right: 1rem;
-      }
     }
   </style>
 </Layout>

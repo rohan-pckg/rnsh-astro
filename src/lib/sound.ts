@@ -1,7 +1,7 @@
 const STORAGE_KEY = "rnsh-sound-muted"
 const DEFAULT_VOLUME = 0.12
 
-export type SoundName = "navigate" | "open" | "back" | "clear" | "tool-switch"
+type SoundName = "navigate" | "open" | "back" | "clear" | "tool-switch"
 
 class SoundManager {
   private ctx: AudioContext | null = null

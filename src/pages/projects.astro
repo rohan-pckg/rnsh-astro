@@ -4,9 +4,9 @@ import PageShell from "@/components/PageShell.astro"
 import Layout from "@/layouts/main.astro"
 ---
 
-<Layout title="Projects" description="Projects and experiments.">
+<Layout>
   <PageShell>
-    <NavigationMenu segments={[{ label: "Projects" }]} client:idle />
+    <NavigationMenu segments={[{ label: "Projects" }]} client:load />
     <div class="page-content">
       <div class="editorial-stack">
         <span class="section-title">Projects</span>

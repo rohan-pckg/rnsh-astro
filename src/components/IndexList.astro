@@ -1,6 +1,4 @@
 ---
-import { formatDate } from "@/lib/format"
-
 export interface IndexListItem {
   title: string
   href: string
@@ -15,6 +13,13 @@ export interface Props {
 }
 
 const { items, emptyLabel = "Nothing here yet." } = Astro.props
+
+const formatDate = (date: Date) =>
+  date.toLocaleDateString("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  })
 ---
 
 {
@@ -40,7 +45,9 @@ const { items, emptyLabel = "Nothing here yet." } = Astro.props
             )}
 
             <div class="flex items-baseline justify-between gap-4">
-              <span class="section-title">{item.title}</span>
+              <span class="section-title">
+                {item.title}
+              </span>
               {item.date && (
                 <time
                   datetime={item.date.toISOString()}
