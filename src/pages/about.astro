@@ -1,6 +1,5 @@
 ---
 import Layout from "@/layouts/main.astro"
-import NavigationMenu from "@/components/NavigationMenu"
 import PageShell from "@/components/PageShell.astro"
 
 const pfp = "/about.jpeg"
@@ -8,8 +7,6 @@ const pfp = "/about.jpeg"
 
 <Layout>
   <PageShell>
-    <NavigationMenu segments={[{ label: "About" }]} client:load />
-
     <div class="page-content">
       <div class="editorial-stack">
         <div class="flex flex-col gap-3 pb-2">

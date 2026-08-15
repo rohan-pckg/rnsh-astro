@@ -1,18 +1,13 @@
 ---
 import Layout from "@/layouts/main.astro"
 import SiteContainer from "@/components/SiteContainer.astro"
-import NavigationMenu from "@/components/NavigationMenu"
+import ThoughtsList from "@/components/ThoughtsList"
 import { getCollection } from "astro:content"
-import { contactLinks } from "@/lib/social-links"
 
 const formatDate = (date: Date) =>
-  date.toLocaleDateString("en-US", {
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-  })
+  date.toLocaleDateString("en-US", { month: "2-digit", year: "2-digit" })
 
-const recentPosts = (await getCollection("writing"))
+const thoughts = (await getCollection("writing"))
   .filter((post) => !post.data.draft)
   .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
   .slice(0, 3)
@@ -24,50 +19,25 @@ const recentPosts = (await getCollection("writing"))
 ---
 
 <Layout>
-  <SiteContainer>
-    <NavigationMenu segments={[{ label: "Menu" }]} client:load />
-
-    <div class="page-content">
-    <header class="space-y-2">
-      <h1 class="body-text">Rohan Singh</h1>
-    </header>
-
-    <section class="mt-10" aria-label="Introduction">
-      <p class="body-text max-w-[62ch]">
+  <SiteContainer class="home-container">
+    <header class="hero">
+      <h1 class="hero-title">Rohan Singh</h1>
+      <p class="hero-description">
         I enjoy building small tools, clean interfaces, and systems that make
         everyday work a little simpler.
       </p>
-    </section>
+    </header>
 
-    <nav class="mt-8 flex gap-6" aria-label="Contact links">
-      <a class="text-link-underlined" href={contactLinks.email.href}>Email</a>
-      <a class="text-link-underlined" href={contactLinks.github.href}
-        >Github</a
-      >
-    </nav>
-
-    <section class="mt-20" aria-labelledby="recent-heading">
-      <h2 id="recent-heading" class="section-title">Recent writings</h2>
+    <section class="thoughts-section" aria-labelledby="thoughts-heading">
+      <h2 id="thoughts-heading" class="thoughts-label">Thoughts</h2>
 
       {
-        recentPosts.length > 0 ? (
-          <ul class="writing-list mt-8">
-            {recentPosts.map((post) => (
-              <li>
-                <a class="writing-item" href={post.href} data-sound="navigate">
-                  <span class="writing-title">{post.title}</span>
-                  <span class="writing-divider" aria-hidden="true" />
-                  <time class="writing-date">{post.date}</time>
-                </a>
-              </li>
-            ))}
-          </ul>
+        thoughts.length > 0 ? (
+          <ThoughtsList thoughts={thoughts} client:load />
         ) : (
-          <p class="body-text mt-8">Nothing here yet.</p>
+          <p class="body-text">Nothing here yet.</p>
         )
       }
     </section>
-    </div>
-
   </SiteContainer>
 </Layout>

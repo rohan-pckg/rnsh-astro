@@ -1,5 +1,4 @@
 ---
-import NavigationMenu from "@/components/NavigationMenu"
 import PageShell from "@/components/PageShell.astro"
 import Layout from "@/layouts/main.astro"
 
@@ -21,7 +20,6 @@ const photos: { src: string; alt: string }[] = [
 
 <Layout>
   <PageShell>
-    <NavigationMenu segments={[{ label: "Gallery" }]} client:load />
     <div class="page-content">
     <!-- Gallery -->
     {

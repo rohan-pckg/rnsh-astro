@@ -11,6 +11,21 @@ import ClientRouter from "astro/components/ClientRouter.astro"
     <title>\(^-^)/</title>
     <ClientRouter />
 
+    <script is:inline>
+      ;(function () {
+        try {
+          var stored = localStorage.getItem("rnsh-theme")
+          var theme =
+            stored === "dark" || stored === "light"
+              ? stored
+              : "light"
+          document.documentElement.dataset.theme = theme
+        } catch (e) {
+          document.documentElement.dataset.theme = "light"
+        }
+      })()
+    </script>
+
     <style is:global>
       @keyframes page-fade-in {
         from {
@@ -59,7 +74,7 @@ import ClientRouter from "astro/components/ClientRouter.astro"
     </main>
 
     <script>
-      import { sound } from "@/lib/sound"
+      import { sound, type SoundName } from "@/lib/sound"
 
       function onFirstInteraction() {
         sound.init()
@@ -67,14 +82,18 @@ import ClientRouter from "astro/components/ClientRouter.astro"
         document.removeEventListener("pointerdown", onFirstInteraction)
         document.removeEventListener("keydown", onFirstInteraction)
       }
-      document.addEventListener("pointerdown", onFirstInteraction, { once: true })
+      document.addEventListener("pointerdown", onFirstInteraction, {
+        once: true,
+      })
       document.addEventListener("keydown", onFirstInteraction, { once: true })
 
       document.addEventListener("click", (e) => {
-        const el = (e.target as Element).closest("[data-sound]") as HTMLElement | null
+        const el = (e.target as Element).closest(
+          "[data-sound]"
+        ) as HTMLElement | null
         if (!el) return
-        const name = el.dataset.sound as string
-        if (name) sound.play(name as any)
+        const name = el.dataset.sound as SoundName
+        if (name) sound.play(name)
       })
     </script>
   </body>

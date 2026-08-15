@@ -1,6 +1,8 @@
 import NavMenuItem from "@/components/NavMenuItem"
+import ThemeToggle from "@/components/ThemeToggle"
 import { useState, useEffect, useCallback, useRef } from "react"
 import { motion, AnimatePresence, useReducedMotion } from "motion/react"
+import { durations, easings } from "@/lib/motion"
 
 type NavItem = {
   label: string
@@ -8,12 +10,11 @@ type NavItem = {
 }
 
 const navItems: NavItem[] = [
+  { label: "Home", href: "/" },
   { label: "About", href: "/about" },
   { label: "Thoughts", href: "/blogs" },
   { label: "Projects", href: "/projects" },
-  { label: "Gallery", href: "/gallery" },
-  { label: "Design", href: "/design" },
-  { label: "Sketchbook", href: "/sketchbook" },
+  { label: "Contact", href: "mailto:rnsh.space@gmail.com" },
 ]
 
 export type BreadcrumbSegment = {
@@ -25,20 +26,12 @@ type Props = {
   segments: BreadcrumbSegment[]
 }
 
-const separator = (
-  <span className="mx-1" style={{ color: "var(--inactive)" }}>
-    /
-  </span>
-)
-
 export default function NavigationMenu({ segments }: Props) {
   const [menuOpen, setMenuOpen] = useState(false)
   const navRef = useRef<HTMLDivElement>(null)
   const toggleRef = useRef<HTMLButtonElement>(null)
 
   const shouldReduceMotion = useReducedMotion()
-  const isHome = segments.length === 1 && segments[0].label === "Menu"
-  const isArticle = segments.length > 1
 
   const closeMenu = useCallback(() => {
     setMenuOpen(false)
@@ -47,6 +40,15 @@ export default function NavigationMenu({ segments }: Props) {
   const openMenu = useCallback(() => {
     setMenuOpen(true)
   }, [])
+
+  const handleOverlayClick = useCallback(
+    (e: React.MouseEvent) => {
+      if (e.target === e.currentTarget) {
+        closeMenu()
+      }
+    },
+    [closeMenu]
+  )
 
   useEffect(() => {
     if (menuOpen) {
@@ -87,7 +89,9 @@ export default function NavigationMenu({ segments }: Props) {
   useEffect(() => {
     window.setTimeout(() => {
       if (menuOpen) {
-        navRef.current?.querySelector<HTMLAnchorElement>(".nav-menu-item")?.focus()
+        navRef.current
+          ?.querySelector<HTMLAnchorElement>(".nav-menu-item")
+          ?.focus()
       } else {
         toggleRef.current?.focus()
       }
@@ -114,134 +118,32 @@ export default function NavigationMenu({ segments }: Props) {
       ? (navItemByLabel.get(segments[0].label.toLowerCase()) ?? null)
       : null
 
-  const overlayTransition = {
-    type: "tween" as const,
-    duration: shouldReduceMotion ? 0 : 0.2,
-    ease: "easeOut" as const,
-  }
-
-  function renderCloseButton(useOverlayToggleRef: boolean) {
-    return (
-      <span className="nav-breadcrumb-part">
-        {separator}
-        <button
-          ref={useOverlayToggleRef ? undefined : toggleRef}
-          type="button"
-          onClick={closeMenu}
-          className="nav-current"
-          aria-expanded
-          aria-label="Close navigation"
-        >
-          close
-        </button>
-      </span>
-    )
-  }
-
-  function renderBreadcrumb(isOverlay: boolean) {
-    if (menuOpen) {
-      if (isArticle) {
-        return (
-          <div className="nav-breadcrumb">
-            {renderCloseButton(isOverlay)}
-            <span className="nav-breadcrumb-part nav-breadcrumb-part-leaf">
-              {separator}
-              <span className="nav-current nav-breadcrumb-leaf">
-                {segments[segments.length - 1].label}
-              </span>
-            </span>
-          </div>
-        )
-      }
-
-      return (
-        <div className="nav-breadcrumb">{renderCloseButton(isOverlay)}</div>
-      )
-    }
-
-    return (
-      <div className="nav-breadcrumb">
-        {segments.map((seg, i) => {
-          const isLast = i === segments.length - 1
-
-          if (i === 0 && isArticle) {
-            return (
-              <span key={i} className="nav-breadcrumb-part">
-                {separator}
-                <button
-                  ref={isOverlay ? undefined : toggleRef}
-                  type="button"
-                  onClick={openMenu}
-                  className="nav-parent"
-                  data-sound="navigate"
-                  aria-expanded={false}
-                  aria-label={`Open navigation — ${seg.label}`}
-                >
-                  {seg.label}
-                </button>
-              </span>
-            )
-          }
-
-          if (!isArticle) {
-            return (
-              <span key={i} className="nav-breadcrumb-part">
-                {separator}
-                <button
-                  ref={isOverlay ? undefined : toggleRef}
-                  type="button"
-                  onClick={openMenu}
-                  className="nav-current"
-                  data-sound="navigate"
-                  aria-expanded={false}
-                  aria-label={`Open navigation — ${isHome ? "menu" : seg.label}`}
-                >
-                  {isHome ? "menu" : seg.label}
-                </button>
-              </span>
-            )
-          }
-
-          if (isLast) {
-            return (
-              <span
-                key={i}
-                className="nav-breadcrumb-part nav-breadcrumb-part-leaf"
-              >
-                {separator}
-                <span className="nav-current nav-breadcrumb-leaf">
-                  {seg.label}
-                </span>
-              </span>
-            )
-          }
-
-          return (
-            <span key={i} className="nav-breadcrumb-part">
-              {separator}
-              <span style={{ color: "var(--inactive)" }}>{seg.label}</span>
-            </span>
-          )
-        })}
-      </div>
-    )
-  }
+  const enterTransition = shouldReduceMotion
+    ? { duration: 0 }
+    : { duration: durations.moderate, ease: easings.out }
 
   return (
     <div
       ref={navRef}
       style={{ marginBottom: "var(--gap-after-breadcrumb, 2.5rem)" }}
     >
-      <div className="nav-title">
-        <a
-          href="/"
-          className="nav-home"
-          data-sound="navigate"
-          onClick={handleNavClick}
-        >
-          rnsh
-        </a>
-        {renderBreadcrumb(false)}
+      <div className="site-header">
+        <ThemeToggle />
+        <div className="nav-breadcrumb">
+          <button
+            ref={toggleRef}
+            type="button"
+            onClick={openMenu}
+            className="menu-trigger focus-ring"
+            data-cuelume-press="press"
+            data-cuelume-release="release"
+            aria-expanded={menuOpen}
+            aria-haspopup="dialog"
+            aria-label="Open navigation"
+          >
+            Menu
+          </button>
+        </div>
       </div>
 
       <AnimatePresence>
@@ -250,48 +152,27 @@ export default function NavigationMenu({ segments }: Props) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={overlayTransition}
-            className="fixed inset-0 z-40 overflow-x-hidden overflow-y-auto"
+            transition={enterTransition}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Navigation menu"
+            className="nav-overlay fixed inset-0 z-40 flex flex-col items-end overflow-x-hidden overflow-y-auto px-6 pt-2 pb-24 sm:px-8"
             style={{
               background: "var(--background)",
-              scrollbarGutter: "stable",
             }}
+            onClick={handleOverlayClick}
           >
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={overlayTransition}
-              className="nav-overlay-panel mx-auto flex max-w-[640px] flex-col px-6 pt-32 pb-20 sm:px-8 sm:pt-36 lg:pt-40"
-              style={{
-                paddingBottom:
-                  "max(5rem, calc(5rem + env(safe-area-inset-bottom, 0px)))",
-              }}
-            >
-              <div className="nav-title">
-                <a
-                  href="/"
-                  className="nav-home"
-                  data-sound="navigate"
+            <nav className="nav-links" aria-label="Navigation">
+              {navItems.map((item) => (
+                <NavMenuItem
+                  key={item.href}
+                  href={item.href}
+                  label={item.label}
+                  isActive={activeHref === item.href}
                   onClick={handleNavClick}
-                >
-                  rnsh
-                </a>
-                {renderBreadcrumb(true)}
-              </div>
-
-              <div className="nav-links">
-                {navItems.map((item) => (
-                  <NavMenuItem
-                    key={item.href}
-                    href={item.href}
-                    label={item.label}
-                    isActive={activeHref === item.href}
-                    onClick={handleNavClick}
-                  />
-                ))}
-              </div>
-            </motion.div>
+                />
+              ))}
+            </nav>
           </motion.div>
         )}
       </AnimatePresence>

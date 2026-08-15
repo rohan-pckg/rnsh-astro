@@ -1,42 +1,36 @@
 ---
-import ArticleListItem from "@/components/ArticleListItem.astro"
-import NavigationMenu from "@/components/NavigationMenu"
+import ThoughtsList from "@/components/ThoughtsList"
 import PageShell from "@/components/PageShell.astro"
 import Layout from "@/layouts/main.astro"
 import { getCollection } from "astro:content"
 
-const posts = (await getCollection("writing"))
-  .filter((p) => !p.data.draft)
+const formatDate = (date: Date) =>
+  date.toLocaleDateString("en-US", { month: "2-digit", year: "2-digit" })
+
+const thoughts = (await getCollection("writing"))
+  .filter((post) => !post.data.draft)
   .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
   .map((post) => ({
     title: post.data.title,
     href: `/writing/${post.id}`,
-    date: post.data.date.toLocaleDateString("en-US", {
-      month: "long",
-      day: "numeric",
-      year: "numeric",
-    }),
-    category: post.data.category,
+    date: formatDate(post.data.date),
   }))
 ---
 
 <Layout>
   <PageShell>
-    <NavigationMenu segments={[{ label: "Thoughts" }]} client:load />
     <div class="page-content">
-    {
-      posts.length > 0 ? (
-        <ul class="writing-list">
-          {posts.map((post) => (
-            <li>
-              <ArticleListItem {...post} />
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p class="body-text">Nothing here yet.</p>
-      )
-    }
+      <section class="thoughts-section" aria-labelledby="thoughts-heading">
+        <h2 id="thoughts-heading" class="thoughts-label">Thoughts</h2>
+
+        {
+          thoughts.length > 0 ? (
+            <ThoughtsList thoughts={thoughts} client:load />
+          ) : (
+            <p class="body-text">Nothing here yet.</p>
+          )
+        }
+      </section>
     </div>
   </PageShell>
 </Layout>

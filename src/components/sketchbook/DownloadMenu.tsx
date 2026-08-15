@@ -11,6 +11,7 @@ import { createPortal } from "react-dom"
 import { AnimatePresence, motion, useReducedMotion } from "motion/react"
 
 import { sound } from "@/lib/sound"
+import { fadeTransition } from "@/lib/motion"
 
 type ExportItem = {
   label: string
@@ -22,11 +23,6 @@ type DownloadMenuProps = {
   editorRef: RefObject<HTMLElement | null>
   onOpenChange?: (open: boolean) => void
 }
-
-const fadeTransition = (reduced: boolean) => ({
-  duration: reduced ? 0 : 0.2,
-  ease: "easeOut" as const,
-})
 
 function getPanelStyle(trigger: HTMLButtonElement | null): CSSProperties {
   if (!trigger) return {}
