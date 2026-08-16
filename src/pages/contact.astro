@@ -1,0 +1,62 @@
+---
+import Layout from "@/layouts/main.astro"
+import SiteContainer from "@/components/SiteContainer.astro"
+
+type ContactLink = {
+  label: string
+  value: string
+  href: string
+  external?: boolean
+}
+
+const contacts: ContactLink[] = [
+  {
+    label: "Gmail",
+    value: "rnsh.space@gmail.com",
+    href: "mailto:rnsh.space@gmail.com",
+  },
+  {
+    label: "Github",
+    value: "rohan-pckg",
+    href: "https://github.com/rohan-pckg",
+    external: true,
+  },
+  {
+    label: "Twitter",
+    value: "rnsh-twt",
+    href: "https://twitter.com/rnsh-twt",
+    external: true,
+  },
+  {
+    label: "Reddit",
+    value: "rohan_pckg",
+    href: "https://reddit.com/user/rohan_pckg",
+    external: true,
+  },
+]
+---
+
+<Layout>
+  <SiteContainer>
+    <section class="contact-section" aria-labelledby="contacts-heading">
+      <h1 id="contacts-heading" class="section-label">Contacts</h1>
+
+      <div class="contact-list">
+        {
+          contacts.map((contact) => (
+            <a
+              href={contact.href}
+              class="contact-item focus-ring"
+              target={contact.external ? "_blank" : undefined}
+              rel={contact.external ? "noopener noreferrer" : undefined}
+              data-sound="navigate"
+            >
+              <span class="contact-label">{contact.label}</span>
+              <span class="contact-value">{contact.value}</span>
+            </a>
+          ))
+        }
+      </div>
+    </section>
+  </SiteContainer>
+</Layout>

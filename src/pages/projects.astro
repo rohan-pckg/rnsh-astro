@@ -1,19 +1,16 @@
 ---
-import PageShell from "@/components/PageShell.astro"
 import Layout from "@/layouts/main.astro"
+import SiteContainer from "@/components/SiteContainer.astro"
+import ProjectList from "@/components/ProjectList"
+import { projects } from "@/data/projects"
 ---
 
 <Layout>
-  <PageShell>
-    <div class="page-content">
-      <div class="editorial-stack">
-        <span class="section-title">Projects</span>
-        <p class="body-text">Under construction.</p>
-        <p class="body-text">
-          Working on documenting projects.<br />
-          Coming soon.
-        </p>
-      </div>
-    </div>
-  </PageShell>
+  <SiteContainer>
+    <section class="projects-section" aria-labelledby="projects-page-heading">
+      <h1 id="projects-page-heading" class="section-label">Projects</h1>
+
+      <ProjectList projects={projects} client:load />
+    </section>
+  </SiteContainer>
 </Layout>

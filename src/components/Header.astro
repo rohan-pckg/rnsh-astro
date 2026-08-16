@@ -1,0 +1,27 @@
+---
+import NavigationMenu from "@/components/NavigationMenu"
+
+const pathname = Astro.url.pathname
+const isHome = pathname === "/" || pathname === ""
+---
+
+<header class="site-header-bar">
+  {
+    isHome ? (
+      <a href="/" class="site-header-brand focus-ring">
+        <span class="home-name">Rohan Singh</span>
+        <span class="home-title">Engineer</span>
+      </a>
+    ) : (
+      <button
+        type="button"
+        class="nav-back-button focus-ring"
+        onclick="if (window.history.length > 1) { window.history.back() } else { window.location.href = '/' }"
+        data-sound="back"
+      >
+        Back
+      </button>
+    )
+  }
+  <NavigationMenu client:load />
+</header>

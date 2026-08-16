@@ -1,7 +1,9 @@
 ---
 import Layout from "@/layouts/main.astro"
 import SiteContainer from "@/components/SiteContainer.astro"
+import ProjectList from "@/components/ProjectList"
 import ThoughtsList from "@/components/ThoughtsList"
+import { projects } from "@/data/projects"
 import { getCollection } from "astro:content"
 
 const formatDate = (date: Date) =>
@@ -20,16 +22,15 @@ const thoughts = (await getCollection("writing"))
 
 <Layout>
   <SiteContainer class="home-container">
-    <header class="hero">
-      <h1 class="hero-title">Rohan Singh</h1>
-      <p class="hero-description">
-        I enjoy building small tools, clean interfaces, and systems that make
-        everyday work a little simpler.
-      </p>
-    </header>
+
+    <section class="projects-section" aria-labelledby="projects-heading">
+      <h2 id="projects-heading" class="section-label">Projects</h2>
+
+      <ProjectList projects={projects} client:load />
+    </section>
 
     <section class="thoughts-section" aria-labelledby="thoughts-heading">
-      <h2 id="thoughts-heading" class="thoughts-label">Thoughts</h2>
+      <h2 id="thoughts-heading" class="section-label">Thoughts</h2>
 
       {
         thoughts.length > 0 ? (

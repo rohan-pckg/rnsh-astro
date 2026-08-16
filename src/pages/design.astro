@@ -1,24 +1,46 @@
 ---
-import IndexList from "@/components/IndexList.astro"
-import PageShell from "@/components/PageShell.astro"
 import Layout from "@/layouts/main.astro"
+import SiteContainer from "@/components/SiteContainer.astro"
 import { getCollection } from "astro:content"
 
+const formatDate = (date: Date) =>
+  date.toLocaleDateString("en-US", { month: "2-digit", year: "2-digit" })
+
 const designs = (await getCollection("design"))
-  .filter((d) => !d.data.draft)
+  .filter((item) => !item.data.draft)
   .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
-  .map((design) => ({
-    title: design.data.title,
-    href: `/design/${design.id}`,
-    date: design.data.date,
-    thumbnail: design.data.thumbnail,
-  }))
 ---
 
 <Layout>
-  <PageShell>
-    <div class="page-content">
-    <IndexList items={designs} />
-    </div>
-  </PageShell>
+  <SiteContainer>
+    <section class="design-section" aria-labelledby="designs-heading">
+      <h1 id="designs-heading" class="section-label">Designs</h1>
+
+      <div class="design-list">
+        {
+          designs.map((item) => (
+            <a
+              href={`/design/${item.id}`}
+              class="design-item focus-ring"
+              data-sound="navigate"
+            >
+              <div class="design-thumbnail-wrapper">
+                <img
+                  src={item.data.thumbnail}
+                  alt={item.data.title}
+                  class="design-thumbnail"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </div>
+              <div class="design-meta-row">
+                <span class="design-title">{item.data.title}</span>
+                <span class="design-date">{formatDate(item.data.date)}</span>
+              </div>
+            </a>
+          ))
+        }
+      </div>
+    </section>
+  </SiteContainer>
 </Layout>

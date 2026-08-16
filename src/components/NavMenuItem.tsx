@@ -1,8 +1,10 @@
+import type React from "react"
+
 type NavMenuItemProps = {
   href: string
   label: string
   isActive: boolean
-  onClick: () => void
+  onClick: (e: React.MouseEvent<HTMLAnchorElement>) => void
 }
 
 export default function NavMenuItem({

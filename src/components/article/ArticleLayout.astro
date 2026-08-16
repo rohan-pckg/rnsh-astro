@@ -174,7 +174,7 @@ const formatDate = (d: Date) =>
   }
 
   article :global(.article-content code:not(pre code)) {
-    background: #EFEBE3;
+    background: color-mix(in srgb, var(--heading) 6%, var(--background));
     color: var(--body);
     font-size: var(--type-body);
     font-weight: 400;
@@ -195,7 +195,7 @@ const formatDate = (d: Date) =>
     margin: 2rem 0;
     overflow-x: auto;
     padding: 1.25rem 0;
-    background: #EFEBE3;
+    background: color-mix(in srgb, var(--heading) 6%, var(--background));
     border: 1px solid var(--border);
     color: var(--body);
     font-family: var(--font-mono);

@@ -7,7 +7,7 @@ import {
 } from "cuelume"
 
 const STORAGE_KEY = "rnsh-sound-muted"
-const DEFAULT_VOLUME = 0.15
+const DEFAULT_VOLUME = 0.05
 
 export type SoundName =
   | "navigate"

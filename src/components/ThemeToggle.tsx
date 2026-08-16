@@ -1,5 +1,7 @@
 import { useCallback, useState } from "react"
+import { motion, useReducedMotion } from "motion/react"
 import { sound } from "../lib/sound"
+import { springs } from "../lib/motion"
 
 const STORAGE_KEY = "rnsh-theme"
 
@@ -10,6 +12,7 @@ function readTheme(): "light" | "dark" {
 
 export default function ThemeToggle() {
   const [theme, setTheme] = useState<"light" | "dark">(readTheme)
+  const reducedMotion = useReducedMotion()
 
   const toggle = useCallback(() => {
     const next = readTheme() === "dark" ? "light" : "dark"
@@ -29,14 +32,23 @@ export default function ThemeToggle() {
   }, [])
 
   return (
-    <button
+    <motion.button
       type="button"
       className="theme-toggle"
       aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} theme`}
       suppressHydrationWarning
       onClick={toggle}
+      whileTap={reducedMotion ? undefined : { scale: 0.92 }}
+      transition={springs.fast}
     >
-      <span className="theme-dot" aria-hidden="true" />
-    </button>
+      <motion.span
+        className="theme-dot"
+        aria-hidden="true"
+        animate={
+          reducedMotion ? undefined : { scale: theme === "dark" ? 0.72 : 1 }
+        }
+        transition={springs.fast}
+      />
+    </motion.button>
   )
 }

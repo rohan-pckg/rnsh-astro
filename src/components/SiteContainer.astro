@@ -1,4 +1,6 @@
 ---
+import Header from "@/components/Header.astro"
+
 export interface Props {
   class?: string
 }
@@ -7,7 +9,10 @@ const { class: className = "" } = Astro.props
 ---
 
 <div
-  class={`site-container mx-auto flex min-h-svh w-full max-w-[640px] flex-col px-6 pt-32 pb-24 sm:px-8 sm:pt-40 lg:pt-48 lg:pb-32 ${className}`}
+  class={`site-container mx-auto flex min-h-svh w-full max-w-[640px] flex-col px-6 pt-12 pb-24 sm:px-8 sm:pt-20 lg:pt-24 lg:pb-32 ${className}`}
 >
-  <slot />
+  <Header />
+  <main class="site-main flex-1">
+    <slot />
+  </main>
 </div>

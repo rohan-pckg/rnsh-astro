@@ -1,6 +1,5 @@
-import { useEffect, useRef } from "react"
-import { motion, useReducedMotion } from "motion/react"
-import { springs } from "../lib/motion"
+import type { PointerEvent } from "react"
+import { sound } from "@/lib/sound"
 
 type Thought = {
   href: string
@@ -9,32 +8,28 @@ type Thought = {
 }
 
 export default function ThoughtsList({ thoughts }: { thoughts: Thought[] }) {
-  const reducedMotion = useReducedMotion()
-  const listRef = useRef<HTMLDivElement>(null)
+  function handlePointerEnter(e: PointerEvent) {
+    if (e.pointerType !== "mouse") return
+    sound.play("tick", { volume: 0.06 })
+  }
 
-  useEffect(() => {
-    if (reducedMotion) return
-    listRef.current
-      ?.querySelectorAll<HTMLElement>(".thought-item")
-      .forEach((el) => {
-        el.setAttribute("data-cuelume-hover", "tick")
-      })
-  }, [reducedMotion])
+  function handleClick() {
+    sound.play("navigate")
+  }
 
   return (
-    <div className="thoughts-list" ref={listRef}>
+    <div className="thoughts-list">
       {thoughts.map((thought) => (
-        <motion.a
+        <a
           key={thought.href}
           href={thought.href}
           className="thought-item focus-ring"
-          data-sound="navigate"
-          whileHover={reducedMotion ? undefined : { x: 3 }}
-          transition={springs.fast}
+          onPointerEnter={handlePointerEnter}
+          onClick={handleClick}
         >
           <span className="thought-title">{thought.title}</span>
           <span className="thought-date">{thought.date}</span>
-        </motion.a>
+        </a>
       ))}
     </div>
   )
