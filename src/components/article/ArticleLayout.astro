@@ -29,9 +29,8 @@ const formatDate = (d: Date) =>
 
     <div class="page-content">
       <article class="max-w-full min-w-0">
-      <!-- <h1 class="section-title">{title}</h1> -->
-      <p class="body-text" style="margin-top: var(--gap-after-title)">{description}</p>
-      <div class="article-meta" style="margin-top: var(--gap-after-description)">
+      <h1 class="section-title">{title}</h1>
+      <div class="article-meta" style="margin-top: var(--gap-after-title)">
         <time class="metadata" datetime={date.toISOString()}>
           {formatDate(date)}
         </time>
