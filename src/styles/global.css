@@ -244,7 +244,9 @@ html.theme-transition *::after {
     font-size: var(--type-body);
     line-height: 1.5;
     font-weight: 500;
-    transition: color var(--motion-duration) var(--motion-ease), opacity var(--motion-duration) var(--motion-ease);
+    transition:
+      color var(--motion-duration) var(--motion-ease),
+      opacity var(--motion-duration) var(--motion-ease);
   }
 
   .nav-back-button:hover {
@@ -285,8 +287,8 @@ html.theme-transition *::after {
     overflow-x: hidden;
     overflow-y: auto;
     background: color-mix(in srgb, var(--background) 88%, transparent);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
   }
 
   .nav-overlay-shell {
@@ -998,7 +1000,6 @@ html.theme-transition *::after {
       margin-top: 0;
       margin-bottom: 2rem;
     }
-
   }
 }
 
