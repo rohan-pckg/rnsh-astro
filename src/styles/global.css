@@ -288,7 +288,6 @@ html.theme-transition *::after {
     overflow-y: auto;
     background: color-mix(in srgb, var(--background) 88%, transparent);
     backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
   }
 
   .nav-overlay-shell {
