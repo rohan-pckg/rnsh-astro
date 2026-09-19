@@ -158,10 +158,10 @@ function WorkTimeline() {
           style={{ height: `${renderLaneCount * 116 + 80}px` }}
         >
           <div className="work-axis" aria-hidden="true" />
-          {years.map((year) => (
+          {years.map((year, yi) => (
             <span
               key={year}
-              className="work-year"
+              className={`work-year${yi === 0 ? " tick-first" : ""}${yi === years.length - 1 ? " tick-last" : ""}`}
               style={{ left: `${toPct(year)}%` }}
               aria-hidden="true"
             >
@@ -189,7 +189,11 @@ function WorkTimeline() {
                 className={`work-bar${selected === bar.index ? " is-selected" : ""}${dimmed ? " is-dimmed" : ""}`}
                 style={{
                   left: `${toPct(bar.x0)}%`,
-                  width: `max(${toPct(bar.x1) - toPct(bar.x0)}%, max-content)`,
+                  // NOTE: `max(pct%, max-content)` is NOT valid CSS (math
+                  // functions reject intrinsic keywords), so the floor is
+                  // expressed as width + min-width instead.
+                  width: "max-content",
+                  minWidth: `${toPct(bar.x1) - toPct(bar.x0)}%`,
                   maxWidth: "100%",
                   top: `${56 + lane * 116}px`,
                 }}

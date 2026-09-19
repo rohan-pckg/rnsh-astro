@@ -1173,6 +1173,27 @@ button.pill.is-expanded {
   .pill-nav-list {
     gap: 4px;
   }
+
+  /* Mobile-only larger touch sizing (desktop untouched). */
+  .pill {
+    height: 36px;
+    padding: 0 10px;
+    border-radius: 10px;
+  }
+
+  .pill-icon,
+  .pill-icon svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .pill.is-expanded {
+    padding: 0 13px 0 10px;
+  }
+
+  .pill.is-expanded .pill-label {
+    margin-left: 8px;
+  }
 }
 
 @media (max-width: 380px) {
@@ -1185,17 +1206,17 @@ button.pill.is-expanded {
   }
 
   .pill {
-    height: 30px;
-    padding-inline: 7px;
+    height: 34px;
+    padding-inline: 9px;
   }
 
   .pill.is-expanded {
-    padding-right: 9px;
-    padding-left: 7px;
+    padding-right: 11px;
+    padding-left: 9px;
   }
 
   .pill.is-expanded .pill-label {
-    margin-left: 5px;
+    margin-left: 7px;
   }
 }
 
@@ -1870,6 +1891,16 @@ button.pill.is-expanded {
   opacity: 0.4;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
+}
+
+/* Edge ticks align their inner edge to the coordinate so labels never
+   clip outside the canvas; middle ticks stay centered on theirs. */
+.work-year.tick-first {
+  transform: none;
+}
+
+.work-year.tick-last {
+  transform: translateX(-100%);
 }
 
 .work-now {
