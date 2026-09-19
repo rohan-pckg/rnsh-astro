@@ -1,16 +1,27 @@
 ---
 import Layout from "@/layouts/main.astro"
 import SiteContainer from "@/components/SiteContainer.astro"
-import ProjectList from "@/components/ProjectList"
+import ProjectList from "@/components/ProjectList.astro"
 import { projects } from "@/data/projects"
+
+const items = projects.map((project) => ({
+  title: project.title,
+  href: project.href,
+  external: project.external,
+}))
 ---
 
 <Layout>
   <SiteContainer>
-    <section class="projects-section" aria-labelledby="projects-page-heading">
-      <h1 id="projects-page-heading" class="section-label">Projects</h1>
+    <div class="page-body">
+      <section class="home-section" aria-labelledby="projects-page-heading">
+        <div class="home-section-head">
+          <h1 id="projects-page-heading">Projects</h1>
+          <span class="section-rule" aria-hidden="true"></span>
+        </div>
 
-      <ProjectList projects={projects} client:load />
-    </section>
+        <ProjectList items={items} />
+      </section>
+    </div>
   </SiteContainer>
 </Layout>

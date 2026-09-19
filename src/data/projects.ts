@@ -3,6 +3,9 @@ export type Project = {
   description: string
   href: string
   external?: boolean
+  // Optional cover visual. No project currently ships one, so the
+  // showcase falls back to an abstract placeholder block.
+  image?: string
 }
 
 export const projects: Project[] = [

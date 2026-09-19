@@ -38,10 +38,16 @@ const contacts: ContactLink[] = [
 
 <Layout>
   <SiteContainer>
-    <section class="contact-section" aria-labelledby="contacts-heading">
-      <h1 id="contacts-heading" class="section-label">Contacts</h1>
+    <div class="page-body">
+      <section class="home-section" aria-labelledby="contacts-heading">
+<div class="home-section-head">
+          <h1 id="projects-page-heading">Contact</h1>
+          <span class="section-rule" aria-hidden="true"></span>
+        </div>
 
-      <div class="contact-list">
+
+
+        <div class="contact-list">
         {
           contacts.map((contact) => (
             <a
@@ -56,7 +62,8 @@ const contacts: ContactLink[] = [
             </a>
           ))
         }
-      </div>
-    </section>
+        </div>
+      </section>
+    </div>
   </SiteContainer>
 </Layout>

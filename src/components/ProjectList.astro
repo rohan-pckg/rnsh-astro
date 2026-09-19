@@ -1,0 +1,64 @@
+---
+export interface ProjectListItem {
+  title: string
+  href: string
+  external?: boolean
+}
+
+export interface Props {
+  items: ProjectListItem[]
+}
+
+const { items } = Astro.props
+
+/**
+ * Derive the single external destination from the project's own href.
+ * Live/demo URL -> "live", GitHub repository URL -> "github".
+ * Relative (internal) hrefs get no badge so detail navigation, if ever
+ * added, keeps working without interference.
+ */
+function destination(href: string): "live" | "github" | null {
+  let host: string
+  try {
+    host = new URL(href).hostname.toLowerCase()
+  } catch {
+    return null
+  }
+  if (!host) return null
+  if (host === "github.com" || host.endsWith(".github.com")) return "github"
+  return "live"
+}
+---
+
+<ul class="project-rows">
+  {
+    items.map((project) => {
+      const dest = destination(project.href)
+      return (
+        <li class="project-row">
+          <a
+            href={project.href}
+            class="project-row-title"
+            target={project.external ? "_blank" : undefined}
+            rel={project.external ? "noopener noreferrer" : undefined}
+            data-sound="navigate"
+          >
+            {project.title}
+          </a>
+          {dest && (
+            <a
+              href={project.href}
+              class="project-row-link"
+              target={project.external ? "_blank" : undefined}
+              rel={project.external ? "noopener noreferrer" : undefined}
+              aria-label={`${project.title} on ${dest === "live" ? "live site" : "GitHub"}`}
+              data-sound="navigate"
+            >
+              {dest === "live" ? "Live" : "GitHub"}
+            </a>
+          )}
+        </li>
+      )
+    })
+  }
+</ul>

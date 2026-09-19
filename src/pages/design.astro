@@ -13,34 +13,39 @@ const designs = (await getCollection("design"))
 
 <Layout>
   <SiteContainer>
-    <section class="design-section" aria-labelledby="designs-heading">
-      <h1 id="designs-heading" class="section-label">Designs</h1>
+    <div class="page-body">
+      <section class="home-section" aria-labelledby="designs-heading">
+        <div class="home-section-head">
+          <h1 id="designs-heading">Designs</h1>
+        </div>
 
-      <div class="design-list">
-        {
-          designs.map((item) => (
-            <a
-              href={`/design/${item.id}`}
-              class="design-item focus-ring"
-              data-sound="navigate"
-            >
-              <div class="design-thumbnail-wrapper">
-                <img
-                  src={item.data.thumbnail}
-                  alt={item.data.title}
-                  class="design-thumbnail"
-                  loading="lazy"
-                  decoding="async"
-                />
-              </div>
-              <div class="design-meta-row">
-                <span class="design-title">{item.data.title}</span>
-                <span class="design-date">{formatDate(item.data.date)}</span>
-              </div>
-            </a>
-          ))
-        }
-      </div>
-    </section>
+        <div class="design-showcase-list">
+          {
+            designs.map((item) => (
+              <a
+                href={`/design/${item.id}`}
+                class="design-showcase"
+                data-sound="navigate"
+              >
+                <div class="design-showcase-visual">
+                  <img
+                    src={item.data.thumbnail}
+                    alt={item.data.title}
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </div>
+                <div class="design-showcase-meta">
+                  <p class="design-showcase-title">{item.data.title}</p>
+                  <p class="design-showcase-date">
+                    {formatDate(item.data.date)}
+                  </p>
+                </div>
+              </a>
+            ))
+          }
+        </div>
+      </section>
+    </div>
   </SiteContainer>
 </Layout>

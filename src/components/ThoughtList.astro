@@ -1,0 +1,65 @@
+---
+export interface ThoughtListItem {
+  title: string
+  href: string
+  date: Date
+}
+
+export interface Props {
+  items: ThoughtListItem[]
+  /** Homepage renders a flat list under its own heading; the archive page
+      keeps year grouping as secondary metadata. */
+  groupByYear?: boolean
+}
+
+const { items, groupByYear = true } = Astro.props
+
+const formatMonthYear = (date: Date) =>
+  date.toLocaleDateString("en-US", { month: "2-digit", year: "2-digit" })
+
+const years = [...new Set(items.map((item) => item.date.getFullYear()))].sort(
+  (a, b) => b - a
+)
+---
+
+{
+  !groupByYear ? (
+    <ul class="index-rows">
+      {items.map((post) => (
+        <li>
+          <a href={post.href} class="index-row" data-sound="navigate">
+            <span class="index-row-title">{post.title}</span>
+            <time class="index-row-date" datetime={post.date.toISOString()}>
+              {formatMonthYear(post.date)}
+            </time>
+          </a>
+        </li>
+      ))}
+    </ul>
+  ) : (
+  years.map((year) => (
+    <div class="year-group">
+      <div class="year-divider" aria-hidden="false">
+        <span>{year}</span>
+      </div>
+      <ul class="index-rows">
+        {items
+          .filter((item) => item.date.getFullYear() === year)
+          .map((post) => (
+            <li>
+              <a href={post.href} class="index-row" data-sound="navigate">
+                <span class="index-row-title">{post.title}</span>
+                <time
+                  class="index-row-date"
+                  datetime={post.date.toISOString()}
+                >
+                  {formatMonthYear(post.date)}
+                </time>
+              </a>
+            </li>
+          ))}
+      </ul>
+    </div>
+  ))
+  )
+}

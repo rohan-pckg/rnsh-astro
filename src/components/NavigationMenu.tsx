@@ -1,72 +1,157 @@
-import NavMenuItem from "@/components/NavMenuItem"
-import { useState, useEffect, useCallback, useRef } from "react"
-import { createPortal } from "react-dom"
-import { motion, AnimatePresence, useReducedMotion } from "motion/react"
-import { springs } from "@/lib/motion"
+import { useCallback, useEffect, useState } from "react"
+import type { MouseEvent, ReactNode } from "react"
 import { sound } from "@/lib/sound"
 import { navigate } from "astro:transitions/client"
 
 type NavItem = {
   label: string
   href: string
+  match: (path: string) => boolean
+  icon: ReactNode
 }
+
+function icon(path: ReactNode) {
+  return (
+    <svg
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.3"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      {path}
+    </svg>
+  )
+}
+
+const homeIcon = icon(<path d="M2.5 7.2 8 2.8l5.5 4.4v5.2a.6.6 0 0 1-.6.6H3.1a.6.6 0 0 1-.6-.6V7.2Z" />)
+const aboutIcon = icon(
+  <>
+    <circle cx="8" cy="5.2" r="2.3" />
+    <path d="M3.2 13.4c.7-2.3 2.6-3.5 4.8-3.5s4.1 1.2 4.8 3.5" />
+  </>
+)
+const designIcon = icon(
+  <>
+    <path d="M9.8 2.6 13.4 6.2 6.1 13.5l-3.9 1 1-3.9 6.6-8Z" />
+    <path d="M8.6 3.8l3.6 3.6" />
+  </>
+)
+const projectsIcon = icon(
+  <>
+    <rect x="2.4" y="2.8" width="11.2" height="8.4" rx="1.4" />
+    <path d="M2.4 6.2h11.2M5 13.4h6" />
+  </>
+)
+const contactIcon = icon(
+  <>
+    <rect x="2.2" y="3.4" width="11.6" height="9.2" rx="1.4" />
+    <path d="m3 5 5 3.6L13 5" />
+  </>
+)
+const thoughtsIcon = icon(
+  <>
+    <path d="M3 2.8h10v10.4H3z" />
+    <path d="M5.2 5.3h5.6M5.2 7.9h5.6M5.2 10.5h3.4" />
+  </>
+)
+const moonIcon = icon(<path d="M13.2 9.4A5.2 5.2 0 0 1 6.6 2.8a5.2 5.2 0 1 0 6.6 6.6Z" />)
+const sunIcon = icon(
+  <>
+    <circle cx="8" cy="8" r="2.6" />
+    <path d="M8 1.8v1.4M8 12.8v1.4M1.8 8h1.4M12.8 8h1.4M3.7 3.7l1 1M11.3 11.3l1 1M12.3 3.7l-1 1M4.7 11.3l-1 1" />
+  </>
+)
 
 const navItems: NavItem[] = [
-  { label: "Home", href: "/" },
-  { label: "About", href: "/about" },
-  { label: "Thoughts", href: "/blogs" },
-  { label: "Projects", href: "/projects" },
-  { label: "Contact", href: "/contact" },
-  { label: "Design", href: "/design" },
+  {
+    label: "Home",
+    href: "/",
+    match: (p) => p === "/",
+    icon: homeIcon,
+  },
+  {
+    label: "About",
+    href: "/about",
+    match: (p) => p === "/about",
+    icon: aboutIcon,
+  },
+  {
+    label: "Design",
+    href: "/design",
+    match: (p) => p === "/design" || p.startsWith("/design/"),
+    icon: designIcon,
+  },
+  {
+    label: "Projects",
+    href: "/projects",
+    match: (p) => p === "/projects",
+    icon: projectsIcon,
+  },
+  {
+    label: "Thoughts",
+    href: "/blogs",
+    match: (p) => p === "/blogs" || p.startsWith("/writing/"),
+    icon: thoughtsIcon,
+  },
+  {
+    label: "Contact",
+    href: "/contact",
+    match: (p) => p === "/contact",
+    icon: contactIcon,
+  },
 ]
 
-export type BreadcrumbSegment = {
-  label: string
-  href?: string
+function currentPath(): string {
+  if (typeof window === "undefined") return "/"
+  return window.location.pathname || "/"
 }
 
-type Props = {
-  segments?: BreadcrumbSegment[]
-  className?: string
+// Astro emits trailing slashes (e.g. "/about/"); normalize so route
+// matching works identically for SSR props and client-side state.
+function normalizePath(p: string): string {
+  if (p.length > 1 && p.endsWith("/")) return p.slice(0, -1)
+  return p || "/"
 }
 
-export default function NavigationMenu({ segments = [], className }: Props) {
-  const [menuOpen, setMenuOpen] = useState(false)
-  const [theme, setTheme] = useState<"light" | "dark">(() => {
-    if (typeof document === "undefined") return "light"
-    return document.documentElement.dataset.theme === "dark" ? "dark" : "light"
-  })
+export default function NavigationMenu({ path }: { path?: string }) {
+  const [activePath, setActivePath] = useState<string>(() =>
+    normalizePath(path ?? currentPath())
+  )
+  const [hoveredHref, setHoveredHref] = useState<string | null>(null)
+  // Always start at "light" so the first client render matches SSR HTML.
+  // The mount effect below then syncs the real (possibly dark) theme from
+  // the DOM without a hydration mismatch.
+  const [theme, setTheme] = useState<"light" | "dark">("light")
 
-  const toggleRef = useRef<HTMLButtonElement>(null)
-  const shouldReduceMotion = useReducedMotion()
-
-  const toggleMenu = useCallback(() => {
-    setMenuOpen((prev) => {
-      const next = !prev
-      if (next) {
-        sound.play("open")
-      } else {
-        sound.play("back")
+  useEffect(() => {
+    const sync = () => {
+      setActivePath(normalizePath(currentPath()))
+      setHoveredHref(null)
+      if (typeof document !== "undefined") {
+        setTheme(
+          document.documentElement.dataset.theme === "dark" ? "dark" : "light"
+        )
       }
-      return next
-    })
-  }, [])
-
-  const closeMenu = useCallback(() => {
-    setMenuOpen(false)
-    sound.play("back")
+    }
+    sync()
+    document.addEventListener("astro:page-load", sync)
+    return () => document.removeEventListener("astro:page-load", sync)
   }, [])
 
   const toggleTheme = useCallback(() => {
     const current =
       document.documentElement.dataset.theme === "dark" ? "dark" : "light"
     const next = current === "dark" ? "light" : "dark"
-
     document.documentElement.classList.add("theme-transition")
     document.documentElement.dataset.theme = next
     try {
       localStorage.setItem("rnsh-theme", next)
-    } catch {}
+    } catch {
+      // Storage may be unavailable; the DOM attribute still applies.
+    }
     setTheme(next)
     sound.play("toggle")
     window.setTimeout(() => {
@@ -74,203 +159,77 @@ export default function NavigationMenu({ segments = [], className }: Props) {
     }, 500)
   }, [])
 
-  const handleOverlayClick = useCallback(
-    (e: React.MouseEvent) => {
-      if (e.target === e.currentTarget) {
-        closeMenu()
-      }
-    },
-    [closeMenu]
-  )
-
-  useEffect(() => {
-    if (menuOpen) {
-      document.body.classList.add("nav-open")
-    } else {
-      document.body.classList.remove("nav-open")
-    }
-    return () => document.body.classList.remove("nav-open")
-  }, [menuOpen])
-
-  useEffect(() => {
-    if (!menuOpen) return
-
-    function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape") {
-        closeMenu()
-        return
-      }
-      if (e.key === "ArrowDown" || e.key === "ArrowUp") {
-        e.preventDefault()
-        const links = document.querySelectorAll<HTMLElement>(
-          ".nav-overlay .nav-menu-item"
-        )
-        if (!links || links.length === 0) return
-        const active = document.activeElement
-        const idx = Array.from(links).indexOf(active as HTMLElement)
-        const next =
-          e.key === "ArrowDown"
-            ? (idx + 1) % links.length
-            : (idx - 1 + links.length) % links.length
-        links[next]?.focus()
-      }
-    }
-
-    window.addEventListener("keydown", onKey)
-    return () => window.removeEventListener("keydown", onKey)
-  }, [menuOpen, closeMenu])
-
-  useEffect(() => {
-    function onPageLoad() {
-      setMenuOpen(false)
-      if (typeof document !== "undefined") {
-        setTheme(
-          document.documentElement.dataset.theme === "dark" ? "dark" : "light"
-        )
-      }
-    }
-    document.addEventListener("astro:page-load", onPageLoad)
-    return () => document.removeEventListener("astro:page-load", onPageLoad)
-  }, [])
-
   const handleNavClick = useCallback(
-    (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    (e: MouseEvent<HTMLAnchorElement>, href: string) => {
       sound.play("navigate")
-      setMenuOpen(false)
+      setHoveredHref(null)
       if (href.startsWith("/")) {
         e.preventDefault()
+        // Move the pill before ClientRouter swaps the page.
+        setActivePath(normalizePath(href))
         navigate(href)
       }
     },
     []
   )
 
-  const navItemByLabel = new Map(
-    navItems.map((i) => [i.label.toLowerCase(), i.href])
-  )
-  const activeHref =
-    segments.length > 0
-      ? (navItemByLabel.get(segments[0].label.toLowerCase()) ?? null)
-      : null
-
-  const enterTransition = shouldReduceMotion
-    ? { duration: 0 }
-    : springs.moderate
-  const itemTransition = shouldReduceMotion ? { duration: 0 } : springs.fast
-
-  const overlay =
-    typeof document !== "undefined"
-      ? createPortal(
-          <AnimatePresence>
-            {menuOpen && (
-              <motion.div
-                key="nav-overlay"
-                initial={{ opacity: 0, y: shouldReduceMotion ? 0 : -4 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: shouldReduceMotion ? 0 : -3 }}
-                transition={enterTransition}
-                role="dialog"
-                aria-modal="true"
-                aria-label="Navigation menu"
-                className="nav-overlay"
-                onClick={handleOverlayClick}
-              >
-                <div className="nav-overlay-shell">
-                  <div className="nav-menu-block">
-                    <motion.div
-                      className="nav-overlay-links"
-                      initial={shouldReduceMotion ? false : "closed"}
-                      animate="open"
-                    >
-                      <motion.nav
-                        className="nav-links"
-                        aria-label="Navigation"
-                        variants={{
-                          closed: {},
-                          open: {
-                            transition: {
-                              staggerChildren: 0.025,
-                              delayChildren: 0.03,
-                            },
-                          },
-                        }}
-                      >
-                        {navItems.map((item) => (
-                          <motion.span
-                            key={item.href}
-                            variants={{
-                              closed: { opacity: 0, y: -3 },
-                              open: { opacity: 1, y: 0 },
-                            }}
-                            transition={itemTransition}
-                          >
-                            <NavMenuItem
-                              href={item.href}
-                              label={item.label}
-                              isActive={activeHref === item.href}
-                              onClick={(e) => handleNavClick(e, item.href)}
-                            />
-                          </motion.span>
-                        ))}
-
-                        <motion.span
-                          key="theme-toggle"
-                          variants={{
-                            closed: { opacity: 0, y: -3 },
-                            open: { opacity: 1, y: 0 },
-                          }}
-                          transition={itemTransition}
-                          style={{ marginTop: "1.25rem" }}
-                        >
-                          <button
-                            type="button"
-                            onClick={toggleTheme}
-                            className="nav-menu-item theme-menu-button focus-ring"
-                            data-cuelume-press="press"
-                            aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} theme`}
-                          >
-                            Theme
-                          </button>
-                        </motion.span>
-                      </motion.nav>
-                    </motion.div>
-                  </div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>,
-          document.body
-        )
-      : null
+  // A hovered navigation item always takes precedence over the current route.
+  // Theme deliberately never participates in either state.
+  const activeHref: string | null =
+    navItems.find((item) => item.match(activePath))?.href ?? null
+  const expandedHref = hoveredHref ?? activeHref
 
   return (
-    <div className={`site-header-nav ${className ?? ""}`}>
-      <button
-        ref={toggleRef}
-        type="button"
-        onClick={toggleMenu}
-        className={`menu-trigger focus-ring ${menuOpen ? "is-open" : ""}`}
-        data-cuelume-press="press"
-        data-cuelume-release="release"
-        aria-expanded={menuOpen}
-        aria-haspopup="dialog"
-        aria-label={menuOpen ? "Close navigation" : "Open navigation"}
-      >
-        <AnimatePresence mode="wait" initial={false}>
-          <motion.span
-            key={menuOpen ? "close" : "menu"}
-            initial={{ opacity: 0, y: -2 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 2 }}
-            transition={{ duration: 0.12 }}
-            style={{ display: "inline-block" }}
+    <nav className="pill-nav" aria-label="Primary">
+      <div className="pill-nav-inner">
+        <ul
+          className="pill-nav-list"
+          onPointerLeave={() => setHoveredHref(null)}
+          onMouseLeave={() => setHoveredHref(null)}
+        >
+        {navItems.map((item) => {
+          const expanded = expandedHref === item.href
+          return (
+            <li key={item.href}>
+              <a
+                href={item.href}
+                className={`pill${expanded ? " is-expanded" : ""}`}
+                aria-current={activeHref === item.href ? "page" : undefined}
+                aria-label={item.label}
+                data-sound="navigate"
+                onClick={(e) => handleNavClick(e, item.href)}
+                onPointerEnter={(e) => {
+                  if (e.pointerType === "mouse") setHoveredHref(item.href)
+                }}
+                onMouseEnter={() => setHoveredHref(item.href)}
+                onFocus={() => setHoveredHref(item.href)}
+                onBlur={() => setHoveredHref(null)}
+              >
+                <span className="pill-icon">{item.icon}</span>
+                <span className="pill-label" aria-hidden={!expanded}>
+                  <span>{item.label}</span>
+                </span>
+              </a>
+            </li>
+          )
+        })}
+        <li>
+          <button
+            type="button"
+            className="pill"
+            aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} theme`}
+            title="Toggle theme"
+            onClick={toggleTheme}
+            onPointerEnter={() => setHoveredHref(null)}
+            onMouseEnter={() => setHoveredHref(null)}
           >
-            {menuOpen ? "Close" : "Menu"}
-          </motion.span>
-        </AnimatePresence>
-      </button>
-
-      {overlay}
-    </div>
+            <span className="pill-icon">
+              {theme === "dark" ? sunIcon : moonIcon}
+            </span>
+          </button>
+        </li>
+        </ul>
+      </div>
+    </nav>
   )
 }

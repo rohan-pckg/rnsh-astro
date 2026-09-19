@@ -1,27 +1,6 @@
 ---
 import NavigationMenu from "@/components/NavigationMenu"
 
-const pathname = Astro.url.pathname
-const isHome = pathname === "/" || pathname === ""
+const path = Astro.url.pathname
 ---
-
-<header class="site-header-bar">
-  {
-    isHome ? (
-      <a href="/" class="site-header-brand focus-ring">
-        <span class="home-name">Rohan Singh</span>
-        <span class="project-description">Engineer</span>
-      </a>
-    ) : (
-      <button
-        type="button"
-        class="nav-back-button focus-ring"
-        onclick="if (window.history.length > 1) { window.history.back() } else { window.location.href = '/' }"
-        data-sound="back"
-      >
-        Back
-      </button>
-    )
-  }
-  <NavigationMenu client:load />
-</header>
+<NavigationMenu client:load path={path} />
