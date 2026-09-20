@@ -3,6 +3,7 @@ import Layout from "@/layouts/main.astro"
 import SiteContainer from "@/components/SiteContainer.astro"
 import ThoughtList from "@/components/ThoughtList.astro"
 import ProjectList from "@/components/ProjectList.astro"
+import HeroArtwork from "@/components/HeroArtwork.astro"
 import { projects } from "@/data/projects"
 import { getCollection } from "astro:content"
 
@@ -25,6 +26,9 @@ const featuredProjects = projects.map((project) => ({
 <Layout>
   <SiteContainer class="home-container">
     <div class="home-redesign">
+      <div class="home-visual">
+        <HeroArtwork />
+      </div>
       <section class="home-hero" aria-label="Introduction">
         <h1>Hi, I&rsquo;m Rohan.</h1>
         <p>
@@ -37,6 +41,9 @@ const featuredProjects = projects.map((project) => ({
           I&rsquo;m currently a Software Engineer at Hoora, crafting
           high-fidelity digital experiences.
         </p>
+        <a class="home-cta" href="/contact" data-sound="navigate">
+          Get in touch
+        </a>
       </section>
 
       <section class="home-section" aria-labelledby="thoughts-heading">

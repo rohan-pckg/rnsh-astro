@@ -1239,6 +1239,9 @@ button.pill.is-expanded {
   .site-container {
     padding-left: 16px;
     padding-right: 16px;
+    /* Mobile: bring content close to the viewport top. The mobile
+       navbar is bottom-fixed, so no top clearance is needed. */
+    padding-top: 20px;
   }
 }
 
@@ -2073,10 +2076,88 @@ button.pill.is-expanded {
   }
 }
 
+/* Homepage hero artwork visual */
+.home-visual {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  height: 235px;
+  margin-bottom: 32px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  /* Matches the GIF backgrounds exactly so the square artwork blends
+     seamlessly into the card with no visible rectangle. */
+  background: var(--background);
+}
+
+.home-cta {
+  display: inline-flex;
+  align-items: center;
+  height: 34px;
+  margin-top: 22px;
+  padding: 0 14px;
+  border-radius: 9px;
+  background: var(--pill-bg);
+  color: var(--pill-ink);
+  font-size: 14px;
+  line-height: 1;
+  font-weight: 500;
+  letter-spacing: -0.006em;
+  text-decoration: none;
+  transition: background-color 150ms ease-out;
+}
+
+.home-cta:hover {
+  background: var(--pill-bg-hover);
+}
+
+.home-cta:focus-visible {
+  outline: 1.5px solid var(--pill-ink);
+  outline-offset: 2px;
+}
+
+.hero-artwork {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+.hero-artwork-img {
+  /* 75% of the 235px card = ~177px, unchanged from before. */
+  height: 75%;
+  width: auto;
+  max-width: 44%;
+  object-fit: contain;
+}
+
+:root[data-theme="light"] .hero-artwork-img-dark {
+  display: none;
+}
+
+:root[data-theme="dark"] .hero-artwork-img-light {
+  display: none;
+}
+
 @media (max-width: 520px) {
+  .home-visual {
+    height: 200px;
+    margin-bottom: 28px;
+  }
+
+  .hero-artwork-img {
+    /* 66.5% of the 200px card = ~133px, unchanged from before. */
+    height: 66.5%;
+  }
+
   .home-redesign {
     max-width: none;
-    padding: 96px 16px 168px;
+    padding: 20px 16px 168px;
   }
 
   .home-section {

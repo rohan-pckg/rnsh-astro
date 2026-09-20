@@ -1,0 +1,29 @@
+---
+export interface Props {
+  class?: string
+}
+
+const { class: className = "" } = Astro.props
+---
+
+<div class={`hero-artwork ${className}`.trim()}>
+  <img
+    class="hero-artwork-img hero-artwork-img-light"
+    src="/profile-light.gif"
+    alt="Animated abstract profile artwork"
+    width="720"
+    height="720"
+    loading="eager"
+    decoding="async"
+  />
+  <img
+    class="hero-artwork-img hero-artwork-img-dark"
+    src="/profile-dark.gif"
+    alt=""
+    aria-hidden="true"
+    width="720"
+    height="720"
+    loading="eager"
+    decoding="async"
+  />
+</div>
