@@ -1,10 +1,10 @@
 ---
-import PageShell from "@/components/PageShell.astro"
 import Layout from "@/layouts/main.astro"
+import SiteContainer from "@/components/SiteContainer.astro"
 
 /**
  * Drop your CDN URLs here.
- * Mix portrait/landscape shots for a natural masonry rhythm.
+ * Mix portrait/landscape shots for a natural rhythm down the column.
  */
 const photos: { src: string; alt: string }[] = [
   {
@@ -19,77 +19,60 @@ const photos: { src: string; alt: string }[] = [
 ---
 
 <Layout>
-  <PageShell>
-    <div class="page-content">
-    <!-- Gallery -->
-    {
-      photos.length > 0 ? (
-        <div class="grid grid-cols-2 gap-3" id="gallery">
-          {photos.map((photo, i) => (
-            <button
-              class="gallery-item block w-full cursor-zoom-in overflow-hidden"
-              data-src={photo.src}
-              data-index={String(i)}
-              aria-label={`Open photo ${i + 1}`}
-              data-sound="open"
-            >
-              <img
-                src={photo.src}
-                alt={photo.alt}
-                loading="lazy"
-                decoding="async"
-                class="gallery-img block h-auto w-full"
-              />
-            </button>
-          ))}
-        </div>
-      ) : (
-        <p class="body-text">Nothing here yet.</p>
-      )
-    }
-    </div>
-  </PageShell>
+  <SiteContainer>
+    <section class="section" aria-labelledby="gallery-heading">
+      <h1 class="title page-title" id="gallery-heading">Gallery</h1>
+
+      <div class="gallery">
+        {
+          photos.length > 0 ? (
+            photos.map((photo, i) => (
+              <figure>
+                <button
+                  class="gallery-item"
+                  data-src={photo.src}
+                  data-index={String(i)}
+                  aria-label={`Open photo ${i + 1}`}
+                  data-sound="open"
+                >
+                  <img
+                    src={photo.src}
+                    alt={photo.alt}
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </button>
+              </figure>
+            ))
+          ) : (
+            <p class="body-text">Nothing here yet.</p>
+          )
+        }
+      </div>
+    </section>
+  </SiteContainer>
 
   <!-- Lightbox -->
   <div
     id="lightbox"
-    class="fixed inset-0 z-50 hidden items-center justify-center bg-background/95"
+    class="lightbox is-hidden"
     role="dialog"
     aria-modal="true"
     aria-label="Image preview"
   >
-    <button
-      id="lb-close"
-      class="surface-button absolute top-5 right-5"
-      aria-label="Close"
-    >
+    <button id="lb-close" class="lightbox-close" aria-label="Close">
       Close
     </button>
-    <button
-      id="lb-prev"
-      class="surface-button absolute inset-y-0 left-4"
-      aria-label="Previous"
-    >
+    <button id="lb-prev" class="lightbox-step" aria-label="Previous">
       Prev
     </button>
-    <img
-      id="lb-img"
-      src=""
-      alt=""
-      class="max-h-[88vh] max-w-[88vw] object-contain"
-    />
-    <button
-      id="lb-next"
-      class="surface-button absolute inset-y-0 right-4"
-      aria-label="Next"
-    >
+    <img id="lb-img" src="" alt="" class="lightbox-image" />
+    <button id="lb-next" class="lightbox-step" aria-label="Next">
       Next
     </button>
-    <span
-      id="lb-count"
-      class="caption absolute right-0 bottom-5 left-0 text-center font-mono tracking-widest"
-    ></span>
+    <span id="lb-count" class="lightbox-count"></span>
   </div>
+
   <script>
     const items = [
       ...document.querySelectorAll<HTMLButtonElement>(".gallery-item"),
@@ -113,18 +96,18 @@ const photos: { src: string; alt: string }[] = [
     function open(i: number) {
       activeTrigger = items[i] ?? null
       nav(i)
-      lb.classList.replace("hidden", "flex")
+      lb.classList.replace("is-hidden", "is-open")
       document.body.style.overflow = "hidden"
       document.getElementById("lb-close")?.focus()
     }
     function close() {
-      lb.classList.replace("flex", "hidden")
+      lb.classList.replace("is-open", "is-hidden")
       document.body.style.overflow = ""
       activeTrigger?.focus()
     }
 
     function trapFocus(e: KeyboardEvent) {
-      if (e.key !== "Tab" || lb.classList.contains("hidden")) return
+      if (e.key !== "Tab" || lb.classList.contains("is-hidden")) return
 
       const focusable = [
         ...lb.querySelectorAll<HTMLElement>(
@@ -157,31 +140,11 @@ const photos: { src: string; alt: string }[] = [
       if (e.target === lb) close()
     })
     document.addEventListener("keydown", (e) => {
-      if (lb.classList.contains("hidden")) return
+      if (lb.classList.contains("is-hidden")) return
       if (e.key === "Escape") close()
       if (e.key === "ArrowLeft") nav(cur - 1)
       if (e.key === "ArrowRight") nav(cur + 1)
       trapFocus(e)
     })
-
-    // Auto-detect landscape images so they span the full row.
-    document
-      .querySelectorAll<HTMLImageElement>(".gallery-img")
-      .forEach((img) => {
-        const btn = img.closest<HTMLElement>(".gallery-item")!
-        const check = () => {
-          if (img.naturalWidth > img.naturalHeight) {
-            btn.classList.add("is-landscape")
-          }
-        }
-        img.complete ? check() : img.addEventListener("load", check)
-      })
   </script>
-
-  <style>
-    /* Landscape images span both columns */
-    .gallery-item.is-landscape {
-      grid-column: span 2;
-    }
-  </style>
 </Layout>

@@ -67,6 +67,8 @@ export default function DownloadMenu({
     onOpenChange?.(true)
   }, [editorRef, onOpenChange])
 
+  // The menu must not hand keystrokes to the canvas underneath it, so the
+  // provider checks for this marker before acting on a shortcut.
   useEffect(() => {
     if (open) {
       document.body.classList.add("sketch-download-open")

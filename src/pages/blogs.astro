@@ -1,7 +1,7 @@
 ---
-import ThoughtList from "@/components/ThoughtList.astro"
-import PageShell from "@/components/PageShell.astro"
 import Layout from "@/layouts/main.astro"
+import SiteContainer from "@/components/SiteContainer.astro"
+import ThoughtList from "@/components/ThoughtList.astro"
 import { getCollection } from "astro:content"
 
 const thoughts = (await getCollection("writing"))
@@ -15,17 +15,16 @@ const thoughts = (await getCollection("writing"))
 ---
 
 <Layout>
-  <PageShell>
-    <div class="page-body">
-      <section class="home-section" aria-labelledby="thoughts-heading">
-        {
-          thoughts.length > 0 ? (
-            <ThoughtList items={thoughts} />
-          ) : (
-            <p class="body-text">Nothing here yet.</p>
-          )
-        }
-      </section>
-    </div>
-  </PageShell>
+  <SiteContainer>
+    <section class="section" aria-labelledby="thoughts-page-heading">
+      <h1 class="title page-title" id="thoughts-page-heading">Thoughts</h1>
+      {
+        thoughts.length > 0 ? (
+          <ThoughtList items={thoughts} />
+        ) : (
+          <p class="body-text">Nothing here yet.</p>
+        )
+      }
+    </section>
+  </SiteContainer>
 </Layout>

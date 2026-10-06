@@ -14,7 +14,7 @@ const { items } = Astro.props
 /**
  * Derive the single external destination from the project's own href.
  * Live/demo URL -> "live", GitHub repository URL -> "github".
- * Relative (internal) hrefs get no badge so detail navigation, if ever
+ * Relative (internal) hrefs get no metadata so detail navigation, if ever
  * added, keeps working without interference.
  */
 function destination(href: string): "live" | "github" | null {
@@ -30,33 +30,24 @@ function destination(href: string): "live" | "github" | null {
 }
 ---
 
-<ul class="project-rows">
+<ul class="list">
   {
     items.map((project) => {
       const dest = destination(project.href)
       return (
-        <li class="project-row">
-          <a
-            href={project.href}
-            class="project-row-title"
-            target={project.external ? "_blank" : undefined}
-            rel={project.external ? "noopener noreferrer" : undefined}
-            data-sound="navigate"
-          >
-            {project.title}
-          </a>
-          {dest && (
+        <li>
+          <div class="list-item">
             <a
               href={project.href}
-              class="project-row-link"
+              class="list-title"
               target={project.external ? "_blank" : undefined}
               rel={project.external ? "noopener noreferrer" : undefined}
-              aria-label={`${project.title} on ${dest === "live" ? "live site" : "GitHub"}`}
               data-sound="navigate"
             >
-              {dest === "live" ? "Live" : "GitHub"}
+              {project.title}
             </a>
-          )}
+            {dest && <p class="list-meta">{dest === "live" ? "Live" : "GitHub"}</p>}
+          </div>
         </li>
       )
     })

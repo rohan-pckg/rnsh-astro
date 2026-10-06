@@ -1,73 +1,62 @@
 ---
 import Layout from "@/layouts/main.astro"
 import SiteContainer from "@/components/SiteContainer.astro"
-import ThoughtList from "@/components/ThoughtList.astro"
-import ProjectList from "@/components/ProjectList.astro"
-import HeroArtwork from "@/components/HeroArtwork.astro"
-import { projects } from "@/data/projects"
-import { getCollection } from "astro:content"
+import ThemeControl from "@/components/ThemeControl.astro"
+import { navRoutes, isNavRouteActive } from "@/data/navigation"
 
-const thoughts = (await getCollection("writing"))
-  .filter((post) => !post.data.draft)
-  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
-  .map((post) => ({
-    title: post.data.title,
-    href: `/writing/${post.id}`,
-    date: post.data.date,
-  }))
-
-const featuredProjects = projects.map((project) => ({
-  title: project.title,
-  href: project.href,
-  external: project.external,
-}))
+/**
+ * The homepage is the design's index page reproduced: four blocks of text in a
+ * narrow measure against the left margin, separated by viewport-relative
+ * whitespace, with navigation stated as content rather than chrome. No hero, no
+ * cards, no artwork.
+ *
+ * `footer={false}` because this page already is the navigation.
+ */
+const pathname = Astro.url.pathname
 ---
 
 <Layout>
-  <SiteContainer class="home-container">
-    <div class="home-redesign">
-      <div class="home-visual">
-        <HeroArtwork />
-      </div>
-      <section class="home-hero" aria-label="Introduction">
-        <h1>Hi, I&rsquo;m Rohan.</h1>
-        <p>
-          I design and build software that is simple to use, thoughtful in
-          detail, and built to last.
-        </p>
-        <p>
-          Based in Mumbai, India, I&rsquo;m an engineer blending a Computer
-          Science background with front-end architecture and interface design.
-          I&rsquo;m currently a Software Engineer at Hoora, crafting
-          high-fidelity digital experiences.
-        </p>
-        <a class="home-cta" href="/contact" data-sound="navigate">
-          Get in touch
-        </a>
-      </section>
+  <SiteContainer footer={false}>
+    <section class="section">
+      <h1 class="title">Rohan Singh</h1>
+      <p class="body-text">Engineer</p>
+    </section>
 
-      <section class="home-section" aria-labelledby="thoughts-heading">
-        <div class="home-section-head">
-          <h2 id="projects-heading">Thoughts</h2>
-          <span class="section-rule" aria-hidden="true"></span>
-        </div>
+    <section class="section">
+      <h2 class="title">Today</h2>
+      <p class="body-text">
+        Working as a software Engineer at Hoora, crafting high-fidelity digital
+        experiences.
+      </p>
+    </section>
+
+    <section class="section">
+      <h2 class="title">About</h2>
+      <p class="body-text">
+       Generalist at heart, drawn to design and increasingly curious about code.
+      </p>
+    </section>
+
+    <section class="section" aria-labelledby="navigation-heading">
+      <h2 class="title" id="navigation-heading">Navigation</h2>
+      <nav class="nav" aria-label="Site">
         {
-          thoughts.length > 0 ? (
-            <ThoughtList items={thoughts} groupByYear={false} />
-          ) : (
-            <p class="body-text">Nothing here yet.</p>
-          )
+          navRoutes.map((route) => (
+            <a
+              href={route.href}
+              class="navigation-link"
+              aria-current={
+                isNavRouteActive(route, pathname) ? "page" : undefined
+              }
+              data-sound="navigate"
+            >
+              ++ /{route.label}
+            </a>
+          ))
         }
-      </section>
 
-      <section class="home-section" aria-labelledby="projects-heading">
-        <div class="home-section-head">
-          <h2 id="projects-heading">Projects</h2>
-          <span class="section-rule" aria-hidden="true"></span>
-                 </div>
-
-        <ProjectList items={featuredProjects} />
-      </section>
-    </div>
+        <ThemeControl />
+      </nav>
+    </section>
   </SiteContainer>
 </Layout>

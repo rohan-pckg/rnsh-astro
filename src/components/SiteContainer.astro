@@ -1,18 +1,27 @@
 ---
-import Header from "@/components/Header.astro"
+import SiteFooter from "@/components/SiteFooter.astro"
 
+/**
+ * The page measure: `body > .container > main + footer.site-footer`, which is
+ * exactly the structure the design uses on every page. A single column, held
+ * against the left margin by the body, never centred.
+ */
 export interface Props {
   class?: string
+  /**
+   * The homepage states its navigation as page content instead of repeating it
+   * in the footer, so it turns this off.
+   */
+  footer?: boolean
 }
 
-const { class: className = "" } = Astro.props
+const { class: className = "", footer = true } = Astro.props
 ---
 
-<div
-  class={`site-container mx-auto flex min-h-svh w-full flex-col ${className}`}
->
-  <Header />
-  <main class="site-main flex-1">
+<div class={`container ${className}`.trim()}>
+  <main id="main-content">
     <slot />
   </main>
+
+  {footer && <SiteFooter />}
 </div>

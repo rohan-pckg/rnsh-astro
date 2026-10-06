@@ -1,12 +1,24 @@
 ---
 import "@/styles/global.css"
 import ClientRouter from "astro/components/ClientRouter.astro"
+import ScribbleCanvas from "@/components/ScribbleCanvas"
+
+/**
+ * Document shell.
+
+ * The design has no chrome: no top bar, no tab row. The page is a flex row
+ * holding one measure (see `SiteContainer`), with the navigation and the theme
+ * control living at the end of that measure in the footer.
+ *
+ * Beneath the content plane the document ends and the scribble sheet begins: a
+ * full-bleed plane of accent-coloured paper that the scrolling uncovers.
+ */
 ---
 
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" href="/pfp.png" />
     <title>\(^-^)/</title>
     <ClientRouter />
@@ -33,11 +45,9 @@ import ClientRouter from "astro/components/ClientRouter.astro"
       @keyframes page-fade-in {
         from {
           opacity: 0;
-          transform: translateY(4px);
         }
         to {
           opacity: 1;
-          transform: translateY(0);
         }
       }
 
@@ -72,9 +82,12 @@ import ClientRouter from "astro/components/ClientRouter.astro"
   </head>
   <body>
     <a href="#main-content" class="skip-link">Skip to content</a>
-    <main id="main-content">
+
+    <div class="page">
       <slot />
-    </main>
+    </div>
+
+    <ScribbleCanvas client:load />
 
     <script>
       import { sound, type SoundName } from "@/lib/sound"

@@ -1,0 +1,80 @@
+---
+/**
+ * Theme control.
+ *
+ * The design has no chrome, so there is nowhere to put a switch except among
+ * the links. It is therefore written as one: a `++ /dark` / `++ /light` accent
+ * link, labelled and behaving like every other navigation entry.
+ *
+ * `data-theme-toggle` is the hook the script binds to, and the same hook the
+ * page bootstrap uses to apply the stored theme before first paint.
+ */
+---
+
+<button
+  type="button"
+  class="navigation-link"
+  data-theme-toggle
+  aria-label="Switch to dark theme"
+>
+  <span data-theme-label>++ /dark</span>
+</button>
+
+<script>
+  /**
+   * Theme switching, and the label that has to follow it. The label is written
+   * here as well as in the markup because the stored theme is only known on the
+   * client, and a control can appear more than once on a page.
+   */
+  const NEXT_LABEL = { toDark: "++ /dark", toLight: "++ /light" }
+  const NEXT_NAME = {
+    toDark: "Switch to dark theme",
+    toLight: "Switch to light theme",
+  }
+
+  function syncThemeControls() {
+    const toLight = document.documentElement.dataset.theme === "dark"
+    for (const control of document.querySelectorAll<HTMLElement>(
+      "[data-theme-toggle]"
+    )) {
+      control.setAttribute(
+        "aria-label",
+        toLight ? NEXT_NAME.toLight : NEXT_NAME.toDark
+      )
+      const label = control.querySelector<HTMLElement>("[data-theme-label]")
+      if (label)
+        label.textContent = toLight ? NEXT_LABEL.toLight : NEXT_LABEL.toDark
+    }
+  }
+
+  function initThemeControls() {
+    syncThemeControls()
+
+    for (const button of document.querySelectorAll<HTMLButtonElement>(
+      "[data-theme-toggle]"
+    )) {
+      if (button.dataset.bound) continue
+      button.dataset.bound = "true"
+      button.addEventListener("click", () => {
+        const next =
+          document.documentElement.dataset.theme === "dark" ? "light" : "dark"
+        document.documentElement.classList.add("theme-transition")
+        document.documentElement.dataset.theme = next
+        try {
+          localStorage.setItem("rnsh-theme", next)
+        } catch {
+          // Storage may be unavailable; the DOM attribute still applies.
+        }
+        syncThemeControls()
+        window.dispatchEvent(new CustomEvent("rnsh-theme-change", { detail: next }))
+        window.setTimeout(() => {
+          document.documentElement.classList.remove("theme-transition")
+        }, 500)
+      })
+    }
+  }
+
+  initThemeControls()
+  document.addEventListener("astro:page-load", initThemeControls)
+  document.addEventListener("rnsh-theme-change", syncThemeControls)
+</script>

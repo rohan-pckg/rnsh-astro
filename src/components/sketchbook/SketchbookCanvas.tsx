@@ -146,7 +146,7 @@ function SketchbookEditor() {
 
       <canvas
         ref={canvasRef}
-        className={`h-[68vh] max-h-[620px] min-h-[420px] w-full touch-none bg-[#EFEBE3] text-foreground ${
+        className={`sketch-canvas ${
           isDrawing ? "cursor-crosshair" : "cursor-cell"
         }`}
         aria-label="Drawing canvas"
@@ -157,7 +157,7 @@ function SketchbookEditor() {
         onPointerCancel={onPointerUp}
       />
 
-      <p className="caption">
+      <p className="body-text sketch-hint">
         P for pen, M for marker, E for eraser, Cmd/Ctrl+Z to undo,
         Cmd/Ctrl+Shift+Z to redo.
       </p>

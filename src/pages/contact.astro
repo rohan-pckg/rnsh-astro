@@ -38,32 +38,29 @@ const contacts: ContactLink[] = [
 
 <Layout>
   <SiteContainer>
-    <div class="page-body">
-      <section class="home-section" aria-labelledby="contacts-heading">
-<div class="home-section-head">
-          <h1 id="projects-page-heading">Contact</h1>
-          <span class="section-rule" aria-hidden="true"></span>
-        </div>
+    <section class="section" aria-labelledby="contact-page-heading">
+      <h1 class="title page-title" id="contact-page-heading">Contact</h1>
 
-
-
-        <div class="contact-list">
+      <ul class="list">
         {
           contacts.map((contact) => (
-            <a
-              href={contact.href}
-              class="contact-item focus-ring"
-              target={contact.external ? "_blank" : undefined}
-              rel={contact.external ? "noopener noreferrer" : undefined}
-              data-sound="navigate"
-            >
-              <span class="contact-label">{contact.label}</span>
-              <span class="contact-value">{contact.value}</span>
-            </a>
+            <li>
+              <div class="list-item">
+                <a
+                  href={contact.href}
+                  class="list-title"
+                  target={contact.external ? "_blank" : undefined}
+                  rel={contact.external ? "noopener noreferrer" : undefined}
+                  data-sound="navigate"
+                >
+                  {contact.label}
+                </a>
+                <p class="body-text">{contact.value}</p>
+              </div>
+            </li>
           ))
         }
-        </div>
-      </section>
-    </div>
+      </ul>
+    </section>
   </SiteContainer>
 </Layout>

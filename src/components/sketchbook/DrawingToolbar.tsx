@@ -45,14 +45,14 @@ export default function DrawingToolbar({
       aria-label="Drawing tools"
     >
       <div
-        className="sketch-control-group hover-list"
+        className="sketch-control-group"
         aria-label="Drawing tools"
       >
         {tools.map((item) => (
           <button
             key={item}
             type="button"
-            className="sketch-action hover-item"
+            className="sketch-action"
             aria-pressed={tool === item}
             aria-label={`${toolLabels[item]} (${toolShortcuts[item]})`}
             title={`${toolLabels[item]} (${toolShortcuts[item]})`}
@@ -67,12 +67,12 @@ export default function DrawingToolbar({
       </div>
 
       <div
-        className="sketch-control-group hover-list"
+        className="sketch-control-group"
         aria-label="Editing actions"
       >
         <button
           type="button"
-          className="sketch-action hover-item"
+          className="sketch-action"
           disabled={!canUndo}
           aria-label="Undo (Cmd/Ctrl+Z)"
           title="Undo (Cmd/Ctrl+Z)"
@@ -82,7 +82,7 @@ export default function DrawingToolbar({
         </button>
         <button
           type="button"
-          className="sketch-action hover-item"
+          className="sketch-action"
           disabled={!canRedo}
           aria-label="Redo (Shift+Cmd/Ctrl+Z)"
           title="Redo (Shift+Cmd/Ctrl+Z)"
@@ -92,7 +92,7 @@ export default function DrawingToolbar({
         </button>
         <button
           type="button"
-          className="sketch-action hover-item"
+          className="sketch-action"
           disabled={!canClear}
           aria-label="Clear all drawings"
           title="Clear all drawings"

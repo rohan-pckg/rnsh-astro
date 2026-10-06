@@ -1,21 +1,20 @@
 ---
-import PageShell from "@/components/PageShell.astro"
-import SketchbookCanvas from "@/components/sketchbook/SketchbookCanvas"
 import Layout from "@/layouts/main.astro"
+import SiteContainer from "@/components/SiteContainer.astro"
+import SketchbookCanvas from "@/components/sketchbook/SketchbookCanvas"
 ---
 
 <Layout>
-  <PageShell>
+  <SiteContainer>
+    <section class="section" aria-labelledby="lab-page-heading">
+      <h1 class="title page-title" id="lab-page-heading">Lab</h1>
 
-    <div class="page-content">
-      <div class="editorial-stack">
-        <p class="body-text">
-          A quiet notebook for loose lines, quick shapes, and ideas that do not
-          need to become anything yet.
-        </p>
+      <p class="body-text">
+        A quiet notebook for loose lines, quick shapes, and ideas that do not
+        need to become anything yet.
+      </p>
 
-        <SketchbookCanvas client:load />
-      </div>
-    </div>
-  </PageShell>
+      <SketchbookCanvas client:load />
+    </section>
+  </SiteContainer>
 </Layout>

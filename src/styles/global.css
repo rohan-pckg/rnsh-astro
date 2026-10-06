@@ -1,62 +1,122 @@
 @import "tailwindcss";
-@import "@fontsource-variable/inter";
+
+/* ===========================================================================
+   The design system.
+
+   Structure, naming, values and breakpoints are a migration of
+   rohan-pckg/style.css. Where a rule could be copied verbatim it was; the
+   additions are limited to what the portfolio has that the source does not
+   (a light theme, buttons, a canvas) and each one is commented as such.
+
+   The three ideas the whole thing rests on:
+     1. One typeface, one size. Hierarchy is carried by colour, not by scale.
+     2. One column, anchored left. `min(50vw, 720px)` with the page margins
+        doing the centring — the empty right half is intentional.
+     3. Rhythm is vertical and viewport-relative: sections are 10vh apart.
+   =========================================================================== */
+
+/* ---------------------------------------------------------------------------
+   Typeface
+
+   "Ioskeley Mono", regular weight only, self-hosted. The source serves a
+   single woff2 and falls back to `monospace`; there is no second family, so
+   `font-mono`, `font-sans` and the body all resolve to the same stack.
+   --------------------------------------------------------------------------- */
+
+@font-face {
+  font-family: "Ioskeley Mono";
+  src: url("/fonts/IoskeleyMono-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
 
 @theme inline {
-  --font-sans:
-    "Inter Variable", "Inter", ui-sans-serif, system-ui, -apple-system,
-    BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial,
-    "Noto Sans", sans-serif;
-  --font-mono:
-    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
-    "Courier New", monospace;
-  --font-heading: var(--font-sans);
-  --color-background: var(--background);
-  --color-foreground: var(--heading);
-  --color-card: var(--background);
-  --color-card-foreground: var(--body);
-  --color-popover: var(--background);
-  --color-popover-foreground: var(--body);
-  --color-primary: var(--heading);
-  --color-primary-foreground: var(--background);
-  --color-secondary: var(--background);
-  --color-secondary-foreground: var(--body);
-  --color-muted: var(--background);
-  --color-muted-foreground: var(--body);
-  --color-accent: var(--background);
-  --color-accent-foreground: var(--heading);
+  --font-mono: "Ioskeley Mono", monospace;
+  --font-sans: "Ioskeley Mono", monospace;
+
+  --color-background: var(--bg-color);
+  --color-foreground: var(--white);
+  --color-accent: var(--accent);
   --color-border: var(--border);
-  --color-input: var(--inactive);
-  --color-ring: var(--body);
+  --color-surface: var(--surface);
 }
+
+/* ---------------------------------------------------------------------------
+   Tokens
+
+   Dark is the source palette, value for value. The accent is a FIXED brand
+   colour: the same orange in both themes — only the ground, the text and the
+   greys step between them.
+
+   The source defines no light mode, so light is derived by inverting the same
+   four hues: the two neutrals trade places and the grey is re-stepped so it
+   still carries enough contrast against the light ground.
+   --------------------------------------------------------------------------- */
 
 :root {
   color-scheme: light;
-  --background: #ffffff;
-  --heading: #4c4c4c;
-  --body: #71717b;
-  --muted: #6f6f78;
-  --inactive: #a8a7aa;
-  --border: #e8e4da;
-  --type-primary-heading: 0.875rem;
-  --type-body: 0.875rem;
-  --type-caption: var(--type-body);
+
+  --bg-color: #eeeeec; /* source --white */
+  --white: #111110; /* source --bg-color */
+  --gray: #55534e; /* source --gray, stepped for a light ground */
+
+  /* Light-mode accent. */
+  --accent: #ff5800;
+
+  /* The scribble surface is the accent at full strength: a flat sheet, no
+     gradient, no texture, no border, in both themes. */
+  --scribble-bg: var(--accent);
+  --scribble-ink: #ffffff;
+
+  /* Not in the source palette, but needed by code blocks and tables, which
+     are the only surfaces the design gives a background or a border to. */
+  --border: #d5d3ce;
+  --surface: #f4f3f0;
+  --inactive: #8b8983;
+
   --motion-duration: 150ms;
-  --motion-ease: ease-out;
-  --gap-after-breadcrumb: 2.5rem;
-  --gap-below-header: clamp(3.5rem, 8svh, 6rem);
-  --gap-after-title: 0.5rem;
-  --gap-after-description: 0.5rem;
-  --gap-after-meta: clamp(3.25rem, 6.5svh, 4.5rem);
+  --motion-ease: ease;
+
+  /*
+   * The single step between a page's title and the content under it. Every
+   * page uses it, so no page invents its own margin. `.section`'s row gap
+   * already contributes 0.5rem; the title adds the same again, so the step a
+   * reader sees reads as 1rem — deliberate, and still inside the design's
+   * compact scale.
+   */
+  --page-title-gap: 0.5rem;
+
+  /* The run of page ground between the last thing on the page and the top of
+     the sheet. This is the whole "uncovering" effect — there is no animation,
+     only whitespace for the sheet to emerge out of. */
+  --scribble-lead: 24vh;
+  --scribble-height: clamp(420px, 80vh, 900px);
+
+  /*
+   * The page's own inset from the viewport edge. One token, set by the
+   * breakpoints below, read by both `body` and the sheet that escapes it —
+   * which is what lets the sheet reach both edges without `100vw` (and so
+   * without the scrollbar's width ever leaking into a horizontal scrollbar).
+   */
+  --page-gutter: 10vw;
+  --page-lead: 10vh;
 }
 
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --background: #1b1b1e;
-  --heading: #e4e4e4;
-  --body: #a3a3a8;
-  --muted: #84848b;
-  --inactive: #5b5b62;
-  --border: #2c2c31;
+
+  /* rohan-pckg, verbatim. */
+  --bg-color: #111110;
+  --white: #eeeeec;
+  --gray: #b5b3ad;
+
+  /* Dark-mode accent. */
+  --accent: #ff8700;
+
+  --border: #2a2a28;
+  --surface: #1a1a18;
+  --inactive: #6f6d68;
 }
 
 html.theme-transition,
@@ -80,44 +140,76 @@ html.theme-transition *::after {
   }
 }
 
+/* ---------------------------------------------------------------------------
+   Base — reset, page ground, links, images
+   --------------------------------------------------------------------------- */
+
 @layer base {
   html {
-    font-family: var(--font-sans);
-    background: var(--background);
-    color: var(--body);
-    -webkit-tap-highlight-color: transparent;
-    scrollbar-gutter: stable;
-  }
-
-  body {
-    min-height: 100svh;
-    margin: 0;
-    background: var(--background);
-    color: var(--body);
-    font-size: 14px;
-    line-height: 1.6;
+    font-family: "Ioskeley Mono", monospace;
+    /*
+     * The source sets `font-size: 12px` on `:root` and then `14px` on
+     * `html, body`. `:root` is the `html` element and has the higher
+     * specificity, so the root really is 12px and only `body` is 14px —
+     * which makes every `rem` in the design a 12px step. Reproduced as-is:
+     * `margin: 0.5rem` is a 6px gutter, not 7px.
+     */
+    font-size: 12px;
     font-weight: 400;
-    letter-spacing: -0.006em;
-    -webkit-font-smoothing: antialiased;
-    text-rendering: optimizeLegibility;
-    -webkit-text-size-adjust: 100%;
   }
 
-  a,
-  button {
-    color: inherit;
-    transition: color var(--motion-duration) var(--motion-ease);
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* The page is a flex row holding a single measure, which is what keeps the
+     column hard against the left margin instead of drifting to the middle.
+     `flex-direction` only matters because the document also contains
+     out-of-flow nodes (skip link, lightbox, download panel); with one in-flow
+     child the two axes are equivalent. */
+  body {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    margin-top: var(--page-lead);
+    margin-left: var(--page-gutter);
+    margin-right: var(--page-gutter);
+    background-color: var(--bg-color);
+    color: var(--white);
+    font-size: 14px;
+    line-height: 1.65;
   }
 
   a {
+    color: var(--accent);
     text-decoration: none;
   }
 
+  a:hover,
+  a:focus-visible {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  img {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* The source has no buttons; the portfolio's controls need the neutral
+     reset so a `<button>` inherits the page's type rather than the UA's. */
   button {
     border: 0;
     background: transparent;
     padding: 0;
     font: inherit;
+    color: inherit;
     text-align: inherit;
   }
 
@@ -130,342 +222,767 @@ html.theme-transition *::after {
     outline: none;
   }
 
-  :focus-visible {
-    outline: none;
-  }
-
-  .skip-link {
-    position: absolute;
-    top: -100%;
-    left: 0.5rem;
-    z-index: 100;
-    padding: 0.5rem 0.75rem;
-    background: var(--heading);
-    color: var(--background);
-    font-size: var(--type-body);
-  }
-
-  .skip-link:focus {
-    top: 0.5rem;
-  }
-
   ::selection {
     background: var(--inactive);
-    color: var(--heading);
+    color: var(--bg-color);
   }
 }
 
+/* ---------------------------------------------------------------------------
+   The sheet underneath
+
+   The page is two planes. The portfolio content is the plane on top; beneath it
+   the document ends and a full-bleed sheet of accent-coloured paper begins.
+   There is no footer card, no border and no shadow — it is one flat surface
+   that the scrolling simply uncovers, after a long run of the page's own
+   ground so the reveal reads as reaching the bottom rather than arriving at a
+   box.
+   --------------------------------------------------------------------------- */
+
+/* The content plane. Explicitly above the sheet so it can never be painted
+   over, whatever the browser's stacking order would prefer. */
+.page {
+  position: relative;
+  z-index: 1;
+}
+
+/* The sheet. `flex: none` stops the flex layout shrinking it back to the
+   content measure, and the negative margins escape the page's 10vw gutters
+   from any breakpoint, so it always spans edge to edge. */
+.scribble {
+  flex: none;
+  position: relative;
+  z-index: 0;
+  /* Escape the page's gutters by exactly as much as they are, so the sheet is
+     precisely the document width — no `100vw`, and therefore no scrollbar
+     width leaking into a horizontal scrollbar. */
+  width: calc(100% + 2 * var(--page-gutter));
+  margin-inline: calc(-1 * var(--page-gutter));
+  margin-top: var(--scribble-lead);
+  height: var(--scribble-height);
+  display: block;
+  background: var(--scribble-bg);
+  cursor: crosshair;
+  /* Only the drawing surface opts out of touch gestures — never the page. */
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* ---------------------------------------------------------------------------
+   Layout and text primitives — copied from the source
+   --------------------------------------------------------------------------- */
+
+/* The measure is declared outside any layer on purpose: Tailwind ships its
+   own `.container` utility, which would otherwise win on the `max-width`. */
+.container {
+  width: 100%;
+  max-width: min(50vw, 720px);
+  margin: 0.5rem;
+}
+
 @layer components {
-  .section-title,
-  .nav-title,
-  .important {
-    color: var(--heading);
-    font-weight: 500;
+  .section {
+    display: grid;
+    gap: 0.5rem;
+    margin-bottom: 10vh;
   }
 
-  .section-title,
-  .nav-title {
-    font-size: var(--type-body);
-    line-height: 1.5;
+  .title {
+    color: var(--white);
+    font-weight: 400;
+    font-size: 14px;
+  }
+
+  /*
+   * A page's own title — the one line that names what the page is — separated
+   * from the first thing below it by the shared step. Applied to every page
+   * heading, so the title/content gap is the same everywhere. In-page section
+   * headings keep the section's own 0.5rem gap, which is what the design uses
+   * between a heading and the prose under it.
+   */
+  .page-title {
+    margin-block-end: var(--page-title-gap);
   }
 
   .body-text {
-    color: var(--body);
-    font-size: var(--type-body);
-    line-height: 1.7;
-    font-weight: 400;
+    color: var(--gray);
   }
 
-  .metadata,
-  .caption,
-  .body-small {
-    color: var(--inactive);
-    font-size: var(--type-body);
-    line-height: 1.7;
-    font-weight: 400;
-    font-variant-numeric: tabular-nums;
+  .link {
+    color: var(--accent);
   }
 
-  .editorial-stack {
+  .date {
+    color: var(--gray);
+    text-decoration: none !important;
+  }
+
+  /* Shared navigation — a vertical stack of accent links. The portfolio's
+     row used to be a scrollable bar; the design's navigation is this. */
+  .nav {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: 0.5rem;
   }
 
-  .text-link-underlined {
-    color: var(--body);
-    text-decoration-line: underline;
-    text-decoration-thickness: 1px;
-    text-underline-offset: 0.18em;
-    transition: color 150ms ease-out;
+  .navigation-link {
+    color: var(--accent);
+    display: inline-block;
   }
 
-  .text-link-underlined:hover,
-  .text-link-underlined:focus-visible {
-    color: var(--heading);
+  /* The theme control is the one navigation entry that is not an anchor, so
+     it does not pick up the element-level `a:hover` rule. */
+  button.navigation-link:hover,
+  button.navigation-link:focus-visible {
+    text-decoration: underline;
+    text-underline-offset: 3px;
   }
 
-  .hover-list:hover .hover-item,
-  .hover-list:hover .hover-item .section-title {
-    color: var(--inactive);
+  .site-footer {
+    margin-top: 4vh;
+    margin-bottom: 6vh;
   }
 
-  .hover-list .hover-item:hover,
-  .hover-list .hover-item:focus-visible,
-  .hover-list .hover-item:focus-within,
-  .hover-list .hover-item:hover .section-title,
-  .hover-list .hover-item:focus-visible .section-title,
-  .hover-list .hover-item:focus-within .section-title {
-    color: var(--body);
+  .site-footer .nav {
+    gap: 0.35rem;
   }
 
-  .site-header-bar {
-    position: relative;
+  /* Writing / archive entries */
+  .entry {
+    display: grid;
+    gap: 0.25rem;
+    margin-bottom: 6vh;
+  }
+
+  .entry-title {
+    color: var(--accent);
+  }
+
+  .entry-title:hover,
+  .entry-title:focus-visible {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  /* Project / experiment list */
+  .list-item {
+    display: grid;
+    gap: 0.25rem;
+    margin-bottom: 6vh;
+  }
+
+  .list-title {
+    color: var(--accent);
+  }
+
+  .list-title:hover,
+  .list-title:focus-visible {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .list-meta {
+    color: var(--gray);
+  }
+
+  /* The design writes its entries straight into the section, with no list in
+     between. The portfolio keeps list semantics, so the wrapper carries only
+     the reset and nothing else. */
+  .entry-list,
+  .list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Design preview
+
+   The source hides the preview away on pointer-capable devices and parks it in
+   the bottom-right corner on hover. On touch it simply sits under the entry.
+   --------------------------------------------------------------------------- */
+
+@layer components {
+  /*
+   * Touch and no-hover pointers have no reliable hover, so here the preview is
+   * simply part of the entry and takes the full content measure. It is never
+   * capped below the column width and never cropped: the image carries its own
+   * ratio through `height: auto`.
+   */
+  .preview {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    margin-top: 0.75rem;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    /*
+     * Pointer devices: park a large preview in the bottom-right corner and
+     * reveal it on hover, as the source does.
+     *
+     * Sizing is responsive rather than fixed. `clamp` grows the preview with
+     * the viewport between a floor and a ceiling: never so small that it is
+     * only a thumbnail, never so large that it cannot be read. Above 900px the
+     * reading column stops at 50vw, so a preview of `34vw` inset by `6vw` lands
+     * in the empty right half and never reaches the text. Between 600 and
+     * 900px the column widens to 70vw, so the preview takes its floor, where it
+     * still sits clear of the left-aligned entry titles. `height: auto`
+     * alongside an explicit width is what preserves the image's own aspect
+     * ratio instead of stretching it.
+     */
+    .preview {
+      position: fixed;
+      right: 6vw;
+      bottom: 6vh;
+      width: clamp(300px, 34vw, 520px);
+      height: auto;
+      margin: 0;
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity 0.15s ease;
+      z-index: 5;
+    }
+
+    .entry:hover .preview,
+    .entry:focus-within .preview {
+      opacity: 1;
+      visibility: visible;
+    }
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Gallery
+   --------------------------------------------------------------------------- */
+
+@layer components {
+  .gallery {
+    display: grid;
+    gap: 8vh;
+  }
+
+  .gallery figure {
+    margin: 0;
+  }
+
+  .gallery figcaption {
+    color: var(--gray);
+    margin-top: 0.75rem;
+  }
+
+  /* A gallery cell is only a hit target for the lightbox: no chrome, no
+     cursor affordance beyond the pointer the browser already draws. */
+  .gallery-item {
+    display: block;
+    width: 100%;
+    cursor: zoom-in;
+  }
+
+  /* Lightbox. The design has no overlay, so it is the page ground with the
+     page's own link language for its controls. */
+  .lightbox {
+    position: fixed;
+    inset: 0;
     z-index: 50;
     display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 1.5rem;
-    width: 100%;
-    min-height: 44px;
-    margin-bottom: var(--gap-below-header);
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-color);
   }
 
-  .site-header-brand {
+  .lightbox.is-hidden {
+    display: none;
+  }
+
+  .lightbox-image {
+    width: auto;
+    max-width: 88vw;
+    height: auto;
+    max-height: 88vh;
+    object-fit: contain;
+  }
+
+  .lightbox-close,
+  .lightbox-step {
+    color: var(--accent);
+  }
+
+  .lightbox-close:hover,
+  .lightbox-close:focus-visible,
+  .lightbox-step:hover,
+  .lightbox-step:focus-visible {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .lightbox-close {
+    position: absolute;
+    top: 1.25rem;
+    right: 1.25rem;
+  }
+
+  .lightbox-step {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+
+  .lightbox-step:first-of-type {
+    left: 1rem;
+  }
+
+  .lightbox-step:last-of-type {
+    right: 1rem;
+  }
+
+  .lightbox-count {
+    position: absolute;
+    right: 0;
+    bottom: 1.25rem;
+    left: 0;
+    color: var(--gray);
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Article layout
+   --------------------------------------------------------------------------- */
+
+@layer components {
+  .article-title {
+    color: var(--white);
+    font-weight: 400;
+    font-size: 14px;
+  }
+
+  .article-meta {
+    color: var(--gray);
     display: flex;
-    flex-direction: column;
-    gap: 0.125rem;
-    text-decoration: none;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    align-items: baseline;
+  }
+
+  .article-content {
+    margin-top: 1rem;
+  }
+
+  .article-content p {
+    color: var(--gray);
+    margin: 0.6rem 0;
+  }
+
+  /* The source styles h2/h3 only, so an h1 in the prose keeps the UA's 2em
+     bold — reproduced here because Tailwind's preflight would otherwise
+     collapse it back to body size. */
+  .article-content h1 {
+    font-size: 2em;
+    font-weight: bold;
+    margin: 0.67em 0;
+  }
+
+  .article-content h2,
+  .article-content h3 {
+    color: var(--white);
+    font-weight: 400;
+    margin-top: 2rem;
+    padding-bottom: 4px;
+    font-size: 14px;
+  }
+
+  .article-content ul,
+  .article-content ol {
+    color: var(--gray);
+    padding-left: 1.4rem;
+    margin: 0.6rem 0;
+  }
+
+  .article-content li {
+    color: var(--gray);
+    margin: 0.25rem 0;
+  }
+
+  .article-content blockquote {
+    border-left: 2px solid var(--accent);
+    padding-left: 1rem;
+    margin: 1rem 0;
+    color: var(--gray);
+  }
+
+  .article-content blockquote blockquote {
+    margin: 0.75rem 0;
+  }
+
+  .article-content code {
+    color: var(--accent);
+    font-family: "Ioskeley Mono", monospace;
+  }
+
+  .article-content pre {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 1rem;
+    overflow-x: auto;
+    margin: 1rem 0;
+  }
+
+  .article-content pre code {
+    color: var(--gray);
+  }
+
+  .article-content table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 1rem 0;
+    font-size: 12px;
+  }
+
+  .article-content th,
+  .article-content td {
+    border: 1px solid var(--border);
+    padding: 0.4rem 0.6rem;
+    text-align: left;
+    color: var(--gray);
+  }
+
+  .article-content th {
+    color: var(--white);
+  }
+
+  .article-content figure {
+    margin: 1.5rem 0;
+  }
+
+  .article-content figcaption {
+    color: var(--gray);
+    margin-top: 0.6rem;
+  }
+
+  /* The source's `.afterthought`, under the name the portfolio's own posts
+     use for the same closing note. */
+  .article-content .sketchbook-afterthought a {
+    color: var(--accent);
+  }
+
+  .article-content .sketchbook-afterthought {
+    margin-top: 2rem;
+  }
+
+  /* Prose images carry their caption as an <em> on the following line rather
+     than a <figcaption>, so give it the caption treatment. */
+  .article-content em:has(+ br),
+  .article-content img + em {
+    display: block;
+    margin-top: 0.5rem;
+    color: var(--gray);
+    font-style: normal;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Code blocks
+
+   The portfolio's posts carry a filename badge and a copy action above each
+   block. The design has no equivalent component, so it is built from the same
+   tokens: muted metadata, accent on interaction, no chrome.
+   --------------------------------------------------------------------------- */
+
+@layer components {
+  .article-code-frame {
+    margin: 2rem 0;
+    overflow: hidden;
+  }
+
+  .article-code-frame pre {
+    margin: 0;
+  }
+
+  .article-code-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-bottom: 0.75rem;
+  }
+
+  .article-code-badge,
+  .article-code-copy {
+    color: var(--gray);
+    font-family: "Ioskeley Mono", monospace;
+  }
+
+  .article-code-copy:hover,
+  .article-code-copy:focus-visible {
+    color: var(--white);
+  }
+
+  .article-code-badge:hover,
+  .article-code-copy:hover {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .article-code-frame .astro-code,
+  .article-code-frame .astro-code span {
+    color: var(--gray) !important;
+  }
+
+  .astro-code,
+  .astro-code span {
+    color: var(--shiki-light);
+    font-style: var(--shiki-light-font-style);
+    font-weight: var(--shiki-light-font-weight);
+    text-decoration: var(--shiki-light-text-decoration);
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   About — Life/Work tabs and timelines
+
+   The source has no tabs or timelines. They are re-expressed in the design's
+   own vocabulary: accent marks the selected tab, grey is everything else, and
+   the only surfaces are the hairline axis and the outlined bars.
+   --------------------------------------------------------------------------- */
+
+@layer components {
+  .about-tabs {
+    margin-top: 2rem;
+  }
+
+  .about-portrait {
+    margin: 0;
+  }
+
+  /* The design has no horizontal grouping to copy, so a pair of tab-like labels
+     takes the widest step in the system rather than the vertical stack step,
+     which would run the two words together. */
+  .about-tablist {
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+  }
+
+  .about-tab {
+    color: var(--gray);
+    font-size: 14px;
+  }
+
+  .about-tab:hover,
+  .about-tab:focus-visible {
+    color: var(--white);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .about-tab.is-active {
+    color: var(--accent);
+  }
+
+  .about-tab:focus-visible {
+    outline: 1px solid var(--white);
+    outline-offset: 3px;
+  }
+
+  .about-panel {
+    margin-top: 1rem;
+  }
+
+  .life-list {
+    display: grid;
+    gap: 0.25rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .life-item {
+    display: grid;
+    grid-template-columns: 76px minmax(0, 1fr);
+    gap: 0.5rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .life-period {
+    color: var(--gray);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .life-period.is-now {
+    color: var(--white);
+  }
+
+  .life-text {
+    color: var(--gray);
+  }
+
+  .work-scroll {
+    overflow-x: auto;
+  }
+
+  .work-canvas {
+    position: relative;
+    width: 100%;
+    min-width: 700px;
+  }
+
+  .work-axis {
+    position: absolute;
+    top: 26px;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .work-year {
+    position: absolute;
+    top: 0;
+    transform: translateX(-50%);
+    color: var(--gray);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .work-year.tick-first {
+    transform: none;
+  }
+
+  .work-year.tick-last {
+    transform: translateX(-100%);
+  }
+
+  .work-now {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: var(--accent);
+  }
+
+  .work-now-dot {
+    position: absolute;
+    top: 24px;
+    left: -2.5px;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+
+  .work-now-label {
+    position: absolute;
+    bottom: 0;
+    left: 0.25rem;
+    color: var(--gray);
+    white-space: nowrap;
+  }
+
+  .work-bar {
+    position: absolute;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 0;
+    height: 48px;
+    padding: 0 0.5rem;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    text-align: left;
     transition: opacity var(--motion-duration) var(--motion-ease);
   }
 
-  .nav-back-button {
-    color: var(--inactive);
-    font-size: var(--type-body);
-    line-height: 1.5;
-    font-weight: 500;
-    transition:
-      color var(--motion-duration) var(--motion-ease),
-      opacity var(--motion-duration) var(--motion-ease);
-  }
-
-  .nav-back-button:hover {
-    color: var(--body);
-  }
-
-  .site-header-nav {
-    position: relative;
-    z-index: 50;
-  }
-
-  .menu-trigger {
-    color: var(--heading);
-    font-size: var(--type-body);
-    line-height: 1.5;
-    font-weight: 500;
-    text-align: right;
-    transition: color var(--motion-duration) var(--motion-ease);
-  }
-
-  .menu-trigger.is-open {
-    color: var(--inactive);
-  }
-
-  .menu-trigger:hover {
-    color: var(--body);
-  }
-
-  .menu-trigger:focus-visible {
-    outline: 1px solid var(--heading);
-    outline-offset: 4px;
-  }
-
-  .nav-overlay {
-    position: fixed;
-    inset: 0;
-    z-index: 40;
-    overflow-x: hidden;
-    overflow-y: auto;
-    background: color-mix(in srgb, var(--background) 88%, transparent);
-    backdrop-filter: blur(20px);
-  }
-
-  .nav-overlay-shell {
+  .work-bar-main {
     display: flex;
-    flex-direction: column;
-    min-height: 100svh;
-    width: 100%;
-    max-width: 640px;
-    margin-inline: auto;
-    padding: 3rem 1.5rem calc(5.25rem + env(safe-area-inset-bottom, 0px));
+    flex: none;
+    align-items: baseline;
+    gap: 0.35rem;
+    white-space: nowrap;
   }
 
-  @media (min-width: 640px) {
-    .nav-overlay-shell {
-      padding-top: 5rem;
-      padding-inline: 2rem;
+  .work-bar-title {
+    flex: none;
+    color: var(--white);
+    white-space: nowrap;
+  }
+
+  .work-bar-company,
+  .work-bar-period {
+    color: var(--gray);
+    white-space: nowrap;
+  }
+
+  .work-bar-period {
+    flex: none;
+    font-variant-numeric: tabular-nums;
+  }
+
+  @media (hover: hover) {
+    .work-bar:hover {
+      border-color: var(--white);
     }
   }
 
-  @media (min-width: 1024px) {
-    .nav-overlay-shell {
-      padding-top: 6rem;
-    }
+  .work-bar.is-dimmed {
+    opacity: 0.35;
   }
 
-  .nav-menu-block {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    margin-left: auto;
-    width: fit-content;
-    text-align: right;
+  .work-bar.is-dimmed:hover {
+    opacity: 0.7;
   }
 
-  .nav-overlay-links {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    width: 100%;
-    margin-top: 2.75rem;
+  .work-bar.is-selected {
+    border-color: var(--accent);
+    opacity: 1;
   }
 
-  .nav-links {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 0.5rem;
-    text-align: right;
+  .work-bar:focus-visible {
+    outline: 1px solid var(--white);
+    outline-offset: 3px;
   }
 
-  .nav-menu-item {
-    display: block;
-    color: var(--heading);
-    font-size: var(--type-body);
-    line-height: 1.5;
-    font-weight: 500;
-    text-align: right;
-    transition: color var(--motion-duration) var(--motion-ease);
+  .work-detail {
+    max-width: 60ch;
+    margin-top: 2rem;
   }
 
-  .nav-links:hover .nav-menu-item {
-    color: var(--inactive);
+  .work-detail-head {
+    color: var(--white);
   }
 
-  .nav-links:hover .nav-menu-item:hover,
-  .nav-menu-item:focus-visible {
-    color: var(--heading);
+  .work-detail-period {
+    margin-top: 0.25rem;
+    color: var(--gray);
+    font-variant-numeric: tabular-nums;
   }
 
-  body.nav-open {
-    overflow: hidden;
+  .work-detail-text {
+    margin-top: 0.25rem;
+    color: var(--gray);
   }
 
-  body.nav-open .site-header-brand,
-  body.nav-open .nav-back-button {
-    opacity: 0;
-    pointer-events: none;
+  .work-detail-hint {
+    color: var(--gray);
   }
+}
 
-  body.sketch-download-open {
-    overflow: hidden;
-  }
+/* ---------------------------------------------------------------------------
+   Lab — drawing surface
 
-  .writing-list {
-    display: flex;
-    flex-direction: column;
-    gap: 1.25rem;
-  }
+   Grey is the resting state for a control, white on hover, accent when it is
+   the one that is active.
+   --------------------------------------------------------------------------- */
 
-  .writing-list:hover .writing-title,
-  .writing-list:hover .writing-date {
-    color: var(--inactive);
-  }
-
-  .writing-item {
-    display: grid;
-    grid-template-columns: max-content minmax(2rem, 1fr) max-content;
-    align-items: center;
-    gap: 1rem;
-    color: var(--body);
-    line-height: 1.8;
-  }
-
-  .writing-title {
-    color: var(--body);
-    font-size: var(--type-body);
-    font-weight: 500;
-  }
-
-  .writing-date {
-    color: var(--heading);
-    opacity: 0.4;
-    font-size: var(--type-body);
-    font-weight: 400;
-  }
-
-  .writing-divider {
-    height: 1px;
-    background: var(--border);
-    transition: background var(--motion-duration) var(--motion-ease);
-  }
-
-  .writing-item,
-  .writing-title,
-  .writing-date {
-    transition: color var(--motion-duration) var(--motion-ease);
-  }
-
-  .writing-item:hover .writing-title,
-  .writing-item:focus-visible .writing-title,
-  .writing-item:hover .writing-date,
-  .writing-item:focus-visible .writing-date {
-    color: var(--heading);
-  }
-
-  .writing-item:hover .writing-divider,
-  .writing-item:focus-visible .writing-divider {
-    background: var(--heading);
-  }
-
-  @media (max-width: 767px) {
-    .writing-list {
-      margin-top: 24px !important;
-      margin-bottom: 32px;
-      gap: 16px;
-    }
-
-    .writing-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      min-height: 44px;
-      line-height: 1.4;
-    }
-
-    .writing-divider {
-      display: none;
-    }
-
-    .writing-date {
-      white-space: nowrap;
-      text-align: right;
-      margin-left: 1rem;
-    }
-
-    .site-header {
-      gap: 1rem;
-    }
-
-    .site-header .nav-breadcrumb {
-      flex: 1;
-      min-width: 0;
-      overflow: hidden;
-      white-space: nowrap;
-      justify-content: flex-end;
-    }
-  }
-
+@layer components {
   .sketch-editor {
     isolation: isolate;
   }
@@ -473,63 +990,54 @@ html.theme-transition *::after {
   .sketch-toolbar {
     display: flex;
     flex-wrap: wrap;
-    align-items: center;
-    gap: 0.75rem 1rem;
+    align-items: baseline;
+    gap: 0.25rem 1rem;
   }
 
   .sketch-control-group {
     display: flex;
-    align-items: center;
-    gap: 0.75rem;
+    align-items: baseline;
+    gap: 1rem;
   }
 
   .sketch-action {
-    color: var(--inactive);
-    font-size: var(--type-body);
-    line-height: 1.5;
-    background: none;
-    border: none;
-    padding: 0;
-    font-family: inherit;
-    cursor: pointer;
+    color: var(--gray);
   }
 
   .sketch-action:hover,
-  .sketch-action:focus-visible,
-  .sketch-action[aria-pressed="true"] {
-    color: var(--body);
+  .sketch-action:focus-visible {
+    color: var(--white);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .sketch-action[aria-pressed="true"],
+  .sketch-action.is-active {
+    color: var(--accent);
+  }
+
+  .sketch-action:focus-visible {
+    outline: none;
   }
 
   .sketch-action:disabled {
     cursor: not-allowed;
+    color: var(--inactive);
     opacity: 0.45;
   }
 
   .sketch-download-trigger.is-active {
     position: relative;
     z-index: 30;
-    color: var(--body);
-  }
-
-  .sketch-toolbar.is-download-open .hover-list .hover-item {
-    color: var(--inactive);
-    pointer-events: none;
-  }
-
-  .sketch-toolbar.is-download-open .sketch-action:disabled {
-    color: var(--inactive);
-    opacity: 0.45;
-    pointer-events: none;
+    color: var(--accent);
   }
 
   .sketch-download-scrim {
     position: absolute;
     inset: 0;
     z-index: 10;
-    margin: 0;
-    padding: 0;
     border: none;
-    background: var(--background);
+    background: var(--bg-color);
     cursor: default;
   }
 
@@ -539,1628 +1047,139 @@ html.theme-transition *::after {
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
-    background: var(--background);
+    background: var(--bg-color);
   }
 
   .sketch-download-option {
     display: block;
     width: 100%;
     padding: 0.25rem 0;
-    color: var(--inactive);
-    font-size: var(--type-body);
-    line-height: 1.5;
-    background: none;
-    border: none;
+    color: var(--gray);
     text-align: left;
-    cursor: pointer;
-    transition: color var(--motion-duration) var(--motion-ease);
-  }
-
-  .sketch-download-panel:hover .sketch-download-option {
-    color: var(--inactive);
   }
 
   .sketch-download-option:hover,
   .sketch-download-option:focus-visible {
-    color: var(--body);
+    color: var(--white);
+    text-decoration: underline;
+    text-underline-offset: 3px;
   }
 
-  @media (max-width: 767px) {
-    .sketch-download-panel {
-      left: 0;
-      right: 0;
-      bottom: 0;
-      top: auto !important;
-      width: 100%;
-      max-width: 100%;
-      padding: 0.75rem 1.5rem calc(0.75rem + env(safe-area-inset-bottom, 0px));
-    }
-
-    .sketch-download-option {
-      min-height: 44px;
-      padding: 0.625rem 0;
-    }
-  }
-
-  .focus-ring:focus-visible {
-    outline: 1px solid var(--heading);
-    outline-offset: 4px;
-  }
-
-  @keyframes home-section-enter {
-    from {
-      opacity: 0;
-      transform: translateY(5px);
-    }
-
-    to {
-      opacity: 1;
-      transform: none;
-    }
-  }
-
-  .hero {
-    margin-top: 0;
-  }
-
-  .hero-title {
-    color: var(--heading);
-    font-size: var(--type-body);
-    line-height: 1.5;
-    font-weight: 500;
-  }
-
-  .hero-description {
-    max-width: 32ch;
-    margin-top: 1rem;
-    color: var(--body);
-    line-height: 1.7;
-  }
-
-  .intro-section {
-    margin-top: 0;
-    margin-bottom: clamp(3.75rem, 8.5svh, 5rem);
-  }
-
-  .intro-text {
-    color: var(--body);
-    font-size: var(--type-body);
-    line-height: 1.7;
-    font-weight: 500;
-    max-width: 42ch;
-  }
-
-  .home-header {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 1.5rem;
-    min-height: 44px;
-  }
-
-  .home-header-left {
-    display: flex;
-    flex-direction: column;
-    gap: 0.125rem;
-  }
-
-  .home-name {
-    color: var(--heading);
-    font-size: var(--type-body);
-    line-height: 1.5;
-    font-weight: 500;
-  }
-
-  .home-title {
-    color: var(--inactive);
-    font-size: var(--type-body);
-    line-height: 1.5;
-    font-weight: 400;
-  }
-
-  .home-nav {
-    margin-bottom: 0 !important;
-  }
-
-  .home-nav .site-header {
-    justify-content: flex-end;
-    min-height: auto;
-  }
-
-  .home-nav .theme-toggle {
-    display: none;
-  }
-
-  .section-label {
-    color: var(--inactive);
-    font-size: var(--type-body);
-    line-height: 1.5;
-    font-weight: 500;
-  }
-
-  .projects-section {
-    margin-top: 0;
-    margin-bottom: clamp(3.75rem, 8.5svh, 5rem);
-  }
-
-  .projects-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    margin-top: 1.5rem;
-  }
-
-  .project-item {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-    padding: 0.75rem 1rem;
-    margin-inline: -1rem;
-    border-radius: 0.5rem;
-    text-decoration: none;
-    background-color: transparent;
-    transition: background-color 150ms ease-out;
-  }
-
-  .project-item:hover,
-  .project-item:focus-visible {
-    background-color: color-mix(in srgb, var(--heading) 4.5%, transparent);
-  }
-
-  .project-title {
-    color: var(--heading);
-    font-size: var(--type-body);
-    line-height: 1.5;
-    font-weight: 500;
-  }
-
-  .project-description {
-    color: var(--heading);
-    opacity: 0.4;
-    max-width: 44ch;
-    font-size: var(--type-body);
-    line-height: 1.6;
-    font-weight: 500;
-  }
-
-  .contact-section {
-    margin-top: 0;
-    margin-bottom: clamp(3.75rem, 8.5svh, 5rem);
-  }
-
-  .contact-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    margin-top: 1.5rem;
-  }
-
-  .contact-item {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 1rem;
-    padding: 0.75rem 1rem;
-    margin-inline: -1rem;
-    border-radius: 0.5rem;
-    text-decoration: none;
-    background-color: transparent;
-    transition: background-color 150ms ease-out;
-  }
-
-  .contact-item:hover,
-  .contact-item:focus-visible {
-    background-color: color-mix(in srgb, var(--heading) 4.5%, transparent);
-  }
-
-  .contact-label {
-    color: var(--heading);
-    font-size: var(--type-body);
-    line-height: 1.5;
-    font-weight: 500;
-    flex-shrink: 0;
-  }
-
-  .contact-value {
-    color: var(--heading);
-    opacity: 0.4;
-    font-size: var(--type-body);
-    line-height: 1.5;
-    font-weight: 500;
-    text-align: right;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .design-section {
-    margin-top: 0;
-    margin-bottom: clamp(3.75rem, 8.5svh, 5rem);
-  }
-
-  .design-list {
-    display: flex;
-    flex-direction: column;
-    gap: 2.25rem;
-    margin-top: 1.5rem;
-  }
-
-  .design-item {
-    display: flex;
-    flex-direction: column;
-    gap: 0.875rem;
-    padding: 0.75rem 1rem;
-    margin-inline: -1rem;
-    border-radius: 0.5rem;
-    text-decoration: none;
-    background-color: transparent;
-    transition: background-color 150ms ease-out;
-  }
-
-  .design-item:hover,
-  .design-item:focus-visible {
-    background-color: color-mix(in srgb, var(--heading) 4.5%, transparent);
-  }
-
-  .design-thumbnail-wrapper {
-    width: 100%;
-    overflow: hidden;
-    border-radius: 0.375rem;
-    background: color-mix(in srgb, var(--heading) 4%, transparent);
-  }
-
-  .design-thumbnail {
-    width: 100%;
-    height: auto;
+  /* The drawing surface is the one place the design keeps a light ground: the
+     paper the sketchbook is drawn on, which is a different object from the
+     page it sits on. */
+  .sketch-canvas {
     display: block;
-    object-fit: cover;
+    width: 100%;
+    height: 68vh;
+    max-height: 620px;
+    min-height: 420px;
+    touch-action: none;
+    background: #efece3;
   }
 
-  .design-meta-row {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 1rem;
-  }
-
-  .design-title {
-    color: var(--heading);
-    font-size: var(--type-body);
-    line-height: 1.5;
-    font-weight: 500;
-  }
-
-  .design-date {
-    color: var(--heading);
-    opacity: 0.4;
-    font-size: var(--type-body);
-    line-height: 1.5;
-    font-weight: 500;
-  }
-
-  .thoughts-section {
-    margin-top: 0;
-    margin-bottom: 2rem;
-  }
-
-  .thoughts-label {
-    color: var(--inactive);
-    font-size: var(--type-body);
-    line-height: 1.5;
-    font-weight: 500;
-  }
-
-  .thoughts-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    margin-top: 1.25rem;
-  }
-
-  .thought-item {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 1rem;
-    padding: 0.75rem 1rem;
-    margin-inline: -1rem;
-    border-radius: 0.5rem;
-    text-decoration: none;
-    background-color: transparent;
-    transition: background-color 150ms ease-out;
-  }
-
-  .thought-item:hover,
-  .thought-item:focus-visible {
-    background-color: color-mix(in srgb, var(--heading) 4.5%, transparent);
-  }
-
-  .thought-title {
-    color: var(--heading);
-    font-size: var(--type-body);
-    line-height: 1.5;
-    font-weight: 500;
-    transition: color var(--motion-duration) var(--motion-ease);
-  }
-
-  .thought-date {
-    flex-shrink: 0;
-    color: var(--heading);
-    opacity: 0.4;
-    font-size: var(--type-body);
-    line-height: 1.5;
-    font-variant-numeric: tabular-nums;
-  }
-
-  .thoughts-list:hover .thought-title {
-    color: var(--muted);
-  }
-
-  .thought-item:hover .thought-title,
-  .thought-item:focus-visible .thought-title {
-    color: var(--heading);
-  }
-
-  .home-footer {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    margin-top: 6rem;
-  }
-
-  .home-contact {
-    color: var(--muted);
-    font-size: var(--type-body);
-    line-height: 1.5;
-    transition: color var(--motion-duration) var(--motion-ease);
-  }
-
-  .home-contact:hover,
-  .home-contact:focus-visible {
-    color: var(--heading);
-  }
-
-  .home-time {
-    padding-bottom: 1.5rem;
-  }
-
-  .site-container.home-container {
-    display: flex;
-    flex-direction: column;
-    min-height: 100svh;
-  }
-
-  .home-container > .home-header {
-    margin-bottom: clamp(6.25rem, 16svh, 8.5rem);
-  }
-
-  .home-container > .projects-section {
-    flex: none;
-  }
-
-  .home-container > .thoughts-section {
-    margin-top: 0;
-  }
-
-  @media (prefers-reduced-motion: no-preference) {
-    .site-header-bar,
-    .intro-section,
-    .projects-section,
-    .thoughts-section {
-      animation: home-section-enter 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
-    }
-
-    .intro-section {
-      animation-delay: 40ms;
-    }
-
-    .projects-section {
-      animation-delay: 90ms;
-    }
-
-    .thoughts-section {
-      animation-delay: 140ms;
-    }
-  }
-
-  .live-time {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-    color: var(--inactive);
-    font-size: var(--type-body);
-    line-height: 1.5;
-  }
-
-  .live-time-time {
-    font-weight: 500;
-  }
-
-  .live-time-date {
-    font-weight: 400;
-  }
-
-  @media (min-width: 640px) {
-    .thoughts-section {
-      margin-top: 0;
-      margin-bottom: 2rem;
-    }
-
-    .nav-overlay-shell {
-      padding-top: 7.5rem;
-      padding-right: 2rem;
-      padding-bottom: calc(7rem + env(safe-area-inset-bottom, 0px));
-      padding-left: 2rem;
-    }
-  }
-
-  @media (min-width: 1024px) {
-    .thoughts-section {
-      margin-top: 0;
-      margin-bottom: 2rem;
-    }
+  .sketch-hint {
+    margin-top: 0.5rem;
   }
 }
 
-.site-container.home-container {
-  --type-body: 0.875rem;
-}
+/* ---------------------------------------------------------------------------
+   Utility components the portfolio needs that the design has no rules for
+   --------------------------------------------------------------------------- */
 
-@media (min-width: 768px) {
-  .site-container.home-container {
-    --type-body: 1rem;
+@layer components {
+  .skip-link {
+    position: absolute;
+    top: -100%;
+    left: 1rem;
+    z-index: 100;
+    padding: 0.25rem 0.5rem;
+    background: var(--white);
+    color: var(--bg-color);
+    font-size: 14px;
+  }
+
+  .skip-link:focus {
+    top: 1rem;
   }
 }
 
-.astro-code,
-.astro-code span {
-  color: var(--shiki-light);
-  font-style: var(--shiki-light-font-style);
-  font-weight: var(--shiki-light-font-weight);
-  text-decoration: var(--shiki-light-text-decoration);
-}
+/* ---------------------------------------------------------------------------
+   Responsive — the source's three breakpoints, unchanged
 
-/* ——— New minimal homepage redesign (Inter, 14px baseline) ——— */
+     ≤900px  margins 8vw, measure 70vw
+     ≤600px  margins 8vw, measure 100%, sections 8vh
+     ≤400px  margins 6vw, sections 7vh
+   --------------------------------------------------------------------------- */
 
-:root {
-  --pill-bg: #f1f1f3;
-  --pill-bg-hover: #e9e9ec;
-  --pill-ink: #1c1c1e;
-  --pill-ink-soft: #6b6b70;
-  --card-bg: #f4f4f5;
-  --page-ink: #111113;
-  --page-soft: #6e6e73;
-}
-
-:root[data-theme="dark"] {
-  --pill-bg: #26262b;
-  --pill-bg-hover: #2f2f35;
-  --pill-ink: #f2f2f3;
-  --pill-ink-soft: #a7a7ae;
-  --card-bg: #232328;
-  --page-ink: #f0f0f1;
-  --page-soft: #a3a3a8;
-}
-
-/* Floating expanding-pill navbar — shares the content column grid */
-.pill-nav {
-  position: fixed;
-  left: 0;
-  right: 0;
-  top: 20px;
-  z-index: 60;
-  display: flex;
-  justify-content: center;
-  pointer-events: none;
-}
-
-.pill-nav-inner {
-  width: 100%;
-  max-width: 640px;
-  display: flex;
-  justify-content: flex-start;
-  pointer-events: auto;
-}
-
-.pill-nav-list {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  max-width: 100%;
-}
-
-.pill {
-  display: inline-flex;
-  align-items: center;
-  flex: none;
-  height: 32px;
-  box-sizing: border-box;
-  width: auto;
-  padding: 0 9px;
-  border: 0;
-  border-radius: 9px;
-  background: var(--pill-bg);
-  color: var(--pill-ink-soft);
-  font-size: 14px;
-  line-height: 1;
-  font-weight: 450;
-  letter-spacing: -0.006em;
-  text-decoration: none;
-  white-space: nowrap;
-  overflow: hidden;
-  cursor: pointer;
-  transition:
-    background-color 150ms ease-out,
-    color 150ms ease-out,
-    padding 180ms ease-out;
-}
-
-a.pill:hover,
-button.pill:hover,
-a.pill.is-expanded,
-button.pill.is-expanded {
-  background: var(--pill-bg-hover);
-  color: var(--pill-ink);
-}
-
-.pill-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex: none;
-  width: 14px;
-  height: 14px;
-}
-
-.pill-icon svg {
-  width: 14px;
-  height: 14px;
-  display: block;
-}
-
-.pill-label {
-  display: grid;
-  flex: none;
-  grid-template-columns: 0fr;
-  opacity: 0;
-  transform: translateX(-2px);
-  transition:
-    grid-template-columns 180ms ease-out,
-    opacity 150ms ease-out,
-    transform 180ms ease-out,
-    margin 180ms ease-out;
-  margin-left: 0;
-}
-
-.pill-label > span {
-  overflow: hidden;
-  white-space: nowrap;
-  min-width: 0;
-}
-
-.pill.is-expanded {
-  padding: 0 12px 0 9px;
-  color: var(--pill-ink);
-}
-
-.pill.is-expanded .pill-label {
-  grid-template-columns: 1fr;
-  opacity: 1;
-  transform: none;
-  margin-left: 7px;
-}
-
-.pill:focus-visible {
-  outline: 1.5px solid var(--pill-ink);
-  outline-offset: 2px;
-}
-
-@media (max-width: 767px) {
-  .pill-nav {
-    top: auto;
-    bottom: calc(20px + env(safe-area-inset-bottom, 0px));
-    padding-inline: 16px;
+@media screen and (max-width: 900px) {
+  :root {
+    --page-gutter: 8vw;
   }
 
-  .pill-nav-inner {
-    max-width: none;
-    justify-content: center;
-  }
-
-  .pill-nav-list {
-    gap: 4px;
-  }
-
-  /* Mobile-only larger touch sizing (desktop untouched). */
-  .pill {
-    height: 36px;
-    padding: 0 10px;
-    border-radius: 10px;
-  }
-
-  .pill-icon,
-  .pill-icon svg {
-    width: 16px;
-    height: 16px;
-  }
-
-  .pill.is-expanded {
-    padding: 0 13px 0 10px;
-  }
-
-  .pill.is-expanded .pill-label {
-    margin-left: 8px;
+  .container {
+    max-width: 70vw;
   }
 }
 
-@media (max-width: 380px) {
-  .pill-nav {
-    padding-inline: 12px;
+@media screen and (max-width: 600px) {
+  :root {
+    --page-gutter: 8vw;
+    --page-lead: 8vh;
   }
 
-  .pill-nav-list {
-    gap: 3px;
+  .container {
+    max-width: 100%;
+    margin: 0;
   }
 
-  .pill {
-    height: 34px;
-    padding-inline: 9px;
+  .section {
+    margin-bottom: 8vh;
   }
 
-  .pill.is-expanded {
-    padding-right: 11px;
-    padding-left: 9px;
+  .entry,
+  .list-item {
+    margin-bottom: 5vh;
   }
 
-  .pill.is-expanded .pill-label {
-    margin-left: 7px;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .pill,
-  .pill-label {
-    transition: none;
-  }
-}
-
-/* Shared editorial page shell. Homepage and every standard route use this
-   exact column, so the fixed desktop navigation shares their left edge. */
-.site-container {
-  width: 100%;
-  max-width: 640px;
-  padding: 132px 0 160px;
-}
-
-@media (max-width: 672px) {
-  .site-container {
-    padding-left: 16px;
-    padding-right: 16px;
-    /* Mobile: bring content close to the viewport top. The mobile
-       navbar is bottom-fixed, so no top clearance is needed. */
-    padding-top: 20px;
-  }
-}
-
-/* New homepage shell */
-.site-container.home-container {
-  max-width: 640px;
-  padding-left: 0;
-  padding-right: 0;
-  padding-top: 0;
-  padding-bottom: 0;
-}
-
-.home-redesign {
-  --home-col: 640px;
-  width: 100%;
-  max-width: var(--home-col);
-  margin-inline: auto;
-  padding: 132px 0 160px;
-  color: var(--page-ink);
-  font-size: 14px;
-  line-height: 1.6;
-}
-
-.home-hero h1 {
-  margin: 0 0 18px;
-  font-size: 14px;
-  line-height: 1.5;
-  font-weight: 600;
-  letter-spacing: -0.006em;
-  color: var(--page-ink);
-}
-
-.home-hero p {
-  margin: 0 0 16px;
-  font-size: 14px;
-  line-height: 1.6;
-  font-weight: 400;
-  letter-spacing: -0.006em;
-  color: var(--page-soft);
-}
-
-.home-hero p:last-child {
-  margin-bottom: 0;
-}
-
-.home-section {
-  margin-top: 88px;
-}
-
-.home-section-head {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 28px;
-}
-
-/* Secondary labels (year markers, Projects heading) sit at ~40% opacity. */
-.year-divider > span,
-#projects-heading,
-#projects-page-heading {
-  opacity: 0.4;
-}
-
-.home-section-head h2,
-.home-section-head h1 {
-  margin: 0;
-  flex: none;
-  font-size: 14px;
-  line-height: 1.5;
-  font-weight: 600;
-  letter-spacing: -0.006em;
-  color: var(--page-ink);
-}
-
-.home-section-head .section-rule {
-  flex: 1;
-  height: 1px;
-  background: var(--border);
-  align-self: center;
-  min-width: 24px;
-}
-
-.home-arrow {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  border-radius: 7px;
-  color: var(--page-soft);
-  text-decoration: none;
-  transition:
-    color 150ms ease-out,
-    background-color 150ms ease-out;
-}
-
-.home-arrow:hover {
-  color: var(--page-ink);
-  background: var(--pill-bg);
-}
-
-.home-arrow svg {
-  width: 13px;
-  height: 13px;
-}
-
-.home-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 28px 20px;
-}
-
-.home-card {
-  display: block;
-  min-width: 0;
-  text-decoration: none;
-  color: inherit;
-}
-
-.home-thumb {
-  width: 100%;
-  aspect-ratio: 16 / 10;
-  border-radius: 10px;
-  overflow: hidden;
-  background: var(--card-bg);
-}
-
-.home-thumb img {
-  width: 100%;
-  height: 100%;
-  display: block;
-  object-fit: cover;
-}
-
-.home-thumb-fallback {
-  width: 100%;
-  height: 100%;
-}
-
-.home-thumb-fallback.tint-a {
-  background: linear-gradient(135deg, #eceaff 0%, #cdd8ff 45%, #a9c4f5 100%);
-}
-
-.home-thumb-fallback.tint-b {
-  background: linear-gradient(135deg, #b8e986 0%, #7cc4c4 45%, #4a90d9 100%);
-}
-
-.home-thumb-fallback.tint-c {
-  background: #101012;
-}
-
-.home-thumb-fallback.tint-d {
-  background: #f6f6f4;
-}
-
-.home-card-title {
-  margin: 10px 0 0;
-  font-size: 14px;
-  line-height: 1.45;
-  font-weight: 500;
-  letter-spacing: -0.006em;
-  color: var(--page-ink);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.home-card-sub {
-  margin: 3px 0 0;
-  font-size: 14px;
-  line-height: 1.55;
-  font-weight: 400;
-  letter-spacing: -0.002em;
-  color: var(--page-soft);
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.home-card-date {
-  margin: 3px 0 0;
-  font-size: 14px;
-  line-height: 1.5;
-  font-weight: 400;
-  color: var(--page-soft);
-}
-
-/* Homepage Projects: minimal text-only editorial list (Thoughts stays cards) */
-.project-list {
-  display: flex;
-  flex-direction: column;
-  gap: 40px;
-}
-
-.project-entry {
-  display: block;
-  min-width: 0;
-  text-decoration: none;
-  color: inherit;
-}
-
-.project-entry-title {
-  margin: 0;
-  font-size: 14px;
-  line-height: 1.5;
-  font-weight: 500;
-  letter-spacing: -0.006em;
-  color: var(--page-ink);
-  transition: opacity 150ms ease-out;
-}
-
-.project-entry-description {
-  margin: 4px 0 0;
-  font-size: 14px;
-  line-height: 1.6;
-  font-weight: 400;
-  letter-spacing: -0.006em;
-  color: var(--page-soft);
-}
-
-.project-entry:hover .project-entry-title,
-.project-entry:focus-visible .project-entry-title {
-  opacity: 0.65;
-}
-
-.project-entry:focus-visible {
-  outline: 1.5px solid var(--pill-ink);
-  outline-offset: 4px;
-  border-radius: 4px;
-}
-
-/* Projects: large full-width visual showcases (same language as Designs).
-   Projects currently ship no image assets, so the visual falls back to an
-   abstract block until `project.image` is provided. */
-.project-showcase-list {
-  display: flex;
-  flex-direction: column;
-  gap: 56px;
-}
-
-.project-showcase {
-  display: block;
-  min-width: 0;
-  text-decoration: none;
-  color: inherit;
-}
-
-.project-showcase-visual {
-  width: 100%;
-  aspect-ratio: 16 / 10;
-  border-radius: 12px;
-  overflow: hidden;
-  background: var(--card-bg);
-}
-
-.project-showcase-visual img {
-  width: 100%;
-  height: 100%;
-  display: block;
-  object-fit: cover;
-}
-
-.project-showcase-meta {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 12px;
-  margin-top: 10px;
-}
-
-.project-showcase-title {
-  margin: 0;
-  font-size: 14px;
-  line-height: 1.45;
-  font-weight: 500;
-  letter-spacing: -0.006em;
-  color: var(--page-ink);
-}
-
-.project-showcase-date {
-  margin: 0;
-  flex-shrink: 0;
-  font-size: 14px;
-  line-height: 1.45;
-  font-weight: 400;
-  letter-spacing: -0.006em;
-  color: var(--page-soft);
-  font-variant-numeric: tabular-nums;
-}
-
-.project-showcase-description {
-  margin: 4px 0 0;
-  font-size: 14px;
-  line-height: 1.6;
-  font-weight: 400;
-  letter-spacing: -0.006em;
-  color: var(--page-soft);
-}
-
-/* Designs page: large editorial showcase, one work per row */
-.design-showcase-list {
-  display: flex;
-  flex-direction: column;
-  gap: 64px;
-}
-
-.design-showcase {
-  display: block;
-  min-width: 0;
-  text-decoration: none;
-  color: inherit;
-}
-
-.design-showcase-visual {
-  width: 100%;
-  aspect-ratio: 16 / 10;
-  border-radius: 12px;
-  overflow: hidden;
-  background: var(--card-bg);
-}
-
-.design-showcase-visual img {
-  width: 100%;
-  height: 100%;
-  display: block;
-  object-fit: cover;
-}
-
-.design-showcase-meta {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 12px;
-  margin-top: 10px;
-}
-
-.design-showcase-title {
-  margin: 0;
-  font-size: 14px;
-  line-height: 1.45;
-  font-weight: 500;
-  letter-spacing: -0.006em;
-  color: var(--page-ink);
-}
-
-.design-showcase-date {
-  margin: 0;
-  flex-shrink: 0;
-  font-size: 14px;
-  line-height: 1.45;
-  font-weight: 400;
-  letter-spacing: -0.006em;
-  color: var(--page-soft);
-  font-variant-numeric: tabular-nums;
-}
-
-/* Inner pages reuse the homepage system: same container is provided by
-   SiteContainer, sections just drop the homepage's top offset. */
-.page-body > .home-section:first-child {
-  margin-top: 0;
-}
-
-/* Homepage + archive project rows: title left, one external link right */
-.project-rows {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
-
-.project-row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: baseline;
-  gap: 16px;
-}
-
-.project-row-title {
-  margin: 0;
-  min-width: 0;
-  font-size: 14px;
-  line-height: 1.5;
-  font-weight: 500;
-  letter-spacing: -0.006em;
-  color: var(--page-ink);
-  text-decoration: none;
-  overflow-wrap: break-word;
-}
-
-.project-row-link {
-  flex: none;
-  font-size: 14px;
-  line-height: 1.5;
-  font-weight: 400;
-  letter-spacing: 0;
-  color: var(--page-soft);
-  text-decoration: none;
-  white-space: nowrap;
-  font-variant-numeric: tabular-nums;
-  opacity: 0.85;
-  transition:
-    color 150ms ease-out,
-    opacity 150ms ease-out;
-}
-
-.project-row-link:hover {
-  color: var(--page-ink);
-  opacity: 1;
-}
-
-.project-row-title:focus-visible,
-.project-row-link:focus-visible {
-  outline: 1.5px solid var(--pill-ink);
-  outline-offset: 4px;
-  border-radius: 4px;
-}
-
-/* Shared editorial index rows (Thoughts + Projects text lists) */
-.year-group {
-  margin-top: 44px;
-}
-
-.year-group:first-child {
-  margin-top: 0;
-}
-
-.year-divider {
-  display: flex;
-  align-items: baseline;
-  gap: 12px;
-  margin-bottom: 32px;
-}
-
-.year-divider > span {
-  flex: none;
-  font-size: 14px;
-  line-height: 1.5;
-  font-weight: 600;
-  letter-spacing: 0.01em;
-  color: var(--page-ink);
-  font-variant-numeric: tabular-nums;
-}
-
-.year-divider::after {
-  content: "";
-  flex: 1;
-  height: 1px;
-  background: var(--border);
-  align-self: center;
-}
-
-.index-rows {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
-
-.index-row {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 16px;
-  text-decoration: none;
-  color: inherit;
-  border-radius: 4px;
-}
-
-.index-row-title {
-  margin: 0;
-  min-width: 0;
-  font-size: 14px;
-  line-height: 1.5;
-  font-weight: 500;
-  letter-spacing: -0.006em;
-  color: var(--page-ink);
-  transition: opacity 150ms ease-out;
-}
-
-.index-row-date {
-  margin: 0;
-  flex: none;
-  font-size: 14px;
-  line-height: 1.5;
-  font-weight: 400;
-  letter-spacing: 0;
-  color: var(--page-soft);
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-}
-
-.index-row:hover .index-row-title,
-.index-row:focus-visible .index-row-title {
-  opacity: 0.65;
-}
-
-.index-row:focus-visible {
-  outline: 1.5px solid var(--pill-ink);
-  outline-offset: 4px;
-}
-
-/* About: Life/Work tabs + timelines (14px throughout, tokens only) */
-.about-tabs {
-  margin-top: 40px;
-}
-
-.about-tablist {
-  display: inline-flex;
-  gap: 4px;
-  padding: 3px;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-}
-
-.about-tab {
-  padding: 5px 14px;
-  border: 0;
-  border-radius: 7px;
-  background: transparent;
-  color: var(--page-soft);
-  font-size: 14px;
-  line-height: 1.5;
-  font-weight: 500;
-  letter-spacing: -0.006em;
-  opacity: 0.7;
-  cursor: pointer;
-  transition:
-    background-color 180ms ease-out,
-    color 180ms ease-out,
-    opacity 180ms ease-out;
-}
-
-.about-tab:hover {
-  opacity: 1;
-  color: var(--page-ink);
-}
-
-.about-tab.is-active {
-  background: var(--pill-bg);
-  color: var(--page-ink);
-  opacity: 1;
-}
-
-.about-tab:focus-visible {
-  outline: 1.5px solid var(--pill-ink);
-  outline-offset: 2px;
-}
-
-.about-panel {
-  margin-top: 72px;
-  animation: about-panel-in 180ms ease-out;
-}
-
-@keyframes about-panel-in {
-  from {
-    opacity: 0;
-    transform: translateY(3px);
+  .gallery {
+    gap: 6vh;
   }
 
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-
-.life-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 32px;
-}
-
-.life-item {
-  display: grid;
-  grid-template-columns: 76px minmax(0, 1fr);
-  gap: 16px;
-  align-items: baseline;
-}
-
-.life-period {
-  font-size: 14px;
-  line-height: 1.5;
-  font-weight: 500;
-  letter-spacing: 0;
-  color: var(--page-soft);
-  opacity: 0.4;
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-}
-
-.life-period.is-now {
-  opacity: 1;
-  color: var(--page-ink);
-  font-weight: 600;
-}
-
-.life-text {
-  margin: 0;
-  font-size: 14px;
-  line-height: 1.65;
-  font-weight: 400;
-  letter-spacing: -0.006em;
-  color: var(--page-soft);
-}
-
-.work-scroll {
-  overflow-x: auto;
-  scrollbar-width: thin;
-  padding-bottom: 4px;
-}
-
-/* The timeline canvas intentionally exceeds the 640px content column. */
-.work-breakout {
-  width: min(1120px, calc(100vw - 32px));
-  margin-left: 50%;
-  transform: translateX(-50%);
-}
-
-.work-canvas {
-  position: relative;
-  width: 100%;
-  min-width: 700px;
-}
-
-.work-axis {
-  position: absolute;
-  top: 26px;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: var(--border);
-}
-
-.work-year {
-  position: absolute;
-  top: 0;
-  transform: translateX(-50%);
-  font-size: 14px;
-  line-height: 1.5;
-  font-weight: 400;
-  color: var(--page-soft);
-  opacity: 0.4;
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-}
-
-/* Edge ticks align their inner edge to the coordinate so labels never
-   clip outside the canvas; middle ticks stay centered on theirs. */
-.work-year.tick-first {
-  transform: none;
-}
-
-.work-year.tick-last {
-  transform: translateX(-100%);
-}
-
-.work-now {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 1px;
-  background: var(--pill-ink);
-  opacity: 0.45;
-}
-
-.work-now-dot {
-  position: absolute;
-  top: 24px;
-  left: -2.5px;
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: var(--pill-ink);
-}
-
-.work-now-label {
-  position: absolute;
-  bottom: 0;
-  left: 6px;
-  font-size: 14px;
-  line-height: 1.5;
-  font-weight: 500;
-  letter-spacing: 0.04em;
-  color: var(--page-soft);
-  white-space: nowrap;
-}
-
-.work-bar {
-  position: absolute;
-  height: 48px;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 12px;
-  min-width: 0;
-  padding: 0 18px;
-  text-align: left;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  background: var(--pill-bg);
-  cursor: pointer;
-  transition:
-    opacity 180ms ease-out,
-    border-color 180ms ease-out,
-    background-color 180ms ease-out;
-}
-
-.work-bar-main {
-  flex: none;
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  white-space: nowrap;
-}
-
-.work-bar-title {
-  flex: none;
-  font-size: 14px;
-  line-height: 1.5;
-  font-weight: 600;
-  letter-spacing: -0.006em;
-  color: var(--page-ink);
-  white-space: nowrap;
-}
-
-.work-bar-company {
-  font-size: 14px;
-  line-height: 1.5;
-  font-weight: 400;
-  color: var(--page-soft);
-  white-space: nowrap;
-}
-
-.work-bar-period {
-  flex: none;
-  font-size: 14px;
-  line-height: 1.5;
-  font-weight: 400;
-  color: var(--page-soft);
-  opacity: 0.6;
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-}
-
-.work-bar:hover {
-  border-color: var(--pill-ink);
-}
-
-.work-bar.is-dimmed {
-  opacity: 0.35;
-}
-
-.work-bar.is-dimmed:hover {
-  opacity: 0.7;
-}
-
-.work-bar.is-selected {
-  border-color: var(--page-ink);
-  background: var(--pill-bg);
-  opacity: 1;
-}
-
-.work-bar:focus-visible {
-  outline: 1.5px solid var(--pill-ink);
-  outline-offset: 3px;
-}
-
-.work-detail {
-  margin-top: 80px;
-  max-width: 60ch;
-}
-
-.work-detail-head {
-  margin: 0;
-  font-size: 14px;
-  line-height: 1.5;
-  font-weight: 600;
-  letter-spacing: -0.006em;
-  color: var(--page-ink);
-}
-
-.work-detail-period {
-  margin: 2px 0 0;
-  font-size: 14px;
-  line-height: 1.5;
-  font-weight: 400;
-  color: var(--page-soft);
-  opacity: 0.6;
-  font-variant-numeric: tabular-nums;
-}
-
-.work-detail-text {
-  margin: 8px 0 0;
-  font-size: 14px;
-  line-height: 1.65;
-  font-weight: 400;
-  letter-spacing: -0.006em;
-  color: var(--page-soft);
-}
-
-.work-detail-hint {
-  margin: 0;
-  font-size: 14px;
-  line-height: 1.5;
-  color: var(--page-soft);
-  opacity: 0.6;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .about-panel {
-    animation: none;
-  }
-
-  .about-tab,
-  .work-bar {
-    transition: none;
-  }
-}
-
-@media (max-width: 560px) {
   .life-item {
     grid-template-columns: minmax(0, 1fr);
-    gap: 6px;
+  }
+
+  .sketch-download-panel {
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: auto !important;
+    width: 100%;
+    max-width: 100%;
+    padding: 0.5rem 8vw calc(0.5rem + env(safe-area-inset-bottom, 0px));
+  }
+
+  .sketch-download-option {
+    min-height: 44px;
+    padding: 0.5rem 0;
   }
 }
 
-/* Homepage hero artwork visual */
-.home-visual {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  width: 100%;
-  max-width: 100%;
-  height: 235px;
-  margin-bottom: 32px;
-  overflow: hidden;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  /* Matches the GIF backgrounds exactly so the square artwork blends
-     seamlessly into the card with no visible rectangle. */
-  background: var(--background);
-}
-
-.home-cta {
-  display: inline-flex;
-  align-items: center;
-  height: 34px;
-  margin-top: 22px;
-  padding: 0 14px;
-  border-radius: 9px;
-  background: var(--pill-bg);
-  color: var(--pill-ink);
-  font-size: 14px;
-  line-height: 1;
-  font-weight: 500;
-  letter-spacing: -0.006em;
-  text-decoration: none;
-  transition: background-color 150ms ease-out;
-}
-
-.home-cta:hover {
-  background: var(--pill-bg-hover);
-}
-
-.home-cta:focus-visible {
-  outline: 1.5px solid var(--pill-ink);
-  outline-offset: 2px;
-}
-
-.hero-artwork {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
-}
-
-.hero-artwork-img {
-  /* 75% of the 235px card = ~177px, unchanged from before. */
-  height: 75%;
-  width: auto;
-  max-width: 44%;
-  object-fit: contain;
-}
-
-:root[data-theme="light"] .hero-artwork-img-dark {
-  display: none;
-}
-
-:root[data-theme="dark"] .hero-artwork-img-light {
-  display: none;
-}
-
-@media (max-width: 520px) {
-  .home-visual {
-    height: 200px;
-    margin-bottom: 28px;
+@media screen and (max-width: 400px) {
+  :root {
+    --page-gutter: 6vw;
+    --page-lead: 6vh;
   }
 
-  .hero-artwork-img {
-    /* 66.5% of the 200px card = ~133px, unchanged from before. */
-    height: 66.5%;
+  .section {
+    margin-bottom: 7vh;
   }
+}
 
-  .home-redesign {
-    max-width: none;
-    padding: 20px 16px 168px;
-  }
-
-  .home-section {
-    margin-top: 72px;
+@media (prefers-reduced-motion: reduce) {
+  .preview,
+  .work-bar {
+    transition: none;
   }
 }

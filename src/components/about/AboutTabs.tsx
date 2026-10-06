@@ -149,9 +149,8 @@ function WorkTimeline() {
   }, [nowPct])
 
   return (
-    <div className="work-timeline">
-      <div className="work-breakout">
-        <div ref={scrollRef} className="work-scroll" tabIndex={-1}>
+    <div>
+      <div ref={scrollRef} className="work-scroll" tabIndex={-1}>
         <div
           ref={canvasRef}
           className="work-canvas"
@@ -213,7 +212,6 @@ function WorkTimeline() {
               </button>
             )
           })}
-          </div>
         </div>
       </div>
 

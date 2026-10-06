@@ -1,0 +1,37 @@
+---
+import ThemeControl from "@/components/ThemeControl.astro"
+import { navRoutes, isNavRouteActive } from "@/data/navigation"
+
+/**
+ * The footer, and with it navigation for every page except the homepage.
+ *
+ * The design has no header and no menu bar. Its subpages carry a single `++ /..`
+ * link in the footer; the homepage instead makes navigation page content, so it
+ * opts out of this component. What is added here is the full list, so a reader
+ * who lands on a subpage can still reach everything without scrolling back up.
+ */
+const pathname = Astro.url.pathname
+---
+
+<footer class="site-footer">
+  <nav class="nav" aria-label="Site">
+    {
+      navRoutes.map((route) => (
+        <a
+          href={route.href}
+          class="navigation-link"
+          aria-current={
+            isNavRouteActive(route, pathname) ? "page" : undefined
+          }
+          data-sound="navigate"
+        >
+          ++ /{route.label}
+        </a>
+      ))
+    }
+
+    <ThemeControl />
+
+    <a href="/" class="navigation-link" data-sound="navigate">++ /..</a>
+  </nav>
+</footer>

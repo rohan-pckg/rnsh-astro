@@ -13,15 +13,9 @@ const items = projects.map((project) => ({
 
 <Layout>
   <SiteContainer>
-    <div class="page-body">
-      <section class="home-section" aria-labelledby="projects-page-heading">
-        <div class="home-section-head">
-          <h1 id="projects-page-heading">Projects</h1>
-          <span class="section-rule" aria-hidden="true"></span>
-        </div>
-
-        <ProjectList items={items} />
-      </section>
-    </div>
+    <section class="section" aria-labelledby="projects-page-heading">
+      <h1 class="title page-title" id="projects-page-heading">Projects</h1>
+      <ProjectList items={items} />
+    </section>
   </SiteContainer>
 </Layout>
