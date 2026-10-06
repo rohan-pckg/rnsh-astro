@@ -826,6 +826,15 @@ html.theme-transition *::after {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
+    /*
+     * `min-width: 0` is load-bearing. As a grid item of `.page-section` this
+     * box's automatic minimum size is its content's minimum, and the work
+     * timeline inside it carries a `min-width`. Without this the whole tab
+     * group is floored at the timeline's width and pushes the page sideways
+     * on a phone. With it, the group is exactly as wide as the column and the
+     * timeline scrolls inside itself.
+     */
+    min-width: 0;
   }
 
   /* Shrinks to the width of its labels rather than spanning the column — a
@@ -879,6 +888,15 @@ html.theme-transition *::after {
      the section break above the tab bar, so the group reads as one object —
      the tabs belong to the content below them, not to the text above. */
   .tabpanel {
+    /*
+     * `.tabs` shrinks its children to fit-content so the bar hugs its labels.
+     * On a column flex container that shrinks the panel too, which lets wide
+     * content — the work timeline's `min-width` — dictate the panel's width
+     * and push the page sideways on a phone. The panel is the opposite case:
+     * it always fills the column, and keeps its own overflow to itself.
+     */
+    align-self: stretch;
+    min-width: 0;
     margin-top: var(--space-intra);
   }
 
