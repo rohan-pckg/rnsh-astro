@@ -265,13 +265,70 @@ html.theme-transition *::after {
   z-index: 1;
 }
 
+/* ---------------------------------------------------------------------------
+   Ambient background
+
+   A fixed Pixel Blast layer sitting between the page ground and the content:
+   above `body`'s own background colour, below `.page` and `.scribble`. It
+   never intercepts input, never affects layout, and never scrolls — it is
+   simply uncovered wherever the content has no opaque background of its own.
+
+   Subtlety lives here as much as in the shader settings: the opacity is the
+   master volume, kept at a barely-there texture level in both themes and
+   lower still on phones. The orange scribble sheet stays fully opaque above
+   it, so the drawing surface reads as clean solid accent with no pixels
+   behind it.
+   --------------------------------------------------------------------------- */
+
+.pixel-blast-fixed {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  opacity: 0.1;
+}
+
+:root[data-theme="dark"] .pixel-blast-fixed {
+  opacity: 0.15;
+}
+
+.pixel-blast-fixed > div {
+  width: 100%;
+  height: 100%;
+}
+
+.pixel-blast-fixed canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+@media screen and (max-width: 600px) {
+  .pixel-blast-fixed {
+    opacity: 0.08;
+  }
+
+  :root[data-theme="dark"] .pixel-blast-fixed {
+    opacity: 0.12;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pixel-blast-fixed {
+    display: none;
+  }
+}
+
 /* The sheet. `flex: none` stops the flex layout shrinking it back to the
    content measure, and the negative margins escape the page's 10vw gutters
-   from any breakpoint, so it always spans edge to edge. */
+   from any breakpoint, so it always spans edge to edge. Opaque accent in
+   both themes, painted above the ambient background layer so the drawing
+   surface stays clean. */
 .scribble {
   flex: none;
   position: relative;
-  z-index: 0;
+  z-index: 1;
   /* Escape the page's gutters by exactly as much as they are, so the sheet is
      precisely the document width — no `100vw`, and therefore no scrollbar
      width leaking into a horizontal scrollbar. */
