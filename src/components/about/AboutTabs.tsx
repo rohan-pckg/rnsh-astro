@@ -1,7 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from "react"
+import Tabs, { type TabItem } from "@/components/Tabs"
 import { lifeEntries, workRoles, type WorkRole } from "@/data/career"
+import { sound } from "@/lib/sound"
 
 type Tab = "life" | "work"
+
+/** The group this page presents. The widget itself is shared. */
+const TABS: readonly TabItem[] = [
+  { id: "life", label: "Life" },
+  { id: "work", label: "Work" },
+]
 
 type Bar = {
   role: WorkRole
@@ -236,34 +244,17 @@ export default function AboutTabs() {
   const [tab, setTab] = useState<Tab>("life")
 
   return (
-    <div className="about-tabs">
-      <div className="about-tablist" role="tablist" aria-label="About sections">
-        {(["life", "work"] as const).map((value) => (
-          <button
-            key={value}
-            type="button"
-            role="tab"
-            aria-selected={tab === value}
-            aria-controls={`about-panel-${value}`}
-            id={`about-tab-${value}`}
-            className={`about-tab${tab === value ? " is-active" : ""}`}
-            data-sound="tool-switch"
-            onClick={() => setTab(value)}
-          >
-            {value === "life" ? "Life" : "Work"}
-          </button>
-        ))}
-      </div>
-
-      <div
-        key={tab}
-        className="about-panel"
-        role="tabpanel"
-        id={`about-panel-${tab}`}
-        aria-labelledby={`about-tab-${tab}`}
-      >
-        {tab === "life" ? <LifeTimeline /> : <WorkTimeline />}
-      </div>
-    </div>
+    <Tabs
+      className="about-tabs section-break-before"
+      label="About sections"
+      items={TABS}
+      value={tab}
+      onValueChange={(next) => {
+        setTab(next as Tab)
+        sound.play("tool-switch")
+      }}
+    >
+      {tab === "life" ? <LifeTimeline /> : <WorkTimeline />}
+    </Tabs>
   )
 }

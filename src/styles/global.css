@@ -78,22 +78,34 @@
   --motion-duration: 150ms;
   --motion-ease: ease;
 
-  /*
-   * The single step between a page's title and the content under it. Every
-   * page uses it, so no page invents its own margin.
-   *
-   * The title contributes this on top of `.section`'s own 0.5rem row gap, so
-   * the step a reader actually sees is 2.5rem — comfortably wider than a line
-   * of body text (23.1px), and the one place the design lets a heading sit
-   * apart from what follows it. Still far quieter than the 10vh between
-   * sections, so it reads as part of the page rather than as a break in it.
-   */
-  --page-title-gap: 2rem;
+  /* ---------------------------------------------------------------------
+     Spacing — three levels, and nothing else.
 
-  /* The run of page ground between the last thing on the page and the top of
-     the sheet. This is the whole "uncovering" effect — there is no animation,
-     only whitespace for the sheet to emerge out of. */
-  --scribble-lead: 24vh;
+     Measured off the rendered page rather than picked: a line of this type is
+     23.1px, so a boundary has to clear that leading by a visible margin before
+     it reads as a break at all. Six pixels does not; twelve does.
+
+       INTRA    12px   inside a thing. Between the lines of an item, between
+                        paragraphs, between a control and its own content.
+       ITEM     6vh    between repeated things — projects, entries, rows.
+       SECTION  10vh   between major sections, and from a page title to its
+                        content.
+
+     ITEM and SECTION are viewport-relative because that is the design's
+     central idea: the page breathes with the viewport, so the gaps between
+     things scale with it. INTRA is fixed, because the distance between two
+     lines of text is a property of the type, not of the window.
+
+     Values the source authored for itself — the section row gap, the nav
+     rhythm, the article prose — are left as its own literals rather than
+     pulled onto this scale. See the notes on those rules.
+     --------------------------------------------------------------------- */
+
+  --space-intra: 1rem; /* 12px */
+  --space-item: 6vh; /*  between repeated items */
+  --space-section: 10vh; /*  between sections */
+
+  /* The drawing surface. */
   --scribble-height: clamp(420px, 80vh, 900px);
 
   /*
@@ -104,6 +116,10 @@
    */
   --page-gutter: 10vw;
   --page-lead: 10vh;
+
+  /* The fixed left column of a two-column row. Wide enough for "2026" at 14px
+     mono with air around it, narrow enough to leave the text room. */
+  --period-column: 76px;
 }
 
 :root[data-theme="dark"] {
@@ -261,7 +277,7 @@ html.theme-transition *::after {
      width leaking into a horizontal scrollbar. */
   width: calc(100% + 2 * var(--page-gutter));
   margin-inline: calc(-1 * var(--page-gutter));
-  margin-top: var(--scribble-lead);
+  margin-top: var(--space-section);
   height: var(--scribble-height);
   display: block;
   background: var(--scribble-bg);
@@ -282,14 +298,55 @@ html.theme-transition *::after {
 .container {
   width: 100%;
   max-width: min(50vw, 720px);
+  /* The source's own gutter. */
   margin: 0.5rem;
 }
 
 @layer components {
+  /*
+   * The source's own row gap, 0.5rem. At 14px on a 23.1px line that is less
+   * than the leading it sits between, so it is the right value for a section
+   * that is a title and one or two lines — which is what every section on the
+   * homepage is, and what the source's own index page is. Pages whose sections
+   * hold a stack of content opt into `page-section` below instead.
+   */
   .section {
     display: grid;
     gap: 0.5rem;
-    margin-bottom: 10vh;
+    margin-bottom: var(--space-section);
+  }
+
+  /*
+   * A page's content stack. Same rules as `.section`, but the row gap becomes
+   * the intra step, because a section holding a portrait, a name, paragraphs,
+   * a link and a tab strip needs its internal boundaries to read as
+   * boundaries. This is the single rule that gives every titled page its
+   * vertical rhythm — there is no per-page spacing anywhere.
+   */
+  .page-section {
+    gap: var(--space-intra);
+  }
+
+  /*
+   * Breaks to a full SECTION from inside a content stack.
+   *
+   * The stack's own row gap already contributes `--space-intra`, so this tops
+   * the boundary up to a complete SECTION without double-counting it. The two
+   * names are the same relationship read from either side: `-after` closes a
+   * group (a page title, which opens a page), `-before` opens one (a tab strip
+   * that starts a new movement). Both are derived from `--space-section`, so
+   * there is one value and no page sets its own.
+   *
+   * They are separate classes because grid margins do not collapse: a single
+   * `margin-block` would put a section's worth of space on both sides of the
+   * element, which is a step too far in each direction.
+   */
+  .section-break-after {
+    margin-block-end: calc(var(--space-section) - var(--space-intra));
+  }
+
+  .section-break-before {
+    margin-block-start: calc(var(--space-section) - var(--space-intra));
   }
 
   .title {
@@ -299,14 +356,13 @@ html.theme-transition *::after {
   }
 
   /*
-   * A page's own title — the one line that names what the page is — separated
-   * from the first thing below it by the shared step. Applied to every page
-   * heading, so the title/content gap is identical everywhere and no page sets
-   * its own. In-page section headings keep the section's own 0.5rem gap, which
-   * is what the design uses between a heading and the prose under it.
+   * A page's own title — the one line that names what the page is. It carries
+   * no spacing of its own; in markup it is also a `section-break-after`, so the
+   * title-to-content relationship is the same relationship every other section
+   * break on the site uses.
    */
   .page-title {
-    margin-block-end: var(--page-title-gap);
+    font-weight: 400;
   }
 
   .body-text {
@@ -327,6 +383,7 @@ html.theme-transition *::after {
   .nav {
     display: flex;
     flex-direction: column;
+    /* The source's own nav rhythm, and part of its reference match: leave it. */
     gap: 0.5rem;
   }
 
@@ -343,20 +400,19 @@ html.theme-transition *::after {
     text-underline-offset: 3px;
   }
 
+  /* No top margin: the section above already ends a full SECTION away, and a
+     second step on top of it is what made the footer feel detached. */
   .site-footer {
-    margin-top: 4vh;
-    margin-bottom: 6vh;
-  }
-
-  .site-footer .nav {
-    gap: 0.35rem;
+    margin-bottom: var(--space-item);
   }
 
   /* Writing / archive entries */
+  /* Inside an item: INTRA. Between items: ITEM. The two are deliberately
+     different magnitudes — that difference is the rhythm. */
   .entry {
     display: grid;
-    gap: 0.25rem;
-    margin-bottom: 6vh;
+    gap: var(--space-intra);
+    margin-bottom: var(--space-item);
   }
 
   .entry-title {
@@ -372,8 +428,8 @@ html.theme-transition *::after {
   /* Project / experiment list */
   .list-item {
     display: grid;
-    gap: 0.25rem;
-    margin-bottom: 6vh;
+    gap: var(--space-intra);
+    margin-bottom: var(--space-item);
   }
 
   .list-title {
@@ -420,7 +476,7 @@ html.theme-transition *::after {
     width: 100%;
     max-width: 100%;
     height: auto;
-    margin-top: 0.75rem;
+    margin-top: var(--space-intra);
   }
 
   @media (hover: hover) and (pointer: fine) {
@@ -476,7 +532,7 @@ html.theme-transition *::after {
 
   .gallery figcaption {
     color: var(--gray);
-    margin-top: 0.75rem;
+    margin-top: var(--space-intra);
   }
 
   /* A gallery cell is only a hit target for the lightbox: no chrome, no
@@ -557,6 +613,12 @@ html.theme-transition *::after {
 
 /* ---------------------------------------------------------------------------
    Article layout
+
+   Everything from here to the code blocks is the SOURCE's own authored prose
+   rhythm, reproduced value for value (0.6rem paragraph margins, 1rem quote and
+   pre insets, 1.5rem figures, 0.4rem meta gap). It is deliberately outside the
+   UI spacing scale above: that scale governs the site's furniture, while this
+   governs the texture of published writing, which is not ours to restyle.
    --------------------------------------------------------------------------- */
 
 @layer components {
@@ -575,6 +637,7 @@ html.theme-transition *::after {
   }
 
   .article-content {
+    /* The source's own step from an article's header to its body. */
     margin-top: 1rem;
   }
 
@@ -713,7 +776,7 @@ html.theme-transition *::after {
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
-    padding-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
   }
 
   .article-code-badge,
@@ -748,59 +811,105 @@ html.theme-transition *::after {
 }
 
 /* ---------------------------------------------------------------------------
-   About — Life/Work tabs and timelines
+   Tabs
 
-   The source has no tabs or timelines. They are re-expressed in the design's
-   own vocabulary: accent marks the selected tab, grey is everything else, and
-   the only surfaces are the hairline axis and the outlined bars.
+   The one widget the design had to invent, so it is built from the tokens
+   rather than from anything of its own: a rectangular strip of hairline-bordered
+   cells, no rounding, no shadow, no gradient. The selected cell takes the one
+   surface colour the design has and switches to the accent; the rest stay
+   muted. Nothing about the selected state changes the box, so switching tabs
+   cannot shift the layout by a pixel.
    --------------------------------------------------------------------------- */
 
 @layer components {
-  .about-tabs {
-    margin-top: 2rem;
+  .tabs {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
   }
+
+  /* Shrinks to the width of its labels rather than spanning the column — a
+     control should look like a control, not like a section. */
+  .tablist {
+    display: inline-flex;
+    align-items: stretch;
+    max-width: 100%;
+  }
+
+  /* Compact padding: a tab is a control, so it takes the intra step rather
+     than anything looser. */
+  .tab {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--border);
+    color: var(--gray);
+    background: transparent;
+    font-size: 14px;
+    /* Compact, and fixed: the leading is identical in both states and no state
+       changes weight, so the box can never resize. */
+    line-height: 1.2;
+    white-space: nowrap;
+    transition:
+      color var(--motion-duration) var(--motion-ease),
+      background-color var(--motion-duration) var(--motion-ease);
+  }
+
+  /* Collapses the double edge between neighbours into the single hairline the
+     reference shows, without changing either cell's outer box. */
+  .tab + .tab {
+    margin-inline-start: -1px;
+  }
+
+  .tab:hover {
+    color: var(--white);
+  }
+
+  .tab[aria-selected="true"] {
+    color: var(--accent);
+    background: var(--surface);
+  }
+
+  .tab:focus-visible {
+    outline: 1px solid var(--white);
+    outline-offset: 2px;
+    z-index: 1;
+  }
+
+  /* The bar and its panel are never flush: a group step, not a micro step. */
+  /* A control and its own content: the intra step. Deliberately smaller than
+     the section break above the tab bar, so the group reads as one object —
+     the tabs belong to the content below them, not to the text above. */
+  .tabpanel {
+    margin-top: var(--space-intra);
+  }
+
+  .tabpanel:focus-visible {
+    outline: 1px solid var(--white);
+    outline-offset: 3px;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   About — the Life/Work tab content, and the work timeline
+
+   The Life panel is a two-column grid: a fixed period column, then the text
+   taking whatever is left. Fixed is the point — every description therefore
+   starts on the same x, whatever the year says. The column narrows on small
+   screens but never collapses, because the pairing is the content.
+   --------------------------------------------------------------------------- */
+
+@layer components {
+  /* Spacing comes from the `section-break-before` this element carries in
+     markup: the biography closes, the tabs open a new movement. */
 
   .about-portrait {
     margin: 0;
   }
 
-  /* The design has no horizontal grouping to copy, so a pair of tab-like labels
-     takes the widest step in the system rather than the vertical stack step,
-     which would run the two words together. */
-  .about-tablist {
-    display: flex;
-    align-items: baseline;
-    gap: 1rem;
-  }
-
-  .about-tab {
-    color: var(--gray);
-    font-size: 14px;
-  }
-
-  .about-tab:hover,
-  .about-tab:focus-visible {
-    color: var(--white);
-    text-decoration: underline;
-    text-underline-offset: 3px;
-  }
-
-  .about-tab.is-active {
-    color: var(--accent);
-  }
-
-  .about-tab:focus-visible {
-    outline: 1px solid var(--white);
-    outline-offset: 3px;
-  }
-
-  .about-panel {
-    margin-top: 1rem;
-  }
-
   .life-list {
     display: grid;
-    gap: 0.25rem;
+    /* Same intra step as the paragraphs above, so a row of this table is
+       spaced exactly like a paragraph is. */
+    gap: var(--space-intra);
     list-style: none;
     margin: 0;
     padding: 0;
@@ -808,9 +917,9 @@ html.theme-transition *::after {
 
   .life-item {
     display: grid;
-    grid-template-columns: 76px minmax(0, 1fr);
-    gap: 0.5rem;
-    margin-bottom: 0.25rem;
+    grid-template-columns: var(--period-column) minmax(0, 1fr);
+    gap: var(--space-intra);
+    align-items: baseline;
   }
 
   .life-period {
@@ -908,7 +1017,7 @@ html.theme-transition *::after {
     display: flex;
     flex: none;
     align-items: baseline;
-    gap: 0.35rem;
+    gap: 0.5rem;
     white-space: nowrap;
   }
 
@@ -963,13 +1072,13 @@ html.theme-transition *::after {
   }
 
   .work-detail-period {
-    margin-top: 0.25rem;
+    margin-top: 0.5rem;
     color: var(--gray);
     font-variant-numeric: tabular-nums;
   }
 
   .work-detail-text {
-    margin-top: 0.25rem;
+    margin-top: 0.5rem;
     color: var(--gray);
   }
 
@@ -1108,11 +1217,15 @@ html.theme-transition *::after {
 }
 
 /* ---------------------------------------------------------------------------
-   Responsive — the source's three breakpoints, unchanged
+   Responsive — the source's three breakpoints
 
-     ≤900px  margins 8vw, measure 70vw
-     ≤600px  margins 8vw, measure 100%, sections 8vh
-     ≤400px  margins 6vw, sections 7vh
+     ≤900px  gutter 8vw, measure 70vw
+     ≤600px  gutter 8vw, lead 8vh, measure 100%, macro rhythm one step down
+     ≤400px  gutter 6vw, lead 6vh
+
+   Only the two macro steps move. The micro steps stay exactly where they are,
+   because a 6px gap between the lines of an item is right at any width — a
+   phone is the same design at a smaller size, not a smaller design.
    --------------------------------------------------------------------------- */
 
 @media screen and (max-width: 900px) {
@@ -1129,6 +1242,9 @@ html.theme-transition *::after {
   :root {
     --page-gutter: 8vw;
     --page-lead: 8vh;
+    --space-item: 5vh;
+    --space-section: 8vh;
+    --period-column: 56px;
   }
 
   .container {
@@ -1136,21 +1252,8 @@ html.theme-transition *::after {
     margin: 0;
   }
 
-  .section {
-    margin-bottom: 8vh;
-  }
-
-  .entry,
-  .list-item {
-    margin-bottom: 5vh;
-  }
-
   .gallery {
     gap: 6vh;
-  }
-
-  .life-item {
-    grid-template-columns: minmax(0, 1fr);
   }
 
   .sketch-download-panel {
@@ -1173,10 +1276,7 @@ html.theme-transition *::after {
   :root {
     --page-gutter: 6vw;
     --page-lead: 6vh;
-  }
-
-  .section {
-    margin-bottom: 7vh;
+    --space-section: 7vh;
   }
 }
 

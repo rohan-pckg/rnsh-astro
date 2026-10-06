@@ -16,8 +16,8 @@ const thoughts = (await getCollection("writing"))
 
 <Layout>
   <SiteContainer>
-    <section class="section" aria-labelledby="thoughts-page-heading">
-      <h1 class="title page-title" id="thoughts-page-heading">Thoughts</h1>
+    <section class="section page-section" aria-labelledby="thoughts-page-heading">
+      <h1 class="title page-title section-break-after" id="thoughts-page-heading">Thoughts</h1>
       {
         thoughts.length > 0 ? (
           <ThoughtList items={thoughts} />
