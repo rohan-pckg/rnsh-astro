@@ -80,12 +80,15 @@
 
   /*
    * The single step between a page's title and the content under it. Every
-   * page uses it, so no page invents its own margin. `.section`'s row gap
-   * already contributes 0.5rem; the title adds the same again, so the step a
-   * reader sees reads as 1rem — deliberate, and still inside the design's
-   * compact scale.
+   * page uses it, so no page invents its own margin.
+   *
+   * The title contributes this on top of `.section`'s own 0.5rem row gap, so
+   * the step a reader actually sees is 2.5rem — comfortably wider than a line
+   * of body text (23.1px), and the one place the design lets a heading sit
+   * apart from what follows it. Still far quieter than the 10vh between
+   * sections, so it reads as part of the page rather than as a break in it.
    */
-  --page-title-gap: 0.5rem;
+  --page-title-gap: 2rem;
 
   /* The run of page ground between the last thing on the page and the top of
      the sheet. This is the whole "uncovering" effect — there is no animation,
@@ -298,9 +301,9 @@ html.theme-transition *::after {
   /*
    * A page's own title — the one line that names what the page is — separated
    * from the first thing below it by the shared step. Applied to every page
-   * heading, so the title/content gap is the same everywhere. In-page section
-   * headings keep the section's own 0.5rem gap, which is what the design uses
-   * between a heading and the prose under it.
+   * heading, so the title/content gap is identical everywhere and no page sets
+   * its own. In-page section headings keep the section's own 0.5rem gap, which
+   * is what the design uses between a heading and the prose under it.
    */
   .page-title {
     margin-block-end: var(--page-title-gap);

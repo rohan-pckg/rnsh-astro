@@ -1,6 +1,7 @@
 ---
 export interface ProjectListItem {
   title: string
+  description: string
   href: string
   external?: boolean
 }
@@ -36,6 +37,10 @@ function destination(href: string): "live" | "github" | null {
       const dest = destination(project.href)
       return (
         <li>
+          {/* Name, then where it lives, then what it is — the same order the
+              design's own project index uses, and the same three-tier
+              hierarchy: accent for the name, muted for the status, and
+              prose-weight grey for the description. */}
           <div class="list-item">
             <a
               href={project.href}
@@ -47,6 +52,7 @@ function destination(href: string): "live" | "github" | null {
               {project.title}
             </a>
             {dest && <p class="list-meta">{dest === "live" ? "Live" : "GitHub"}</p>}
+            <p class="body-text">{project.description}</p>
           </div>
         </li>
       )
