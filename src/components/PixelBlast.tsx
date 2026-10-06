@@ -107,6 +107,10 @@ uniform float uHoverAccentStrength;
 // are identical to the official output.
 uniform vec3  uHoverColor;
 uniform float uHoverColorStrength;
+// Brightness lift applied to pixels lit under the hover envelope.
+uniform float uHoverBoost;
+// Brightness lift for pixels a click ring passes over. 0 = official look.
+uniform float uClickBoost;
 
 out vec4 fragColor;
 
@@ -212,6 +216,7 @@ void main(){
   const float dampT     = 1.0;
   const float dampR     = 10.0;
 
+  float clickFeed = 0.0;
   if (uEnableRipples == 1) {
     for (int i = 0; i < MAX_CLICKS; ++i){
       vec2 pos = uClickPos[i];
@@ -224,6 +229,7 @@ void main(){
       float ring  = exp(-pow((r - waveR) / thickness, 2.0));
       float atten = exp(-dampT * t) * exp(-dampR * r);
       feed = max(feed, ring * atten * uRippleIntensity);
+      clickFeed = max(clickFeed, ring * atten * uRippleIntensity);
     }
   }
 
@@ -251,6 +257,12 @@ void main(){
   // orange appears strictly through the Pixel Blast texture. Mixed in linear
   // space, ahead of the sRGB conversion below.
   vec3 color = mix(uColor, uHoverColor, hoverGlow * uHoverColorStrength);
+  // Hover brightness stays a multiplier on lit fragments (unchanged).
+  color *= 1.0 + hoverGlow * uHoverBoost;
+  // Click accent: mix toward the EXACT brand accent uniform (#ff8700,
+  // theme-independent), never a scalar brighten — brightening #ff8700
+  // clamps its green channel and renders yellow.
+  color = mix(color, uHoverColor, clamp(clickFeed * uClickBoost, 0.0, 1.0));
 
   // sRGB gamma correction - convert linear to sRGB for accurate color output
   vec3 srgbColor = mix(
@@ -268,6 +280,23 @@ const MAX_CLICKS = 10
 const HOVER_ACCENT = "#ff8700"
 /** Decorative only: never render sharper than this. Phones get 1. */
 const MAX_DPR_DESKTOP = 1.25
+/** Hover brightness lift at the cursor centre (colour multiplier − 1). */
+const HOVER_BOOST = 0.45
+/** Click ring mixes lit pixels toward the exact brand accent (not a
+    brightness multiply, which would push #ff8700's green channel up and
+    read as yellow). */
+const CLICK_BOOST = 0.85
+/**
+ * Small-viewport density multiplier: denser, more legible pixels on phones,
+ * same noise, colour and speed. Desktop stays exactly 1×.
+ */
+const MOBILE_DENSITY_BOOST = 1.25
+const MOBILE_BREAKPOINT_PX = 600
+
+function densityScale() {
+  if (typeof window === "undefined") return 1
+  return window.innerWidth <= MOBILE_BREAKPOINT_PX ? MOBILE_DENSITY_BOOST : 1
+}
 
 type BlastState = {
   renderer: THREE.WebGLRenderer
@@ -372,12 +401,12 @@ export default function PixelBlast({
       uShapeType: { value: SHAPE_MAP[p.variant] ?? 0 },
       uPixelSize: { value: p.pixelSize * renderer.getPixelRatio() },
       uScale: { value: p.patternScale },
-      uDensity: { value: p.patternDensity },
+      uDensity: { value: p.patternDensity * densityScale() },
       uPixelJitter: { value: p.pixelSizeJitter },
-      uEnableRipples: { value: 0 },
+      uEnableRipples: { value: 1 },
       uRippleSpeed: { value: 0.3 },
       uRippleThickness: { value: 0.1 },
-      uRippleIntensity: { value: 0 },
+      uRippleIntensity: { value: 1 },
       uEdgeFade: { value: p.edgeFade },
       // Parked far offscreen with a zero envelope: no cursor, no change.
       uHoverPos: { value: new THREE.Vector2(-9999, -9999) },
@@ -386,6 +415,8 @@ export default function PixelBlast({
       uHoverAccentStrength: { value: p.hoverAccentStrength },
       uHoverColor: { value: new THREE.Color(HOVER_ACCENT) },
       uHoverColorStrength: { value: p.hoverColorStrength },
+      uHoverBoost: { value: HOVER_BOOST },
+      uClickBoost: { value: CLICK_BOOST },
     }
 
     const scene = new THREE.Scene()
@@ -409,6 +440,8 @@ export default function PixelBlast({
       renderer.setSize(w, h, false)
       const buffer = renderer.getDrawingBufferSize(new THREE.Vector2())
       uniforms.uResolution.value.set(buffer.x, buffer.y)
+      uniforms.uDensity.value =
+        propsRef.current.patternDensity * densityScale()
       uniforms.uPixelSize.value = propsRef.current.pixelSize * renderer.getPixelRatio()
       uniforms.uHoverRadius.value =
         propsRef.current.hoverRadius * renderer.getPixelRatio()
@@ -474,6 +507,23 @@ export default function PixelBlast({
       window.addEventListener("blur", onPointerGone)
     }
 
+    // The original Pixel Blast click ripple, re-enabled: every pointer-down
+    // feeds the shader's uClickPos/uClickTimes ring buffer, exactly what the
+    // official ripple block consumes. Independent of the hover envelope.
+    let clickIndex = 0
+    const onPointerDown = (event: PointerEvent) => {
+      const r = container.getBoundingClientRect()
+      const ratio = renderer.getPixelRatio()
+      const x = (event.clientX - r.left) * ratio
+      const y = (r.height - (event.clientY - r.top)) * ratio
+      const pos = (uniforms.uClickPos.value as THREE.Vector2[])[clickIndex]
+      pos.set(x, y)
+      ;(uniforms.uClickTimes.value as Float32Array)[clickIndex] =
+        uniforms.uTime.value as number
+      clickIndex = (clickIndex + 1) % MAX_CLICKS
+    }
+    window.addEventListener("pointerdown", onPointerDown, { passive: true })
+
     const animate = () => {
       state.raf = requestAnimationFrame(animate)
       if (!state.visible || document.hidden) return
@@ -504,6 +554,7 @@ export default function PixelBlast({
 
     return () => {
       cancelAnimationFrame(state.raf)
+      window.removeEventListener("pointerdown", onPointerDown)
       if (hoverAllowed) {
         window.removeEventListener("pointermove", onPointerMove)
         document.documentElement.removeEventListener(
@@ -533,7 +584,7 @@ export default function PixelBlast({
     ;(u.uColor.value as THREE.Color).set(color)
     u.uShapeType.value = SHAPE_MAP[variant] ?? 0
     u.uScale.value = patternScale
-    u.uDensity.value = patternDensity
+    u.uDensity.value = patternDensity * densityScale()
     u.uPixelJitter.value = pixelSizeJitter
     u.uEdgeFade.value = edgeFade
     u.uPixelSize.value = pixelSize * state.renderer.getPixelRatio()

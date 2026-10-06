@@ -64,9 +64,9 @@
   /* Light-mode accent. */
   --accent: #ff5800;
 
-  /* The scribble surface is the accent at full strength: a flat sheet, no
-     gradient, no texture, no border, in both themes. */
-  --scribble-bg: var(--accent);
+  /* The scribble surface is one fixed brand orange in BOTH themes — never
+     derived from the theme accent. White ink, flat sheet, no texture. */
+  --scribble-bg: #ff8700;
   --scribble-ink: #ffffff;
 
   /* Not in the source palette, but needed by code blocks and tables, which
@@ -106,7 +106,7 @@
   --space-section: 10vh; /*  between sections */
 
   /* The drawing surface. */
-  --scribble-height: clamp(420px, 80vh, 900px);
+  --scribble-height: clamp(360px, 60vh, 760px);
 
   /*
    * The page's own inset from the viewport edge. One token, set by the
@@ -286,11 +286,11 @@ html.theme-transition *::after {
   z-index: 0;
   pointer-events: none;
   overflow: hidden;
-  opacity: 0.1;
+  opacity: 0.15;
 }
 
 :root[data-theme="dark"] .pixel-blast-fixed {
-  opacity: 0.15;
+  opacity: 0.2;
 }
 
 .pixel-blast-fixed > div {
@@ -306,11 +306,11 @@ html.theme-transition *::after {
 
 @media screen and (max-width: 600px) {
   .pixel-blast-fixed {
-    opacity: 0.08;
+    opacity: 0.13;
   }
 
   :root[data-theme="dark"] .pixel-blast-fixed {
-    opacity: 0.12;
+    opacity: 0.17;
   }
 }
 
@@ -336,14 +336,169 @@ html.theme-transition *::after {
   margin-inline: calc(-1 * var(--page-gutter));
   margin-top: var(--space-section);
   height: var(--scribble-height);
-  display: block;
+  display: flex;
+  flex-direction: column;
   background: var(--scribble-bg);
-  cursor: crosshair;
-  /* Only the drawing surface opts out of touch gestures — never the page. */
-  touch-action: none;
   -webkit-user-select: none;
   user-select: none;
   -webkit-touch-callout: none;
+}
+
+/* Expanded = the page viewport, not the browser. Same document flow, same
+   URL, same orange — no Fullscreen API anywhere. */
+.scribble.is-expanded {
+  height: 100vh;
+  height: 100dvh;
+  min-height: 100dvh;
+}
+
+.scribble-canvas {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  display: block;
+  cursor: crosshair;
+  /* Only the drawing surface opts out of touch gestures — never the page. */
+  touch-action: none;
+}
+
+/* The compact dark strip attached to the top edge of the orange sheet. */
+.scribble-toolbar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px 8px;
+  background: #161513;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  /* The page never scrolls horizontally; if the tools overflow on a very
+     narrow phone the strip itself scrolls, nothing else. */
+  overflow-x: auto;
+  scrollbar-width: none;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+}
+
+.scribble-toolbar > * {
+  flex: none;
+}
+
+.scribble-toolbar::-webkit-scrollbar {
+  display: none;
+}
+
+.scribble-sep {
+  flex: none;
+  width: 1px;
+  height: 14px;
+  background: rgba(255, 255, 255, 0.12);
+  margin: 0 5px;
+}
+
+.scribble-btn {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: #8f8d87;
+  font: inherit;
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+}
+
+.scribble-btn svg {
+  width: 15px;
+  height: 15px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.scribble-btn:hover:not(:disabled),
+.scribble-btn:focus-visible {
+  color: #eeeeec;
+}
+
+.scribble-btn:focus-visible {
+  outline: 1px solid #ff8700;
+  outline-offset: 1px;
+}
+
+.scribble-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.scribble-btn.is-active {
+  color: #ff8700;
+  background: rgba(255, 135, 0, 0.12);
+}
+
+.scribble-btn-end {
+  margin-left: auto;
+}
+
+/* Right-side group: Download + its inline options, pushed to the far side.
+   Inside the (possibly scrolled) toolbar row it simply takes the next slot. */
+.scribble-export {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex: none;
+  margin-left: auto;
+}
+
+/* Icon + text buttons (Download, PNG) sized like the icon-only ones. */
+.scribble-btn-text {
+  width: auto;
+  gap: 5px;
+  padding: 0 8px;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+/* Expanded-mode controls: a compact stroke-size slider and two colour
+   swatches that open the native colour picker. */
+.scribble-size {
+  width: 88px;
+  accent-color: #ff8700;
+  cursor: pointer;
+  flex: none;
+}
+
+.scribble-swatch {
+  position: relative;
+  flex: none;
+  width: 16px;
+  height: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  cursor: pointer;
+  margin: 0 6px;
+}
+
+.scribble-swatch-round {
+  border-radius: 50%;
+}
+
+.scribble-swatch-square {
+  border-radius: 2px;
+}
+
+.scribble-swatch input[type="color"] {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+  padding: 0;
+  border: 0;
 }
 
 /* ---------------------------------------------------------------------------
@@ -960,6 +1115,43 @@ html.theme-transition *::after {
   .tabpanel:focus-visible {
     outline: 1px solid var(--white);
     outline-offset: 3px;
+  }
+}
+
+@layer components {
+  /* About reuses the doodle toolbar language for its Life / Work tabs: a
+     compact near-black strip, muted inactive cells, the one #ff8700 accent
+     for the active tool. Functionality identical — only the treatment. */
+  .about-tabs .tablist {
+    background: #161513;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 2px;
+  }
+
+  .about-tabs .tab {
+    border: 0;
+    background: transparent;
+    color: #8f8d87;
+    padding: 0.35rem 1rem;
+    font-size: 13px;
+  }
+
+  .about-tabs .tab + .tab {
+    margin-inline-start: 0;
+  }
+
+  .about-tabs .tab:hover {
+    color: #eeeeec;
+  }
+
+  .about-tabs .tab[aria-selected="true"] {
+    color: #ff8700;
+    background: rgba(255, 135, 0, 0.12);
+  }
+
+  /* Breathing room between the tab strip and the first row of content. */
+  .about-tabs .tabpanel {
+    margin-top: calc(var(--space-intra) * 2);
   }
 }
 
