@@ -362,15 +362,17 @@ html.theme-transition *::after {
   touch-action: none;
 }
 
-/* The compact dark strip attached to the top edge of the orange sheet. */
+/* The compact strip attached to the top edge of the orange sheet. It follows
+   the page theme: a light surface/border in light mode (the dark near-black
+   strip is restored below), so the controls read as furniture of the page. */
 .scribble-toolbar {
   flex: none;
   display: flex;
   align-items: center;
   gap: 2px;
   padding: 4px 8px;
-  background: #161513;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
   /* The page never scrolls horizontally; if the tools overflow on a very
      narrow phone the strip itself scrolls, nothing else. */
   overflow-x: auto;
@@ -391,7 +393,7 @@ html.theme-transition *::after {
   flex: none;
   width: 1px;
   height: 14px;
-  background: rgba(255, 255, 255, 0.12);
+  background: var(--border);
   margin: 0 5px;
 }
 
@@ -399,7 +401,7 @@ html.theme-transition *::after {
   appearance: none;
   border: 0;
   background: transparent;
-  color: #8f8d87;
+  color: var(--gray);
   font: inherit;
   width: 28px;
   height: 28px;
@@ -422,7 +424,7 @@ html.theme-transition *::after {
 
 .scribble-btn:hover:not(:disabled),
 .scribble-btn:focus-visible {
-  color: #eeeeec;
+  color: var(--white);
 }
 
 .scribble-btn:focus-visible {
@@ -477,7 +479,7 @@ html.theme-transition *::after {
   flex: none;
   width: 16px;
   height: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.45);
+  border: 1px solid var(--border);
   cursor: pointer;
   margin: 0 6px;
 }
@@ -499,6 +501,29 @@ html.theme-transition *::after {
   cursor: pointer;
   padding: 0;
   border: 0;
+}
+
+/* Dark mode keeps the original near-black strip, value for value. */
+:root[data-theme="dark"] .scribble-toolbar {
+  background: #161513;
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+:root[data-theme="dark"] .scribble-sep {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+:root[data-theme="dark"] .scribble-btn {
+  color: #8f8d87;
+}
+
+:root[data-theme="dark"] .scribble-btn:hover:not(:disabled),
+:root[data-theme="dark"] .scribble-btn:focus-visible {
+  color: #eeeeec;
+}
+
+:root[data-theme="dark"] .scribble-swatch {
+  border-color: rgba(255, 255, 255, 0.45);
 }
 
 /* ---------------------------------------------------------------------------
@@ -1119,19 +1144,21 @@ html.theme-transition *::after {
 }
 
 @layer components {
-  /* About reuses the doodle toolbar language for its Life / Work tabs: a
-     compact near-black strip, muted inactive cells, the one #ff8700 accent
-     for the active tool. Functionality identical — only the treatment. */
+  /* About reuses the doodle toolbar language for its Life / Work tabs, but
+     follows the page theme: in light mode it is the page's own surface and
+     border with muted text, while dark mode keeps the compact near-black
+     strip. Either way there is one #ff8700 accent for the active tab, and
+     functionality is identical — only the treatment. */
   .about-tabs .tablist {
-    background: #161513;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: var(--surface);
+    border: 1px solid var(--border);
     padding: 2px;
   }
 
   .about-tabs .tab {
     border: 0;
     background: transparent;
-    color: #8f8d87;
+    color: var(--gray);
     padding: 0.35rem 1rem;
     font-size: 13px;
   }
@@ -1141,12 +1168,30 @@ html.theme-transition *::after {
   }
 
   .about-tabs .tab:hover {
-    color: #eeeeec;
+    color: var(--white);
   }
 
   .about-tabs .tab[aria-selected="true"] {
     color: #ff8700;
     background: rgba(255, 135, 0, 0.12);
+  }
+
+  /* Dark mode keeps the original near-black strip, value for value. */
+  :root[data-theme="dark"] .about-tabs .tablist {
+    background: #161513;
+    border-color: rgba(255, 255, 255, 0.08);
+  }
+
+  :root[data-theme="dark"] .about-tabs .tab {
+    color: #8f8d87;
+  }
+
+  :root[data-theme="dark"] .about-tabs .tab:hover {
+    color: #eeeeec;
+  }
+
+  :root[data-theme="dark"] .about-tabs .tab[aria-selected="true"] {
+    color: #ff8700;
   }
 
   /* Breathing room between the tab strip and the first row of content. */
