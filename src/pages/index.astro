@@ -1,62 +1,325 @@
 ---
+import { getCollection, render } from "astro:content"
 import Layout from "@/layouts/main.astro"
-import SiteContainer from "@/components/SiteContainer.astro"
-import ThemeControl from "@/components/ThemeControl.astro"
-import { navRoutes, isNavRouteActive } from "@/data/navigation"
+import StoryDrawer from "@/components/home/StoryDrawer.astro"
+import heroImage from "@/assets/9d6ca.png"
 
 /**
- * The homepage is the design's index page reproduced: four blocks of text in a
- * narrow measure against the left margin, separated by viewport-relative
- * whitespace, with navigation stated as content rather than chrome. No hero, no
- * cards, no artwork.
+ * Homepage, ported 1:1 from the Figma-exported Vite project ("Interactive
+ * Portfolio"): same markup, Tailwind classes, fonts and values.
  *
- * `footer={false}` because this page already is the navigation.
+ * Enhancements (see src/components/home/): a fluid hover highlight, and one
+ * drawer that opens a blog post or the contact details in place
+ * (?post=<id>, ?post=contact).
  */
-const pathname = Astro.url.pathname
+
+// How each post's illustration is presented (kept from the original cards).
+// `rotated`: the arrows sketch is shown turned 90deg, as in the design.
+// `img`/`drawerBox` are the drawer's illustration; the cards use `.art` below.
+// The sketches' near-white (253-254) background is lifted to pure white with a
+// tiny brightness bump, so no faint box shows against the white surfaces. The
+// arrows PNG is coloured, so it is also desaturated (as the design shows it).
+const presentation: Record<
+  string,
+  { img: string; rotated: boolean; drawerBox: string }
+> = {
+  "in-the-age-of-ai": {
+    img: "h-[271px] w-[353px] rotate-90 object-cover opacity-70 mix-blend-multiply grayscale brightness-[1.015]",
+    rotated: true,
+    drawerBox: "h-[360px]",
+  },
+  "write-it-before-you-forget": {
+    img: "h-[223px] w-[273px] object-cover mix-blend-multiply brightness-[1.015]",
+    rotated: false,
+    drawerBox: "h-[240px]",
+  },
+}
+
+const entries = (await getCollection("stories")).sort(
+  (a, b) => a.data.order - b.data.order
+)
+const stories = await Promise.all(
+  entries.map(async (entry) => ({
+    id: entry.id,
+    title: entry.data.title,
+    date: entry.data.date,
+    image: entry.data.image,
+    imageAlt: entry.data.imageAlt,
+    imageClassName: presentation[entry.id]?.img ?? "",
+    boxClassName: presentation[entry.id]?.drawerBox ?? "",
+    rotated: presentation[entry.id]?.rotated ?? false,
+    Content: (await render(entry)).Content,
+  }))
+)
+
+// Keyboard focus rings are drawn by the `.home :focus-visible` rule below.
+const focusRing = "focus-visible:opacity-100"
+const mono = `font-geist-mono text-[12px] leading-normal font-normal text-black uppercase underline underline-offset-1 opacity-40 transition-opacity hover:opacity-80 ${focusRing}`
 ---
 
 <Layout>
-  <SiteContainer footer={false}>
-    <section class="section">
-      <h1 class="title">Rohan Singh</h1>
-      <p class="body-text">Engineer</p>
-    </section>
+  <main
+    id="main-content"
+    class="home relative min-h-dvh [--spacing:4px] bg-[#f9f9f9] p-2 text-black md:p-4"
+  >
+    <section
+      class="hero relative flex h-[572px] min-w-0 flex-col overflow-hidden rounded-[4px] bg-white p-4"
+      aria-labelledby="profile-name"
+    >
+      <div class="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
+        <header class="min-w-0">
+          <h1
+            id="profile-name"
+            class="font-geist text-[14px] leading-normal font-medium opacity-80"
+          >
+            Rohan Singh
+          </h1>
+          <p
+            class="font-geist mt-1 text-[14px] leading-normal font-medium opacity-40"
+          >
+            Engineer &amp; Hobyist Designer
+          </p>
+        </header>
 
-    <section class="section">
-      <h2 class="title">Today</h2>
-      <p class="body-text">
-        Working as a software Engineer at Hoora, crafting high-fidelity digital
-        experiences.
+        <div class="ml-auto">
+          <button
+            type="button"
+            class={`${mono} cursor-pointer`}
+            aria-haspopup="dialog"
+            data-story="contact"
+            data-cuelume-open
+            data-fluid-item
+            data-fluid-pad="3 6"
+          >
+            Contact
+          </button>
+
+        </div>
+      </div>
+
+      <div
+        class="pointer-events-none flex min-h-0 flex-1 items-center justify-center py-4 md:mr-[90px]"
+      >
+        <img
+          class="h-auto max-h-full w-[342px] max-w-full object-contain"
+          src={heroImage.src}
+          width={heroImage.width}
+          height={heroImage.height}
+          alt="A sequence of figures evolving from a pixelated form into a person"
+        />
+      </div>
+
+      <p
+        class="font-geist max-w-[292px] text-[14px] leading-normal font-medium opacity-40"
+      >
+        I design and build software that is simple to use, thoughtful in
+        detail, and built to last.
       </p>
     </section>
 
-    <section class="section">
-      <h2 class="title">About</h2>
-      <p class="body-text">
-       Generalist at heart, drawn to design and increasingly curious about code.
-      </p>
+    <section class="posts mt-2 grid grid-cols-[minmax(0,1fr)] gap-2 md:mt-4 md:grid-cols-[minmax(0,2.4fr)_minmax(280px,1fr)] md:gap-4">
+      {
+        stories.map((story) => (
+          <article
+            class="post group relative h-[465px] min-w-0 cursor-pointer overflow-hidden rounded-[4px] bg-white"
+            data-story={story.id}
+            data-cuelume-open
+            data-fluid-item
+          >
+            <time class="font-geist-mono absolute top-4 right-4 text-[12px] whitespace-nowrap leading-normal font-normal opacity-40">
+              {story.date}
+            </time>
+
+            <div class="art" aria-hidden="true">
+              <div class={`art-frame ${story.rotated ? "art-rot" : "art-sq"}`}>
+                <img src={story.image.src} alt="" />
+              </div>
+            </div>
+
+            <div class="absolute inset-x-4 bottom-4 flex items-end justify-between gap-x-4">
+              <h2 class="font-geist min-w-0 text-[14px] leading-normal font-medium opacity-40">
+                {story.title}
+              </h2>
+              <a
+                class={`${mono} mb-px shrink-0`}
+                href={`/?post=${story.id}`}
+                aria-label={`Read ${story.title}`}
+                aria-haspopup="dialog"
+                data-story-link
+                data-fluid-item
+                data-fluid-pad="3 6"
+              >
+                Read
+              </a>
+            </div>
+          </article>
+        ))
+      }
     </section>
 
-    <section class="section" aria-labelledby="navigation-heading">
-      <h2 class="title" id="navigation-heading">Navigation</h2>
-      <nav class="nav" aria-label="Site">
-        {
-          navRoutes.map((route) => (
-            <a
-              href={route.href}
-              class="navigation-link"
-              aria-current={
-                isNavRouteActive(route, pathname) ? "page" : undefined
-              }
-              data-sound="navigate"
-            >
-              ++ /{route.label}
-            </a>
-          ))
-        }
-
-        <ThemeControl />
-      </nav>
-    </section>
-  </SiteContainer>
+    <StoryDrawer stories={stories} />
+  </main>
 </Layout>
+
+<style>
+  /* Illustration area: everything between the date and the title. The frame
+     keeps the design's crop (aspect ratio) and scales down to fit, capped at
+     the original size. mix-blend-mode on the frame blends it with the card. */
+  .art {
+    position: absolute;
+    top: 44px;
+    right: 16px;
+    bottom: 52px;
+    left: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+  }
+  .art-frame {
+    position: relative;
+    height: 100%;
+    max-width: 100%;
+    mix-blend-mode: multiply;
+  }
+  .art-frame img {
+    filter: brightness(1.015);
+    object-fit: cover;
+  }
+  .art-sq {
+    aspect-ratio: 273 / 223;
+    max-height: 223px;
+  }
+  .art-sq img {
+    width: 100%;
+    height: 100%;
+  }
+  /* The arrows sketch is displayed turned 90deg: size the image from the
+     frame's transposed box. */
+  .art-rot {
+    aspect-ratio: 271 / 353;
+    max-height: 353px;
+    container-type: size;
+    opacity: 0.7;
+  }
+  /* The PNG is coloured; the design shows it grey (it used luminosity blend). */
+  .art-rot img {
+    filter: grayscale(1) brightness(1.015);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 100cqh;
+    height: 100cqw;
+    max-width: none;
+    transform: translate(-50%, -50%) rotate(90deg);
+  }
+
+  /* Tablet / short viewports: normal scrolling page, sensible card heights. */
+  @media (min-width: 768px) {
+    .hero {
+      height: auto;
+      min-height: 420px;
+    }
+    .post {
+      height: auto;
+      min-height: 300px;
+    }
+  }
+
+  /* Desktop: the whole page fits exactly one viewport, no scrolling. */
+  @media (min-width: 1024px) and (min-height: 600px) {
+    .home {
+      display: grid;
+      grid-template-rows: minmax(0, 1.35fr) minmax(0, 1fr);
+      gap: 16px;
+      height: 100dvh;
+      min-height: 0;
+      overflow: hidden;
+      box-sizing: border-box;
+    }
+    .hero,
+    .post {
+      height: auto;
+      min-height: 0;
+    }
+    .posts {
+      margin-top: 0;
+      grid-template-rows: minmax(0, 1fr);
+      min-height: 0;
+    }
+  }
+</style>
+
+<style is:global>
+  /* Focus: nothing shows a ring for mouse or programmatic focus. Only real
+     keyboard focus (:focus-visible, last input = keyboard) on links and
+     buttons gets a subtle ring. */
+  .home :focus {
+    outline: none;
+  }
+  .home[data-input="keyboard"] :is(a, button):focus-visible {
+    outline: 1.5px solid rgba(59, 110, 220, 0.5);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  /* Fixed-height page on desktop; the wrappers just pass the height down. */
+  @media (min-width: 1024px) and (min-height: 600px) {
+    html:has(.home),
+    body:has(.home) {
+      height: 100dvh;
+      overflow: hidden;
+    }
+    body:has(.home) > .page {
+      height: 100%;
+    }
+  }
+
+  /* The homepage owns its own frame: drop the shared body gutter/lead, and
+     use the Figma page ground. Scoped to pages that contain .home. */
+  body:has(.home) {
+    margin: 0;
+    background-color: #f9f9f9;
+  }
+
+  /* Safety net only; the layout itself never overflows horizontally. */
+  html:has(.home),
+  body:has(.home) {
+    max-width: 100%;
+    overflow-x: clip;
+  }
+
+  /* No scribble sheet or pixel background on the homepage. */
+  body:has(.home) .scribble,
+  body:has(.home) .pixel-blast-fixed {
+    display: none;
+  }
+</style>
+
+<script is:inline>
+  // Must run at parse time, i.e. before Astro's ClientRouter module registers
+  // its own popstate listener, so drawer back/forward never reaches it.
+  ;(function () {
+    if (window.__homePopGuard) return
+    window.__homePopGuard = true
+    window.addEventListener("popstate", function (e) {
+      var h = window.__homeDrawerPopstate
+      if (h && h(e)) e.stopImmediatePropagation()
+    })
+  })()
+</script>
+
+<script>
+  import { initHome } from "@/components/home/enhance"
+
+  let cleanup: (() => void) | undefined
+  // Runs on first load and after each ClientRouter navigation.
+  document.addEventListener("astro:page-load", () => {
+    cleanup?.()
+    cleanup = initHome()
+  })
+  document.addEventListener("astro:before-swap", () => {
+    cleanup?.()
+    cleanup = undefined
+  })
+</script>

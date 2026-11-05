@@ -1,0 +1,41 @@
+---
+/**
+ * Inline Lucide icons (lucide-static, ISC). Only the icons listed here are
+ * imported, so only they end up in the page. Decorative by default
+ * (aria-hidden); the control that contains one carries the accessible name.
+ */
+import mail from "lucide-static/icons/mail.svg?raw"
+import volume2 from "lucide-static/icons/volume-2.svg?raw"
+import volumeX from "lucide-static/icons/volume-x.svg?raw"
+import arrowUpRight from "lucide-static/icons/arrow-up-right.svg?raw"
+import x from "lucide-static/icons/x.svg?raw"
+import link from "lucide-static/icons/link.svg?raw"
+import check from "lucide-static/icons/check.svg?raw"
+
+const icons = {
+  mail,
+  "volume-2": volume2,
+  "volume-x": volumeX,
+  "arrow-up-right": arrowUpRight,
+  x,
+  link,
+  check,
+}
+
+interface Props {
+  name: keyof typeof icons
+  class?: string
+}
+const { name, class: className = "" } = Astro.props
+
+// 18px (16px on desktop via the class), stroke 1.5, currentColor.
+const svg = icons[name]
+  .replace(/<!--[\s\S]*?-->\s*/, "")
+  .replace(/class="[^"]*"/, `class="icon ${className}"`)
+  .replace(/width="24"/, 'width="18"')
+  .replace(/height="24"/, 'height="18"')
+  .replace(/stroke-width="2"/, 'stroke-width="1.5"')
+  .replace("<svg", '<svg aria-hidden="true" focusable="false"')
+---
+
+<Fragment set:html={svg} />

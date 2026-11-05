@@ -31,6 +31,29 @@
   font-display: swap;
 }
 
+/* Geist + Geist Mono, used by the homepage only (self-hosted copies of the
+   fonts the Figma export loaded from static.figma.com). */
+@font-face {
+  font-family: "Geist Mono:Regular";
+  src: url("/fonts/GeistMono-Variable.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Geist:Medium";
+  src: url("/fonts/Geist-Variable.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+}
+
+@theme {
+  --font-geist: "Geist:Medium", sans-serif;
+  --font-geist-mono: "Geist Mono:Regular", monospace;
+}
+
 @theme inline {
   --font-mono: "Ioskeley Mono", monospace;
   --font-sans: "Ioskeley Mono", monospace;

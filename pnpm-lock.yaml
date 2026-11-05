@@ -27,8 +27,11 @@ importers:
         specifier: ^6.4.8
         version: 6.4.8(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(rollup@4.60.4)(supports-color@7.2.0)(yaml@2.9.0)
       cuelume:
-        specifier: ^0.2.2
-        version: 0.2.2
+        specifier: ^0.2.8
+        version: 0.2.8
+      lucide-static:
+        specifier: ^1.69.0
+        version: 1.69.0
       motion:
         specifier: ^12.43.0
         version: 12.43.0(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
@@ -1305,8 +1308,8 @@ packages:
   csstype@3.2.3:
     resolution: {integrity: sha512-z1HGKcYy2xA8AGQfwrn0PAy+PB7X/GSj3UVJW9qKyn43xWa+gl5nXmU4qqLMRzWVLFC8KusUX8T/0kCiOYpAIQ==}
 
-  cuelume@0.2.2:
-    resolution: {integrity: sha512-TiNzJRjhddjC4jy4M7sv63V/86VaFhdIs6iHUCrc4CKhqypaxRBv1aedCBGebrz/cO7nroPkEfqHe/P7fOE2GQ==}
+  cuelume@0.2.8:
+    resolution: {integrity: sha512-jnwAdMMUK4emaUWRd9l2RjpfixAMFOFrVkjoVK59FIfk7D3Vuvt+vBBJvU/J+2EiXrDlduialwDKJZorS5Nxqg==}
 
   debug@4.4.3:
     resolution: {integrity: sha512-RGwwWnwQvkVfavKVt22FGLw+xYSdzARwm0ru6DhTVA3umU5hZc28V3kO4stgYryrTlLpuvgI9GiijltAjNbcqA==}
@@ -1877,6 +1880,9 @@ packages:
 
   lru-cache@5.1.1:
     resolution: {integrity: sha512-KpNARQA3Iwv+jTA0utUVVbrh+Jlrr1Fv0e56GGzAFOXN7dk/FviaDW8LHmK52DlcH4WP2n6gI8vN1aesBFgo9w==}
+
+  lucide-static@1.69.0:
+    resolution: {integrity: sha512-n51UItv/qDzvu/UQixn0eSkp3hXppIJg0sRvtltb+rEO0XH2tyqFmtLsaUWu3SiAD0/7NHj/LH0eJlJJL5F4Ew==}
 
   magic-string@0.30.21:
     resolution: {integrity: sha512-vd2F4YUyEXKGcLHoq+TEyCjxueSeHnFxyyjNp80yg0XV4vUhnDer/lvvlqM/arB5bXQN5K2/3oinyCRyx8T2CQ==}
@@ -4192,7 +4198,7 @@ snapshots:
 
   csstype@3.2.3: {}
 
-  cuelume@0.2.2: {}
+  cuelume@0.2.8: {}
 
   debug@4.4.3(supports-color@7.2.0):
     dependencies:
@@ -4818,6 +4824,8 @@ snapshots:
   lru-cache@5.1.1:
     dependencies:
       yallist: 3.1.1
+
+  lucide-static@1.69.0: {}
 
   magic-string@0.30.21:
     dependencies:

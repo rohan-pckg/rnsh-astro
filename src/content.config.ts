@@ -24,4 +24,18 @@ const design = defineCollection({
   }),
 })
 
-export const collections = { writing, design }
+// Posts shown on the homepage and opened in its drawer.
+const stories = defineCollection({
+  loader: glob({ pattern: "**/*.md", base: "./src/content/stories" }),
+  schema: ({ image }) =>
+    z.object({
+      title: z.string(),
+      /** Display string, e.g. "10-12-22 10:00 AM". */
+      date: z.string(),
+      order: z.number().default(0),
+      image: image(),
+      imageAlt: z.string().default(""),
+    }),
+})
+
+export const collections = { writing, design, stories }

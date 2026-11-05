@@ -1,0 +1,346 @@
+---
+import {
+  homeContacts,
+  normalizeHref,
+  isExternalHref,
+} from "@/data/home-contact"
+
+/**
+ * The blog drawer: one native <dialog> holding every post, shown one at a time.
+ * Right panel on desktop, bottom sheet below 768px. Behaviour lives in
+ * ./drawer.ts. All CSS is scoped under `.story-drawer` / `.fluid-hl`.
+ */
+interface Story {
+  id: string
+  title: string
+  date: string
+  image: ImageMetadata
+  imageAlt: string
+  imageClassName: string
+  boxClassName: string
+  Content: any
+}
+interface Props {
+  stories: Story[]
+}
+const { stories } = Astro.props
+// Normalize every href at render time; external-ness comes from the URL itself.
+const contactRows = homeContacts.map((c) => {
+  const href = normalizeHref(c.href)
+  return { ...c, href, external: isExternalHref(href) }
+})
+
+const btn =
+  "font-geist-mono cursor-pointer text-[12px] leading-normal font-normal text-black uppercase underline underline-offset-1 opacity-40 transition-opacity hover:opacity-80"
+---
+
+<dialog
+  class="story-drawer"
+  tabindex="-1"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby={`sd-title-${stories[0]?.id}`}
+>
+  <div class="sd-scrim" data-sd-scrim></div>
+  <div class="sd-panel" data-sd-panel>
+    {
+      stories.map((s) => (
+        <article class="sd-post" data-sd-post={s.id} hidden>
+          <header class="sd-head" data-sd-drag>
+            <span class="sd-handle" aria-hidden="true" />
+            <time class="font-geist-mono text-[12px] leading-normal opacity-40">
+              {s.date}
+            </time>
+            <div>
+              <button
+                type="button"
+                class={btn}
+                data-sd-close
+                data-cuelume-close
+                data-fluid-item
+                data-fluid-pad="3 6"
+                aria-label={`Close ${s.title}`}
+              >
+                Close
+              </button>
+            </div>
+          </header>
+
+          <div class="sd-scroll">
+            <div class={`sd-art ${s.boxClassName}`}>
+              <img
+                class={s.imageClassName}
+                src={s.image.src}
+                alt={s.imageAlt}
+                width={s.image.width}
+                height={s.image.height}
+              />
+            </div>
+            <h2
+              id={`sd-title-${s.id}`}
+              class="font-geist mt-6 text-[14px] leading-normal font-medium opacity-80"
+            >
+              {s.title}
+            </h2>
+            <div class="sd-prose">
+              <s.Content />
+            </div>
+          </div>
+        </article>
+      ))
+    }
+
+    {/* The CONTACT panel reuses the same drawer: id "contact". */}
+    <article class="sd-post" data-sd-post="contact" hidden>
+      <header class="sd-head" data-sd-drag>
+        <span class="sd-handle" aria-hidden="true" />
+        <span
+          id="sd-title-contact"
+          class="font-geist-mono text-[12px] leading-normal uppercase opacity-40"
+        >
+          Contact
+        </span>
+        <div>
+          <button
+            type="button"
+            class={btn}
+            data-sd-close
+            data-cuelume-close
+            data-fluid-item
+            data-fluid-pad="3 6"
+            aria-label="Close contact"
+          >
+            Close
+          </button>
+        </div>
+      </header>
+
+      <div class="sd-scroll">
+        <ul class="sd-contacts">
+          {
+            contactRows.map((c) => (
+              <li>
+                <a
+                  class="sd-row"
+                  href={c.href}
+                  target={c.external ? "_blank" : undefined}
+                  rel={c.external ? "noopener noreferrer" : undefined}
+                  data-cuelume-tap
+                  data-fluid-item
+                >
+                  <span class="sd-row-label">{c.label}</span>
+                  <span class="sd-row-value">
+                    {c.value}
+                    {c.external && (
+                      <span class="sd-row-arrow" aria-hidden="true">
+                        ↗
+                      </span>
+                    )}
+                  </span>
+                  {c.external && <span class="sr-only"> (opens in a new tab)</span>}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </article>
+  </div>
+</dialog>
+
+<style is:global>
+  .story-drawer {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    max-height: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: #000;
+    overflow: hidden;
+  }
+  .story-drawer:focus,
+  .story-drawer:focus-visible {
+    outline: none;
+  }
+  .story-drawer:not([open]) {
+    display: none;
+  }
+  .story-drawer::backdrop {
+    background: transparent;
+  }
+  .sd-scrim {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.1);
+  }
+  .sd-panel {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    bottom: 16px;
+    width: min(520px, 90vw);
+    max-width: calc(100% - 32px);
+    overflow: hidden;
+    border-radius: 4px;
+    background: #fff;
+    box-shadow:
+      0 24px 80px rgba(0, 0, 0, 0.12),
+      0 0 0 1px rgba(0, 0, 0, 0.04);
+    will-change: transform;
+  }
+  .sd-post {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+  .sd-post[hidden] {
+    display: none;
+  }
+  .sd-head {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex: none;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding: 16px;
+  }
+  .sd-handle {
+    display: none;
+  }
+  .sd-scroll {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 0 16px 32px;
+  }
+  .sd-art {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    pointer-events: none;
+  }
+  .sd-prose {
+    margin-top: 12px;
+    max-width: 460px;
+    font-family: "Geist:Medium", sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.625;
+    color: rgba(0, 0, 0, 0.6);
+  }
+  .sd-prose > * + * {
+    margin-top: 16px;
+  }
+  .sd-contacts {
+    margin: 8px 0 0;
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid rgba(0, 0, 0, 0.06);
+  }
+  .sd-contacts li {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  }
+  .sd-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    min-height: 48px;
+    padding: 0 4px;
+    color: #000;
+    text-decoration: none;
+  }
+  .sd-row-label {
+    flex: none;
+    font-family: "Geist Mono:Regular", monospace;
+    font-size: 12px;
+    line-height: 1.5;
+    text-transform: uppercase;
+    opacity: 0.4;
+  }
+  .sd-row-value {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    text-align: right;
+    font-family: "Geist:Medium", sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.5;
+    opacity: 0.8;
+  }
+  .sd-row-arrow {
+    margin-left: 4px;
+    opacity: 0.5;
+  }
+  .sd-row:hover {
+    text-decoration: none;
+  }
+  .sd-prose h2,
+  .sd-prose h3 {
+    color: #000;
+    font-size: 16px;
+  }
+
+  @media (max-width: 767px) {
+    .sd-panel {
+      top: auto;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      width: auto;
+      max-width: none;
+      height: 90dvh;
+    }
+    .sd-head {
+      padding-top: 28px;
+      touch-action: none;
+    }
+    .sd-handle {
+      position: absolute;
+      top: 8px;
+      left: 50%;
+      display: block;
+      width: 36px;
+      height: 4px;
+      margin-left: -18px;
+      border-radius: 2px;
+      background: rgba(0, 0, 0, 0.15);
+    }
+  }
+
+  /* The shared fluid-hover highlight: a very quiet overlay. */
+  .fluid-hl {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 5;
+    pointer-events: none;
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.04);
+    opacity: 0;
+    will-change: transform, width, height;
+    transition:
+      transform 180ms cubic-bezier(0.22, 1, 0.36, 1),
+      width 180ms cubic-bezier(0.22, 1, 0.36, 1),
+      height 180ms cubic-bezier(0.22, 1, 0.36, 1),
+      border-radius 180ms cubic-bezier(0.22, 1, 0.36, 1),
+      opacity 120ms ease-out;
+  }
+  .fluid-hl.is-snap {
+    transition: opacity 120ms ease-out;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .fluid-hl {
+      transition: opacity 80ms linear;
+    }
+  }
+</style>

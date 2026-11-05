@@ -17,12 +17,13 @@ export type SoundName =
   | "tool-switch"
   | CuelumeSoundName
 
+// cuelume >= 0.2.4 renamed its cues (tap, select, open, close, navigate, ...).
 const LEGACY_CUES: Record<string, CuelumeSoundName> = {
-  navigate: "tick",
-  open: "press",
-  back: "release",
-  clear: "droplet",
-  "tool-switch": "tick",
+  navigate: "navigate",
+  open: "open",
+  back: "close",
+  clear: "close",
+  "tool-switch": "select",
 }
 
 class SoundManager {
