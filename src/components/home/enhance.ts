@@ -1,8 +1,9 @@
 import { createFluidHover } from "./fluid-hover"
 import { initDrawer } from "./drawer"
 import { initHomeSound } from "./home-sound"
+import { initClock } from "./clock"
 
-/** Wires the homepage's fluid hover, drawer and sounds. Returns a cleanup. */
+/** Wires the homepage's fluid hover, drawer, sounds and the clock. Returns a cleanup. */
 export function initHome(): () => void {
   const main = document.querySelector<HTMLElement>(".home")
   if (!main) return () => {}
@@ -16,6 +17,7 @@ export function initHome(): () => void {
   document.addEventListener("pointerdown", onPointer, true)
 
   const sound = initHomeSound(main)
+  const clock = initClock(main)
   const fluid = createFluidHover(main)
   const drawer = initDrawer(main, {
     cue: (name) => sound.cue(name),
@@ -28,5 +30,6 @@ export function initHome(): () => void {
     drawer?.destroy()
     fluid.destroy()
     sound.destroy()
+    clock()
   }
 }

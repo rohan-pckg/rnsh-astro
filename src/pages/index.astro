@@ -63,42 +63,33 @@ const mono = `font-geist-mono text-[12px] leading-normal font-normal text-black 
     class="home relative min-h-dvh [--spacing:4px] bg-[#f9f9f9] p-2 text-black md:p-4"
   >
     <section
-      class="hero relative flex h-[572px] min-w-0 flex-col overflow-hidden rounded-[4px] bg-white p-4"
+      class="hero relative h-[572px] min-w-0 overflow-hidden rounded-[4px] bg-white p-4"
       aria-labelledby="profile-name"
     >
-      <div class="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
-        <header class="min-w-0">
-          <h1
-            id="profile-name"
-            class="font-geist text-[14px] leading-normal font-medium opacity-80"
-          >
-            Rohan Singh
-          </h1>
-          <p
-            class="font-geist mt-1 text-[14px] leading-normal font-medium opacity-40"
-          >
-            Engineer &amp; Hobyist Designer
-          </p>
-        </header>
+      <header class="hero-header min-w-0">
+        <h1
+          id="profile-name"
+          class="font-geist text-[14px] leading-normal font-medium opacity-80"
+        >
+          Rohan Singh
+        </h1>
+        <p
+          class="font-geist mt-1 text-[14px] leading-normal font-medium opacity-40"
+        >
+          Engineer &amp; Hobyist Designer
+        </p>
+      </header>
 
-        <div class="ml-auto">
-          <button
-            type="button"
-            class={`${mono} cursor-pointer`}
-            aria-haspopup="dialog"
-            data-story="contact"
-            data-cuelume-open
-            data-fluid-item
-            data-fluid-pad="3 6"
-          >
-            Contact
-          </button>
-
-        </div>
-      </div>
+      {/* Decorative live clock (desktop only; display:none on phones). Empty
+          until the script fills it; the width is reserved so nothing shifts. */}
+      <time
+        class="hero-time font-geist-mono text-[12px] leading-normal font-normal whitespace-nowrap opacity-40"
+        data-clock
+        aria-hidden="true"
+      ></time>
 
       <div
-        class="pointer-events-none flex min-h-0 flex-1 items-center justify-center py-4 md:mr-[90px]"
+        class="hero-art pointer-events-none flex min-h-0 items-center justify-center py-4 md:mr-[90px]"
       >
         <img
           class="h-auto max-h-full w-[342px] max-w-full object-contain"
@@ -110,11 +101,23 @@ const mono = `font-geist-mono text-[12px] leading-normal font-normal text-black 
       </div>
 
       <p
-        class="font-geist max-w-[292px] text-[14px] leading-normal font-medium opacity-40"
+        class="hero-tag font-geist max-w-[292px] text-[14px] leading-normal font-medium opacity-40"
       >
         I design and build software that is simple to use, thoughtful in
         detail, and built to last.
       </p>
+
+      {/* One real button: bottom-right on desktop, under the tagline on phones. */}
+      <button
+        type="button"
+        class="contact-btn font-geist cursor-pointer text-[14px] leading-normal font-medium"
+        aria-haspopup="dialog"
+        data-story="contact"
+        data-cuelume-open
+        data-fluid-item
+      >
+        Contact
+      </button>
     </section>
 
     <section class="posts mt-2 grid grid-cols-[minmax(0,1fr)] gap-2 md:mt-4 md:grid-cols-[minmax(0,2.4fr)_minmax(280px,1fr)] md:gap-4">
@@ -162,6 +165,89 @@ const mono = `font-geist-mono text-[12px] leading-normal font-normal text-black 
 </Layout>
 
 <style>
+  /* Hero: a grid. Desktop: clock top-right, tagline bottom-left, Contact
+     bottom-right. Phones: no clock, Contact under the tagline. */
+  .hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      "header time"
+      "art art"
+      "tag contact";
+    column-gap: 16px;
+  }
+  .hero-header {
+    grid-area: header;
+  }
+  .hero-time {
+    grid-area: time;
+    align-self: start;
+    justify-self: end;
+    min-width: 17ch; /* "06-11-26 03:15 AM", reserved so nothing shifts */
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+  .hero-art {
+    grid-area: art;
+  }
+  .hero-tag {
+    grid-area: tag;
+    align-self: last baseline;
+  }
+  .contact-btn {
+    grid-area: contact;
+    align-self: last baseline;
+    justify-self: end;
+    padding: 6px 10px;
+    border: 0;
+    border-radius: 2px;
+    background: #e3e3e3;
+    color: #4a4a4a;
+    transition: background-color 150ms ease;
+  }
+  .contact-btn:active {
+    background: #d0d0d0;
+  }
+  @media (hover: hover) {
+    .contact-btn:hover {
+      background: #d9d9d9;
+    }
+  }
+
+  /* Phones: no clock; Contact sits under the tagline. It keeps the desktop
+     button's exact size (6px 10px); the tap area is extended invisibly. */
+  @media (max-width: 767px) {
+    .hero {
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-rows: auto minmax(0, 1fr) auto auto;
+      grid-template-areas:
+        "header"
+        "art"
+        "tag"
+        "contact";
+    }
+    .hero-time {
+      display: none;
+    }
+    .hero-tag {
+      align-self: start;
+    }
+    .contact-btn {
+      position: relative;
+      align-self: start;
+      justify-self: start;
+      margin-top: 22px;
+    }
+    /* Invisible hit area: ~49px tall, stays clear of the tagline (22px above)
+       and inside the card (16px from the edge). */
+    .contact-btn::after {
+      content: "";
+      position: absolute;
+      inset: -8px -6px;
+    }
+  }
+
   /* Illustration area: everything between the date and the title. The frame
      keeps the design's crop (aspect ratio) and scales down to fit, capped at
      the original size. mix-blend-mode on the frame blends it with the card. */
@@ -261,6 +347,10 @@ const mono = `font-geist-mono text-[12px] leading-normal font-normal text-black 
     outline: 1.5px solid rgba(59, 110, 220, 0.5);
     outline-offset: 2px;
     border-radius: 4px;
+  }
+
+  .home[data-input="keyboard"] .contact-btn:focus-visible {
+    border-radius: 2px;
   }
 
   /* Fixed-height page on desktop; the wrappers just pass the height down. */
