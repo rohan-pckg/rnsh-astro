@@ -1,0 +1,63 @@
+---
+/**
+ * The full About content, as the left column shows it. Rendered to a static
+ * fragment at build time (/posts/full.json) from the same sources as the old
+ * /about page: its copy (src/data/home-about.ts) and the Life / Work timeline
+ * data (src/data/career.ts).
+ */
+import { aboutParagraphs, aboutLinks } from "@/data/home-about"
+import { lifeEntries, workRoles, type WorkRole } from "@/data/career"
+
+const resume = aboutLinks.find((l) => l.label === "Resume")
+const period = (r: WorkRole) =>
+  r.endYear === null
+    ? `${r.startYear} to now`
+    : r.startYear === r.endYear
+      ? `${r.startYear}`
+      : `${r.startYear} to ${r.endYear}`
+---
+
+<img
+  src="/about.jpeg"
+  alt="Rohan Singh"
+  width="1440"
+  height="1440"
+  loading="lazy"
+  decoding="async"
+/>
+{aboutParagraphs.map((p) => <p>{p}</p>)}
+{
+  resume?.href && (
+    <p>
+      <a href={resume.href} target="_blank" rel="noopener noreferrer">
+        View resume
+      </a>
+    </p>
+  )
+}
+
+<h2>Life</h2>
+<ul>
+  {
+    lifeEntries.map((e) => (
+      <li>
+        <strong>{e.period}</strong> {e.text}
+      </li>
+    ))
+  }
+</ul>
+
+<h2>Work</h2>
+{
+  workRoles.map((r) => (
+    <>
+      <h3>
+        {r.title}, {r.company}
+      </h3>
+      <p>
+        <em>{period(r)}</em>
+      </p>
+      <p>{r.description}</p>
+    </>
+  ))
+}

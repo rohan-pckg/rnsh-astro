@@ -20,7 +20,7 @@ const designs = (await getCollection("design"))
         designs.map((item) => (
           <article class="entry">
             <a
-              href={`/design/${item.id}`}
+              href={`/?page=work&view=design&post=${item.id}`}
               class="entry-title"
               data-sound="navigate"
             >

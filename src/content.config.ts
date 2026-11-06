@@ -19,6 +19,8 @@ const design = defineCollection({
     thumbnail: z.string(),
     title: z.string(),
     description: z.string(),
+    /** One plain sentence for the Work list (the description is for SEO). */
+    summary: z.string(),
     date: z.date(),
     draft: z.boolean().default(false),
   }),
@@ -35,6 +37,8 @@ const stories = defineCollection({
       order: z.number().default(0),
       image: image(),
       imageAlt: z.string().default(""),
+      /** One plain sentence shown under the title in the Writing list. */
+      summary: z.string(),
     }),
 })
 

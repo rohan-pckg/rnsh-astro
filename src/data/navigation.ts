@@ -27,7 +27,7 @@ export const navRoutes: readonly NavRoute[] = [
   { label: "thoughts", href: "/blogs", prefixes: ["/writing"] },
   { label: "gallery", href: "/gallery", prefixes: [] },
   { label: "projects", href: "/projects", prefixes: [] },
-  { label: "about", href: "/about", prefixes: [] },
+  { label: "about", href: "/?page=about&post=full", prefixes: [] },
   { label: "designs", href: "/design", prefixes: [] },
   { label: "contact", href: "/contact", prefixes: [] },
 ]

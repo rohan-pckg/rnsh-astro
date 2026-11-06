@@ -6,100 +6,128 @@ import {
 } from "@/data/home-contact"
 
 /**
- * The blog drawer: one native <dialog> holding every post, shown one at a time.
- * Right panel on desktop, bottom sheet below 768px. Behaviour lives in
- * ./drawer.ts. All CSS is scoped under `.story-drawer` / `.fluid-hl`.
+ * The drawer: ONE native <dialog> holding two independent panels, one shared
+ * implementation for every section with nested pages.
+ *  - hubs (far right): Contact, About, Work, Writing; one visible at a time;
+ *  - detail (left column): the item opened from a hub (a post, a design
+ *    write-up, the full About content), filled on demand from
+ *    /posts/<slug>.json. It docks just left of the hub, or takes the far-right
+ *    slot when no hub is open.
+ * Desktop: side by side (both can be open). Phones: stacked bottom sheets.
+ * Behaviour lives in ./drawer.ts. All CSS is scoped under `.story-drawer`.
  */
-interface Story {
+interface Post {
   id: string
   title: string
   date: string
-  image: ImageMetadata
-  imageAlt: string
-  imageClassName: string
-  boxClassName: string
-  Content: any
+  summary: string
+  kind: "story" | "writing"
+}
+interface WorkItem {
+  type: "code" | "design"
+  title: string
+  summary: string
+  /** Mono tag on the right: the stack for code, the year for design. */
+  tag?: string
+  href: string
+  /** Design items: the write-up's slug (opens in the left column). */
+  slug?: string
+  /** Design items: preview image URL. */
+  image?: string
+}
+interface AboutLink {
+  label: string
+  value: string
+  href?: string
+  post?: string
 }
 interface Props {
-  stories: Story[]
+  posts: Post[]
+  about: { paragraphs: string[]; links: AboutLink[] }
+  work: WorkItem[]
 }
-const { stories } = Astro.props
+const { posts, about, work } = Astro.props
+
 // Normalize every href at render time; external-ness comes from the URL itself.
-const contactRows = homeContacts.map((c) => {
-  const href = normalizeHref(c.href)
-  return { ...c, href, external: isExternalHref(href) }
-})
+const normalize = <T extends { href: string }>(rows: T[]) =>
+  rows.map((c) => {
+    const href = normalizeHref(c.href)
+    return { ...c, href, external: isExternalHref(href) }
+  })
+const contactRows = normalize(homeContacts)
+const codeItems = normalize(work.filter((w) => w.type === "code"))
+const designItems = work.filter((w) => w.type === "design" && w.slug)
+
+// Everything the left column can show, and which hub owns it.
+const items = [
+  ...posts.map((p) => ({
+    id: p.id,
+    title: p.title,
+    date: p.date,
+    hub: "writing",
+    kind: p.kind,
+  })),
+  ...designItems.map((d) => ({
+    id: d.slug!,
+    title: d.title,
+    date: d.tag ?? "",
+    hub: "work",
+    kind: "design",
+  })),
+  { id: "full", title: "More about me", date: "About", hub: "about", kind: "about" },
+]
 
 const btn =
   "font-geist-mono cursor-pointer text-[12px] leading-normal font-normal text-black uppercase underline underline-offset-1 opacity-40 transition-opacity hover:opacity-80"
+const label =
+  "font-geist-mono text-[12px] leading-normal uppercase opacity-40"
+const subtitle =
+  "font-geist mt-2 text-[14px] leading-normal font-medium opacity-80"
 ---
 
 <dialog
   class="story-drawer"
   tabindex="-1"
-  role="dialog"
   aria-modal="true"
-  aria-labelledby={`sd-title-${stories[0]?.id}`}
+  aria-label="Details"
+  data-items={JSON.stringify(items)}
 >
+  <div class="sr-only" aria-live="polite" data-sd-live></div>
   <div class="sd-scrim" data-sd-scrim></div>
-  <div class="sd-panel" data-sd-panel>
-    {
-      stories.map((s) => (
-        <article class="sd-post" data-sd-post={s.id} hidden>
-          <header class="sd-head" data-sd-drag>
-            <span class="sd-handle" aria-hidden="true" />
-            <time class="font-geist-mono text-[12px] leading-normal opacity-40">
-              {s.date}
-            </time>
-            <div>
-              <button
-                type="button"
-                class={btn}
-                data-sd-close
-                data-cuelume-close
-                data-fluid-item
-                data-fluid-pad="3 6"
-                aria-label={`Close ${s.title}`}
-              >
-                Close
-              </button>
-            </div>
-          </header>
 
-          <div class="sd-scroll">
-            <div class={`sd-art ${s.boxClassName}`}>
-              <img
-                class={s.imageClassName}
-                src={s.image.src}
-                alt={s.imageAlt}
-                width={s.image.width}
-                height={s.image.height}
-              />
-            </div>
-            <h2
-              id={`sd-title-${s.id}`}
-              class="font-geist mt-6 text-[14px] leading-normal font-medium opacity-80"
-            >
-              {s.title}
-            </h2>
-            <div class="sd-prose">
-              <s.Content />
-            </div>
-          </div>
-        </article>
-      ))
-    }
-
-    {/* The CONTACT panel reuses the same drawer: id "contact". */}
-    <article class="sd-post" data-sd-post="contact" hidden>
+  {/* DETAIL: the open item (one panel, filled on demand). */}
+  <div class="sd-panel sd-detail" data-sd-side="detail" role="region" aria-label="Details" tabindex="-1" hidden>
+    <article class="sd-post">
       <header class="sd-head" data-sd-drag>
         <span class="sd-handle" aria-hidden="true" />
-        <span
-          id="sd-title-contact"
-          class="font-geist-mono text-[12px] leading-normal uppercase opacity-40"
-        >
-          Contact
-        </span>
+        <time class={label} data-sd-date></time>
+        <div>
+          <button
+            type="button"
+            class={btn}
+            data-sd-close
+            data-cuelume-close
+            data-fluid-item
+            data-fluid-pad="3 6"
+            aria-label="Close"
+          >
+            Close
+          </button>
+        </div>
+      </header>
+      <div class="sd-scroll" tabindex="-1">
+        <div data-sd-content></div>
+      </div>
+    </article>
+  </div>
+
+  {/* HUBS. One visible at a time. */}
+  <div class="sd-panel sd-hubs" data-sd-side="hub" role="region" aria-label="Details" tabindex="-1" hidden>
+    {/* CONTACT (?page=contact) */}
+    <article class="sd-post" data-sd-hub="contact" hidden>
+      <header class="sd-head" data-sd-drag>
+        <span class="sd-handle" aria-hidden="true" />
+        <span id="sd-title-contact" class={label} data-sd-label>Contact</span>
         <div>
           <button
             type="button"
@@ -115,7 +143,7 @@ const btn =
         </div>
       </header>
 
-      <div class="sd-scroll">
+      <div class="sd-scroll" tabindex="-1">
         <ul class="sd-contacts">
           {
             contactRows.map((c) => (
@@ -129,20 +157,208 @@ const btn =
                   data-fluid-item
                 >
                   <span class="sd-row-label">{c.label}</span>
-                  <span class="sd-row-value">
-                    {c.value}
-                    {c.external && (
-                      <span class="sd-row-arrow" aria-hidden="true">
-                        ↗
-                      </span>
-                    )}
-                  </span>
+                  <span class="sd-row-value">{c.value}</span>
                   {c.external && <span class="sr-only"> (opens in a new tab)</span>}
                 </a>
               </li>
             ))
           }
         </ul>
+      </div>
+    </article>
+
+    {/* ABOUT (?page=about); the full content is the left column's "full" */}
+    <article class="sd-post" data-sd-hub="about" hidden>
+      <header class="sd-head" data-sd-drag>
+        <span class="sd-handle" aria-hidden="true" />
+        <span id="sd-title-about" class={label} data-sd-label>About</span>
+        <div>
+          <button
+            type="button"
+            class={btn}
+            data-sd-close
+            data-cuelume-close
+            data-fluid-item
+            data-fluid-pad="3 6"
+            aria-label="Close about"
+          >
+            Close
+          </button>
+        </div>
+      </header>
+      <div class="sd-scroll" tabindex="-1">
+        <h2 class={subtitle}>More about me</h2>
+        <div class="sd-prose">
+          {about.paragraphs.map((p) => <p>{p}</p>)}
+        </div>
+        <ul class="sd-contacts">
+          {
+            about.links.map((c) => {
+              const href = c.href ? normalizeHref(c.href) : `/?page=about&post=${c.post}`
+              const external = !!c.href && isExternalHref(href)
+              return (
+                <li>
+                  <a
+                    class="sd-row"
+                    href={href}
+                    target={external ? "_blank" : undefined}
+                    rel={external ? "noopener noreferrer" : undefined}
+                    data-post={c.post}
+                    data-cuelume-tap
+                    data-fluid-item
+                  >
+                    <span class="sd-row-label">{c.label}</span>
+                    <span class="sd-row-value">{c.value}</span>
+                    {external && <span class="sr-only"> (opens in a new tab)</span>}
+                  </a>
+                </li>
+              )
+            })
+          }
+        </ul>
+      </div>
+    </article>
+
+    {/* WRITING (?page=writing[&post=<slug>]) */}
+    <article class="sd-post" data-sd-hub="writing" hidden>
+      <header class="sd-head" data-sd-drag>
+        <span class="sd-handle" aria-hidden="true" />
+        <span id="sd-title-writing" class={label} data-sd-label>Writing</span>
+        <div>
+          <button
+            type="button"
+            class={btn}
+            data-sd-close
+            data-cuelume-close
+            data-fluid-item
+            data-fluid-pad="3 6"
+            aria-label="Close writing"
+          >
+            Close
+          </button>
+        </div>
+      </header>
+      <div class="sd-scroll" tabindex="-1">
+      
+        <ul class="sd-contacts">
+          {
+            posts.map((p) => (
+              <li>
+                <a
+                  class="sd-row sd-work-row"
+                  href={`/?page=writing&post=${p.id}`}
+                  data-post={p.id}
+                  data-cuelume-select
+                  data-fluid-item
+                >
+                  <span class="sd-work-text">
+                    <span class="sd-row-title">{p.title}</span>
+                    <span class="sd-summary">{p.summary}</span>
+                  </span>
+                  <span class="sd-row-meta">{p.date}</span>
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </article>
+
+    {/* ALL OF MY WORK (?page=work[&view=design]) */}
+    <article class="sd-post" data-sd-hub="work" hidden>
+      <header class="sd-head" data-sd-drag>
+        <span class="sd-handle" aria-hidden="true" />
+        <span id="sd-title-work" class={label} data-sd-label>Work</span>
+        <div>
+          <button
+            type="button"
+            class={btn}
+            data-sd-close
+            data-cuelume-close
+            data-fluid-item
+            data-fluid-pad="3 6"
+            aria-label="Close work"
+          >
+            Close
+          </button>
+        </div>
+      </header>
+      <div class="sd-scroll" tabindex="-1">
+
+
+        <div class="sd-seg" role="tablist" aria-label="Type of work" data-active="code" data-sd-tabs>
+          <span class="sd-seg-ind" aria-hidden="true"></span>
+          <button type="button" role="tab" id="sd-tab-code" class="sd-seg-tab" aria-selected="true" aria-controls="sd-view-code" tabindex="0" data-sd-tab="code">
+            Code
+          </button>
+          <button type="button" role="tab" id="sd-tab-design" class="sd-seg-tab" aria-selected="false" aria-controls="sd-view-design" tabindex="-1" data-sd-tab="design">
+            Design
+          </button>
+        </div>
+
+        <div class="sd-views" data-sd-views>
+          <div role="tabpanel" id="sd-view-code" aria-labelledby="sd-tab-code" data-sd-view="code">
+            <ul class="sd-contacts">
+              {
+                codeItems.map((w) => (
+                  <li>
+                    <a
+                      class="sd-row sd-work-row"
+                      href={w.href}
+                      target={w.external ? "_blank" : undefined}
+                      rel={w.external ? "noopener noreferrer" : undefined}
+                      data-cuelume-tap
+                      data-fluid-item
+                    >
+                      <span class="sd-work-text">
+                        <span class="sd-row-title">{w.title}</span>
+                        <span class="sd-summary">{w.summary}</span>
+                      </span>
+                      {w.tag && <span class="sd-row-meta">{w.tag}</span>}
+                      {w.external && <span class="sr-only"> (opens in a new tab)</span>}
+                    </a>
+                  </li>
+                ))
+              }
+            </ul>
+          </div>
+
+          <div role="tabpanel" id="sd-view-design" aria-labelledby="sd-tab-design" data-sd-view="design" hidden>
+            <ul class="sd-contacts sd-designs">
+              {
+                designItems.map((w) => (
+                  <li>
+                    <a
+                      class="sd-design"
+                      href={w.href}
+                      data-post={w.slug}
+                      data-cuelume-select
+                      data-fluid-item
+                    >
+                      {w.image ? (
+                        <img
+                          class="sd-design-img"
+                          src={w.image}
+                          alt=""
+                          loading="lazy"
+                          decoding="async"
+                        />
+                      ) : (
+                        // TODO: add a `thumbnail` to this design's frontmatter.
+                        <span class="sd-design-img" aria-hidden="true" />
+                      )}
+                      <span class="sd-design-head">
+                        <span class="sd-row-title">{w.title}</span>
+                        {w.tag && <span class="sd-row-meta">{w.tag}</span>}
+                      </span>
+                      <span class="sd-design-desc">{w.summary}</span>
+                    </a>
+                  </li>
+                ))
+              }
+            </ul>
+          </div>
+        </div>
       </div>
     </article>
   </div>
@@ -181,7 +397,6 @@ const btn =
   .sd-panel {
     position: absolute;
     top: 16px;
-    right: 16px;
     bottom: 16px;
     width: min(520px, 90vw);
     max-width: calc(100% - 32px);
@@ -192,6 +407,25 @@ const btn =
       0 24px 80px rgba(0, 0, 0, 0.12),
       0 0 0 1px rgba(0, 0, 0, 0.04);
     will-change: transform;
+  }
+  .sd-panel:focus,
+  .sd-panel:focus-visible {
+    outline: none;
+  }
+  .sd-hubs {
+    right: 16px;
+  }
+  /* The detail panel is anchored to the far-right slot like the hub; the
+     script translates it left by the hub's width + 16px while a hub is open.
+     Width: up to 520px, shrinking to ~400px so two panels stay within ~85vw,
+     and never wider than the space left beside the hub. */
+  .sd-detail {
+    right: 16px;
+    width: min(clamp(400px, calc(85vw - 536px), 520px), calc(100vw - 568px));
+    transition: transform 280ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .sd-panel[hidden] {
+    display: none;
   }
   .sd-post {
     position: relative;
@@ -240,6 +474,24 @@ const btn =
   .sd-prose > * + * {
     margin-top: 16px;
   }
+  /* Shared by the Work, Writing and Design rows. */
+  .sd-row-title {
+    min-width: 0;
+    font-family: "Geist:Medium", sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.5;
+    opacity: 0.8;
+  }
+  .sd-row-meta {
+    flex: none;
+    font-family: "Geist Mono:Regular", monospace;
+    font-size: 12px;
+    line-height: 1.5;
+    text-transform: uppercase;
+    white-space: nowrap;
+    opacity: 0.4;
+  }
   .sd-contacts {
     margin: 8px 0 0;
     padding: 0;
@@ -277,21 +529,286 @@ const btn =
     line-height: 1.5;
     opacity: 0.8;
   }
-  .sd-row-arrow {
-    margin-left: 4px;
-    opacity: 0.5;
-  }
   .sd-row:hover {
     text-decoration: none;
   }
+  /* Post bodies (rendered markdown/MDX) in the drawer's typography. */
   .sd-prose h2,
-  .sd-prose h3 {
+  .sd-prose h3,
+  .sd-prose h4 {
+    margin-top: 28px;
     color: #000;
-    font-size: 16px;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.5;
+    opacity: 0.9;
+  }
+  .sd-prose h3,
+  .sd-prose h4 {
+    margin-top: 22px;
+    opacity: 0.7;
+  }
+  .sd-prose h2 + *,
+  .sd-prose h3 + *,
+  .sd-prose h4 + * {
+    margin-top: 8px;
+  }
+  .sd-prose a {
+    color: rgba(0, 0, 0, 0.85);
+    text-decoration: underline;
+    text-decoration-color: rgba(0, 0, 0, 0.25);
+    text-underline-offset: 3px;
+  }
+  .sd-prose a:hover {
+    text-decoration-color: rgba(0, 0, 0, 0.7);
+  }
+  .sd-prose strong {
+    color: rgba(0, 0, 0, 0.85);
+    font-weight: 600;
+  }
+  .sd-prose ul,
+  .sd-prose ol {
+    padding-left: 20px;
+  }
+  .sd-prose ul {
+    list-style: disc;
+  }
+  .sd-prose ol {
+    list-style: decimal;
+  }
+  .sd-prose li + li {
+    margin-top: 6px;
+  }
+  .sd-prose img {
+    display: block;
+    width: auto;
+    max-width: 100%;
+    height: auto;
+    border-radius: 2px;
+  }
+  .sd-prose blockquote {
+    padding-left: 12px;
+    border-left: 2px solid rgba(0, 0, 0, 0.12);
+  }
+  .sd-prose code {
+    font-family: "Geist Mono:Regular", monospace;
+    font-size: 12px;
+    padding: 1px 4px;
+    border-radius: 2px;
+    background: #f4f4f4;
+  }
+  .sd-prose pre {
+    max-width: 100%;
+    overflow-x: auto;
+    padding: 12px;
+    border-radius: 2px;
+    background: #f6f6f6;
+    line-height: 1.5;
+  }
+  .sd-prose pre code {
+    padding: 0;
+    background: none;
+  }
+  .sd-prose .astro-code,
+  .sd-prose .astro-code span {
+    color: var(--shiki-light);
+    background-color: transparent;
+  }
+  .sd-prose table {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  .sd-prose th,
+  .sd-prose td {
+    padding: 6px 10px;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    text-align: left;
+  }
+  .sd-prose hr {
+    border: 0;
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+  }
+  /* The "Sketchbook" post ends with a small call-to-action link. */
+  .sd-prose .sketchbook-afterthought a {
+    font-family: "Geist Mono:Regular", monospace;
+    font-size: 12px;
+    text-transform: uppercase;
+  }
+
+  /* On-demand body: skeleton while loading, error state with a retry. */
+  .sd-skel {
+    display: grid;
+    gap: 10px;
+    margin-top: 16px;
+  }
+  .sd-skel i {
+    display: block;
+    height: 12px;
+    border-radius: 2px;
+    background: rgba(0, 0, 0, 0.06);
+  }
+  .sd-skel i:nth-child(2) {
+    width: 92%;
+  }
+  .sd-skel i:nth-child(3) {
+    width: 64%;
+  }
+  .sd-error {
+    margin-top: 16px;
+    font-family: "Geist:Medium", sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.5;
+    color: rgba(0, 0, 0, 0.6);
+  }
+  .sd-error button,
+  .sd-error a {
+    margin-right: 16px;
+    font-family: "Geist Mono:Regular", monospace;
+    font-size: 12px;
+    text-transform: uppercase;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    color: rgba(0, 0, 0, 0.5);
+    cursor: pointer;
+  }
+  .sd-error {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 8px 0;
+  }
+  .sd-error p {
+    flex-basis: 100%;
+  }
+  .sd-prose + .sd-contacts {
+    margin-top: 28px;
+  }
+
+  /* Work: Code / Design segmented toggle (a sliding highlight). */
+  .sd-seg {
+    position: relative;
+    display: inline-flex;
+    margin-top: 16px;
+    padding: 2px;
+    border-radius: 2px;
+    background: #f4f4f4;
+  }
+  .sd-seg-ind {
+    position: absolute;
+    top: 2px;
+    bottom: 2px;
+    left: 2px;
+    width: calc(50% - 2px);
+    border-radius: 2px;
+    background: #e3e3e3;
+    transition: transform 180ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .sd-seg[data-active="design"] .sd-seg-ind {
+    transform: translateX(100%);
+  }
+  .sd-seg-tab {
+    position: relative;
+    min-width: 88px;
+    padding: 6px 14px;
+    border-radius: 2px;
+    font-family: "Geist Mono:Regular", monospace;
+    font-size: 12px;
+    line-height: 1.5;
+    text-transform: uppercase;
+    color: rgba(0, 0, 0, 0.45);
+    cursor: pointer;
+    transition: color 150ms ease;
+  }
+  .sd-seg-tab[aria-selected="true"] {
+    color: rgba(0, 0, 0, 0.8);
+  }
+  .sd-views {
+    margin-top: 16px;
+  }
+  .sd-views .sd-contacts {
+    margin-top: 0;
+  }
+  .sd-work-row {
+    align-items: flex-start;
+    margin: 0 -4px;
+    padding: 12px 8px;
+    border-radius: 2px;
+  }
+  /* The open post's row in the Writing list keeps a soft fill. */
+  .sd-work-row[aria-current="true"] {
+    background: #f4f4f4;
+  }
+  .sd-work-text {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .sd-summary,
+  .sd-design-desc {
+    font-family: "Geist:Medium", sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.5;
+    color: rgba(0, 0, 0, 0.45);
+  }
+  /* Design view: cards separated by space only (no rules, no image border). */
+  .sd-designs {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+    border-top: 0;
+  }
+  .sd-designs li {
+    border-bottom: 0;
+  }
+  .sd-design {
+    display: block;
+    padding: 8px;
+    border-radius: 4px;
+    color: #000;
+    text-decoration: none;
+  }
+  .sd-design:hover {
+    text-decoration: none;
+  }
+  .sd-design-img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    border-radius: 2px;
+    background: #f4f4f4;
+    object-fit: cover;
+  }
+  .sd-design-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    margin-top: 10px;
+  }
+  .sd-design-desc {
+    display: -webkit-box;
+    margin-top: 2px;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .sd-detail,
+    .sd-seg-ind,
+    .sd-seg-tab {
+      transition: none;
+    }
   }
 
   @media (max-width: 767px) {
-    .sd-panel {
+    .sd-panel,
+    .sd-detail {
       top: auto;
       right: 0;
       bottom: 0;
@@ -299,6 +816,15 @@ const btn =
       width: auto;
       max-width: none;
       height: 90dvh;
+    }
+    /* The routed-content sheet layers on top of a hub sheet, a bit taller. */
+    .sd-detail {
+      z-index: 2;
+      height: 94dvh;
+      transition: none;
+    }
+    .sd-hubs {
+      z-index: 1;
     }
     .sd-head {
       padding-top: 28px;

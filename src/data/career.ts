@@ -51,7 +51,7 @@ export const lifeEntries: LifeEntry[] = [
   {
     period: "2026",
     text: "Picked up design projects after leaving BunqLabs. Joined an early-stage team as a designer, grew into development work, and had the offer revoked during probation. Received a verbal MERN confirmation and started documenting the journey here.",
-    short: "Design projects, a short design→dev stint, started writing here.",
+    short: "Design projects, a short design to dev stint, started writing here.",
   },
   {
     period: "2025",

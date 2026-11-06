@@ -29,9 +29,6 @@ importers:
       cuelume:
         specifier: ^0.2.8
         version: 0.2.8
-      lucide-static:
-        specifier: ^1.69.0
-        version: 1.69.0
       motion:
         specifier: ^12.43.0
         version: 12.43.0(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
@@ -1880,9 +1877,6 @@ packages:
 
   lru-cache@5.1.1:
     resolution: {integrity: sha512-KpNARQA3Iwv+jTA0utUVVbrh+Jlrr1Fv0e56GGzAFOXN7dk/FviaDW8LHmK52DlcH4WP2n6gI8vN1aesBFgo9w==}
-
-  lucide-static@1.69.0:
-    resolution: {integrity: sha512-n51UItv/qDzvu/UQixn0eSkp3hXppIJg0sRvtltb+rEO0XH2tyqFmtLsaUWu3SiAD0/7NHj/LH0eJlJJL5F4Ew==}
 
   magic-string@0.30.21:
     resolution: {integrity: sha512-vd2F4YUyEXKGcLHoq+TEyCjxueSeHnFxyyjNp80yg0XV4vUhnDer/lvvlqM/arB5bXQN5K2/3oinyCRyx8T2CQ==}
@@ -4824,8 +4818,6 @@ snapshots:
   lru-cache@5.1.1:
     dependencies:
       yallist: 3.1.1
-
-  lucide-static@1.69.0: {}
 
   magic-string@0.30.21:
     dependencies:

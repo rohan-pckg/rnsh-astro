@@ -23,3 +23,6 @@ Thumbs.db
 
 # jetbrains setting folder
 .idea/
+
+# source sketches for scripts/make-transparent.py (not shipped)
+originals/

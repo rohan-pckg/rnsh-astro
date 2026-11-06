@@ -14,11 +14,23 @@ export async function getStaticPaths() {
 const { post } = Astro.props
 const { Content, headings } = await render(post)
 
+// Posts open in the homepage drawer now (Writing hub + the post in the left column). Browsers are sent there straight away;
+// the canonical points at the drawer URL for crawlers, and the full article
+// below stays as a no-JS fallback (and via ?full=1 from the drawer's error
+// state).
+const drawerUrl = `/?page=writing&post=${post.id}`
+
 const wordCount = post.body ? post.body.trim().split(/\s+/).filter(Boolean).length : 0
 const readingTime = Math.max(1, Math.ceil(wordCount / 210))
 ---
 
 <Layout>
+  <Fragment slot="head">
+    <link rel="canonical" href={drawerUrl} />
+    <script is:inline define:vars={{ drawerUrl }}>
+      if (!/[?&]full=1/.test(location.search)) location.replace(drawerUrl)
+    </script>
+  </Fragment>
   <ArticleLayout
     headings={headings}
     title={post.data.title}

@@ -9,7 +9,7 @@ const thoughts = (await getCollection("writing"))
   .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
   .map((post) => ({
     title: post.data.title,
-    href: `/writing/${post.id}`,
+    href: `/?page=writing&post=${post.id}`, // opens in the homepage drawer
     date: post.data.date,
   }))
 ---

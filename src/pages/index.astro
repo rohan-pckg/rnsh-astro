@@ -1,56 +1,104 @@
 ---
-import { getCollection, render } from "astro:content"
+import { getCollection } from "astro:content"
 import Layout from "@/layouts/main.astro"
 import StoryDrawer from "@/components/home/StoryDrawer.astro"
 import heroImage from "@/assets/9d6ca.png"
+import { storyPresentation } from "@/data/story-presentation"
+import { homeCards } from "@/data/home-cards"
+import { aboutParagraphs, aboutLinks } from "@/data/home-about"
+import { projects } from "@/data/projects"
 
 /**
  * Homepage, ported 1:1 from the Figma-exported Vite project ("Interactive
  * Portfolio"): same markup, Tailwind classes, fonts and values.
  *
  * Enhancements (see src/components/home/): a fluid hover highlight, and one
- * drawer that opens a blog post or the contact details in place
- * (?post=<id>, ?post=contact).
+ * drawer that opens, in place, a blog post (?post=<slug>), an About / Work
+ * panel (?page=about|work) or the contact details (?post=contact). Post bodies
+ * are fetched on demand from /posts/<slug>.json (built per post).
  */
 
-// How each post's illustration is presented (kept from the original cards).
-// `rotated`: the arrows sketch is shown turned 90deg, as in the design.
-// `img`/`drawerBox` are the drawer's illustration; the cards use `.art` below.
-// The sketches' near-white (253-254) background is lifted to pure white with a
-// tiny brightness bump, so no faint box shows against the white surfaces. The
-// arrows PNG is coloured, so it is also desaturated (as the design shows it).
-const presentation: Record<
-  string,
-  { img: string; rotated: boolean; drawerBox: string }
-> = {
-  "in-the-age-of-ai": {
-    img: "h-[271px] w-[353px] rotate-90 object-cover opacity-70 mix-blend-multiply grayscale brightness-[1.015]",
-    rotated: true,
-    drawerBox: "h-[360px]",
-  },
-  "write-it-before-you-forget": {
-    img: "h-[223px] w-[273px] object-cover mix-blend-multiply brightness-[1.015]",
-    rotated: false,
-    drawerBox: "h-[240px]",
-  },
+// ---- posts -------------------------------------------------------------
+const pad2 = (n: number) => String(n).padStart(2, "0")
+const ddmmyy = (d: Date) =>
+  `${pad2(d.getUTCDate())}-${pad2(d.getUTCMonth() + 1)}-${pad2(d.getUTCFullYear() % 100)}`
+// Story dates are display strings like "10-12-22 10:00 AM" (DD-MM-YY).
+const storyTime = (str: string) => {
+  const m = /^(\d{2})-(\d{2})-(\d{2})/.exec(str)
+  return m ? Date.UTC(2000 + +m[3], +m[2] - 1, +m[1]) : 0
 }
 
-const entries = (await getCollection("stories")).sort(
-  (a, b) => a.data.order - b.data.order
-)
-const stories = await Promise.all(
-  entries.map(async (entry) => ({
+const stories = (await getCollection("stories"))
+  .sort((a, b) => a.data.order - b.data.order)
+  .map((entry) => ({
     id: entry.id,
     title: entry.data.title,
     date: entry.data.date,
     image: entry.data.image,
-    imageAlt: entry.data.imageAlt,
-    imageClassName: presentation[entry.id]?.img ?? "",
-    boxClassName: presentation[entry.id]?.drawerBox ?? "",
-    rotated: presentation[entry.id]?.rotated ?? false,
-    Content: (await render(entry)).Content,
+    rotated: storyPresentation[entry.id]?.rotated ?? false,
+    summary: entry.data.summary,
   }))
+const writing = (await getCollection("writing")).filter((p) => !p.data.draft)
+
+// The Writing hub: every post (homepage stories + published blog posts),
+// newest first. Equal dates keep their existing order (the sort is stable).
+const posts = [
+  ...stories.map((s) => ({
+    id: s.id,
+    title: s.title,
+    date: s.date.slice(0, 8),
+    time: storyTime(s.date),
+    summary: s.summary,
+    kind: "story" as const,
+  })),
+  ...writing.map((p) => ({
+    id: p.id,
+    title: p.data.title,
+    date: ddmmyy(p.data.date),
+    time: p.data.date.valueOf(),
+    summary: p.data.description,
+    kind: "writing" as const,
+  })),
+].sort((a, b) => b.time - a.time)
+
+// ---- the new row's cards -------------------------------------------------
+// Illustrations (src/assets/about.png / work.png) are optional: without the
+// file the slot stays empty.
+const cardImages = import.meta.glob<{ default: ImageMetadata }>(
+  "/src/assets/{about,work}.png",
+  { eager: true }
 )
+const cards = homeCards.map((c) => ({
+  ...c,
+  img: c.image
+    ? cardImages[`/src/assets/${c.image}.png`]?.default
+    : undefined,
+}))
+
+// ---- "All of my work" rows: code projects + design case studies ----------
+const designs = (await getCollection("design"))
+  .filter((d) => !d.data.draft)
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
+
+/** Everything under "All of my work". Copy lives in `summary` fields. */
+const workItems = [
+  ...projects.map((p) => ({
+    type: "code" as const,
+    title: p.title,
+    summary: p.summary ?? p.description,
+    tag: p.tag,
+    href: p.href,
+  })),
+  ...designs.map((d) => ({
+    type: "design" as const,
+    slug: d.id,
+    title: d.data.title,
+    summary: d.data.summary,
+    tag: String(d.data.date.getUTCFullYear()),
+    href: `/?page=work&view=design&post=${d.id}`,
+    image: d.data.thumbnail,
+  })),
+]
 
 // Keyboard focus rings are drawn by the `.home :focus-visible` rule below.
 const focusRing = "focus-visible:opacity-100"
@@ -62,6 +110,7 @@ const mono = `font-geist-mono text-[12px] leading-normal font-normal text-black 
     id="main-content"
     class="home relative min-h-dvh [--spacing:4px] bg-[#f9f9f9] p-2 text-black md:p-4"
   >
+    <div class="first mb-2 grid gap-2 md:mb-4 md:gap-4">
     <section
       class="hero relative h-[572px] min-w-0 overflow-hidden rounded-[4px] bg-white p-4"
       aria-labelledby="profile-name"
@@ -112,7 +161,7 @@ const mono = `font-geist-mono text-[12px] leading-normal font-normal text-black 
         type="button"
         class="contact-btn font-geist cursor-pointer text-[14px] leading-normal font-medium"
         aria-haspopup="dialog"
-        data-story="contact"
+        data-hub="contact"
         data-cuelume-open
         data-fluid-item
       >
@@ -120,14 +169,71 @@ const mono = `font-geist-mono text-[12px] leading-normal font-normal text-black 
       </button>
     </section>
 
-    <section class="posts mt-2 grid grid-cols-[minmax(0,1fr)] gap-2 md:mt-4 md:grid-cols-[minmax(0,2.4fr)_minmax(280px,1fr)] md:gap-4">
+    <section
+      class="cards grid grid-cols-[minmax(0,1fr)] gap-2 md:grid-cols-[minmax(280px,1fr)_minmax(0,2.4fr)] md:gap-4"
+      aria-label="About and work"
+    >
+      {
+        cards.map((card) => (
+          <article
+            class="card-new group relative min-w-0 cursor-pointer overflow-hidden rounded-[4px] bg-white"
+            data-hub={card.id}
+            data-cuelume-open
+            data-fluid-item
+            data-fluid-tint="0.012"
+          >
+            {card.dateLabel && (
+              <time class="font-geist-mono absolute top-4 right-4 text-[12px] whitespace-nowrap leading-normal font-normal opacity-40">
+                {card.dateLabel}
+              </time>
+            )}
+
+            <div class="art art-free" aria-hidden="true">
+              {card.img && (
+                <img
+                  src={card.img.src}
+                  width={card.img.width}
+                  height={card.img.height}
+                  alt=""
+                  decoding="async"
+                  style={card.opacity ? `opacity:${card.opacity}` : undefined}
+                />
+              )}
+            </div>
+
+            <div class="absolute inset-x-4 bottom-4 flex items-end justify-between gap-x-4">
+              <h2 class="font-geist min-w-0 text-[14px] leading-normal font-medium opacity-40">
+                {card.title}
+              </h2>
+              <a
+                class={`${mono} mb-px shrink-0`}
+                href={`/?page=${card.id}`}
+                aria-label={`${card.action}: ${card.title}`}
+                aria-haspopup="dialog"
+                data-story-link
+                data-fluid-item
+                data-fluid-pad="3 6"
+              >
+                {card.action}
+              </a>
+            </div>
+          </article>
+        ))
+      }
+    </section>
+
+    </div>
+
+    <section class="posts grid grid-cols-[minmax(0,1fr)] gap-2 md:grid-cols-[minmax(0,2.4fr)_minmax(280px,1fr)] md:gap-4">
       {
         stories.map((story) => (
           <article
             class="post group relative h-[465px] min-w-0 cursor-pointer overflow-hidden rounded-[4px] bg-white"
-            data-story={story.id}
+            data-hub="writing"
+            data-post={story.id}
             data-cuelume-open
             data-fluid-item
+            data-fluid-tint="0.012"
           >
             <time class="font-geist-mono absolute top-4 right-4 text-[12px] whitespace-nowrap leading-normal font-normal opacity-40">
               {story.date}
@@ -135,7 +241,7 @@ const mono = `font-geist-mono text-[12px] leading-normal font-normal text-black 
 
             <div class="art" aria-hidden="true">
               <div class={`art-frame ${story.rotated ? "art-rot" : "art-sq"}`}>
-                <img src={story.image.src} alt="" />
+                <img src={story.image.src} alt="" loading="lazy" decoding="async" />
               </div>
             </div>
 
@@ -145,7 +251,7 @@ const mono = `font-geist-mono text-[12px] leading-normal font-normal text-black 
               </h2>
               <a
                 class={`${mono} mb-px shrink-0`}
-                href={`/?post=${story.id}`}
+                href={`/?page=writing&post=${story.id}`}
                 aria-label={`Read ${story.title}`}
                 aria-haspopup="dialog"
                 data-story-link
@@ -160,7 +266,11 @@ const mono = `font-geist-mono text-[12px] leading-normal font-normal text-black 
       }
     </section>
 
-    <StoryDrawer stories={stories} />
+    <StoryDrawer
+      posts={posts}
+      about={{ paragraphs: aboutParagraphs, links: aboutLinks }}
+      work={workItems}
+    />
   </main>
 </Layout>
 
@@ -250,7 +360,7 @@ const mono = `font-geist-mono text-[12px] leading-normal font-normal text-black 
 
   /* Illustration area: everything between the date and the title. The frame
      keeps the design's crop (aspect ratio) and scales down to fit, capped at
-     the original size. mix-blend-mode on the frame blends it with the card. */
+     the original size. The sketches are transparent PNGs, so no blending. */
   .art {
     position: absolute;
     top: 44px;
@@ -266,11 +376,21 @@ const mono = `font-geist-mono text-[12px] leading-normal font-normal text-black 
     position: relative;
     height: 100%;
     max-width: 100%;
-    mix-blend-mode: multiply;
   }
   .art-frame img {
-    filter: brightness(1.015);
     object-fit: cover;
+  }
+  /* New-row cards: the image keeps its own aspect and scales down to fit the
+     slot, never cropped. */
+  .art-free img {
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+  }
+  .card-new {
+    height: 260px;
   }
   .art-sq {
     aspect-ratio: 273 / 223;
@@ -288,9 +408,7 @@ const mono = `font-geist-mono text-[12px] leading-normal font-normal text-black 
     container-type: size;
     opacity: 0.7;
   }
-  /* The PNG is coloured; the design shows it grey (it used luminosity blend). */
   .art-rot img {
-    filter: grayscale(1) brightness(1.015);
     position: absolute;
     top: 50%;
     left: 50%;
@@ -310,28 +428,32 @@ const mono = `font-geist-mono text-[12px] leading-normal font-normal text-black 
       height: auto;
       min-height: 300px;
     }
+    .card-new {
+      height: auto;
+      min-height: 240px;
+    }
   }
 
-  /* Desktop: the whole page fits exactly one viewport, no scrolling. */
-  @media (min-width: 1024px) and (min-height: 600px) {
-    .home {
-      display: grid;
-      grid-template-rows: minmax(0, 1.35fr) minmax(0, 1fr);
-      gap: 16px;
-      height: 100dvh;
-      min-height: 0;
-      overflow: hidden;
-      box-sizing: border-box;
+  /* Desktop: the first screen is exactly the hero (~58%) and the About/Work row
+     (~42%); with the 16px gutter and gaps they fill 100dvh, so the posts row
+     starts just below the fold and the page scrolls normally to it. The floor
+     keeps short windows from crushing the cards. */
+  @media (min-width: 1024px) {
+    .first {
+      grid-template-rows: minmax(0, 1.38fr) minmax(0, 1fr);
+      height: max(640px, calc(100dvh - 32px));
     }
     .hero,
-    .post {
+    .card-new {
       height: auto;
       min-height: 0;
     }
-    .posts {
-      margin-top: 0;
+    .cards {
       grid-template-rows: minmax(0, 1fr);
       min-height: 0;
+    }
+    .post {
+      min-height: 360px;
     }
   }
 </style>
@@ -351,18 +473,6 @@ const mono = `font-geist-mono text-[12px] leading-normal font-normal text-black 
 
   .home[data-input="keyboard"] .contact-btn:focus-visible {
     border-radius: 2px;
-  }
-
-  /* Fixed-height page on desktop; the wrappers just pass the height down. */
-  @media (min-width: 1024px) and (min-height: 600px) {
-    html:has(.home),
-    body:has(.home) {
-      height: 100dvh;
-      overflow: hidden;
-    }
-    body:has(.home) > .page {
-      height: 100%;
-    }
   }
 
   /* The homepage owns its own frame: drop the shared body gutter/lead, and

@@ -8,7 +8,7 @@ export interface HomeContact {
   label: string
   value: string
   href: string
-  /** Opens in a new tab with rel="noopener noreferrer" and shows ↗. */
+  /** Opens in a new tab with rel="noopener noreferrer". */
   external?: boolean
 }
 

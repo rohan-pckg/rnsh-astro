@@ -14,11 +14,22 @@ export async function getStaticPaths() {
 const { design } = Astro.props
 const { Content, headings } = await render(design)
 
+// Design write-ups open in the homepage's left panel (over the Work drawer).
+// Browsers are sent there straight away; the canonical points at the drawer
+// URL, and the full article below stays as a no-JS fallback (and via ?full=1).
+const drawerUrl = `/?page=work&view=design&post=${design.id}`
+
 const wordCount = design.body ? design.body.trim().split(/\s+/).filter(Boolean).length : 0
 const readingTime = Math.max(1, Math.ceil(wordCount / 210))
 ---
 
 <Layout>
+  <Fragment slot="head">
+    <link rel="canonical" href={drawerUrl} />
+    <script is:inline define:vars={{ drawerUrl }}>
+      if (!/[?&]full=1/.test(location.search)) location.replace(drawerUrl)
+    </script>
+  </Fragment>
   <ArticleLayout
     headings={headings}
     title={design.data.title}

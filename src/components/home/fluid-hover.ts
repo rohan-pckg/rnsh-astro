@@ -15,6 +15,8 @@
  * Item options (data attributes):
  *   data-fluid-item          marks an item
  *   data-fluid-pad="y x"     grow the pill beyond the item's box, in px
+ *   data-fluid-tint="0.012"  pill opacity (black); default is the CSS 4%. Large
+ *                            cards use the Figma's 1.2% so they read as white.
  */
 export interface FluidHover {
   hide(): void
@@ -68,6 +70,8 @@ export function createFluidHover(
     hl.style.height = `${b.h}px`
     hl.style.transform = `translate(${b.x}px, ${b.y}px)`
     hl.style.borderRadius = `${b.radius}px`
+    const tint = el.dataset.fluidTint
+    hl.style.background = tint ? `rgba(0, 0, 0, ${tint})` : ""
   }
 
   function show(el: HTMLElement) {

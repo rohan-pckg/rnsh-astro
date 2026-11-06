@@ -4,9 +4,21 @@ import SiteContainer from "@/components/SiteContainer.astro"
 import AboutTabs from "@/components/about/AboutTabs"
 
 const pfp = "/about.jpeg"
+
+// The About content opens in the homepage drawer now (About hub + the full
+// content in the left column). Browsers are sent there straight away; the
+// canonical points at the drawer URL, and this page stays as a no-JS fallback
+// (and via ?full=1).
+const drawerUrl = "/?page=about&post=full"
 ---
 
 <Layout>
+  <Fragment slot="head">
+    <link rel="canonical" href={drawerUrl} />
+    <script is:inline define:vars={{ drawerUrl }}>
+      if (!/[?&]full=1/.test(location.search)) location.replace(drawerUrl)
+    </script>
+  </Fragment>
   <SiteContainer>
     <section class="section page-section" aria-labelledby="about-page-heading">
       <h1 class="title page-title section-break-after" id="about-page-heading">More about me!</h1>
