@@ -2,6 +2,7 @@
 import { getCollection } from "astro:content"
 import Layout from "@/layouts/main.astro"
 import StoryDrawer from "@/components/home/StoryDrawer.astro"
+import GithubBlock from "@/components/home/GithubBlock.astro"
 import { homeCards } from "@/data/home-cards"
 import { aboutParagraphs, aboutLinks } from "@/data/home-about"
 import { projects } from "@/data/projects"
@@ -271,6 +272,8 @@ const mono = `font-geist-mono text-[12px] leading-normal font-normal text-[rgb(v
         ))
       }
     </section>
+
+    <GithubBlock />
 
     <StoryDrawer
       posts={posts}
@@ -556,7 +559,7 @@ const mono = `font-geist-mono text-[12px] leading-normal font-normal text-[rgb(v
         entries.forEach((e) => e.target.classList.toggle("play", e.isIntersecting)),
       { threshold: 0.25 }
     )
-    document.querySelectorAll(".doodle").forEach((el) => doodleObserver!.observe(el))
+    document.querySelectorAll(".doodle, .gh-graph").forEach((el) => doodleObserver!.observe(el))
   }
 
   let cleanup: (() => void) | undefined

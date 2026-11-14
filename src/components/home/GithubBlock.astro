@@ -1,0 +1,201 @@
+---
+/**
+ * The homepage's last block: a year of GitHub contributions drawn as a
+ * hand-inked grid, in the same black-and-white doodle style as the rest.
+ * Data comes from src/lib/github-stats.ts at build time; with no data the
+ * block is not rendered. Cells are drawn with a little deterministic wobble:
+ *   0 a tick   1 an outline   2 outline + hatch   3 half filled   4 solid.
+ */
+import { getGithubStats } from "@/lib/github-stats"
+import { inkIcon } from "@/data/ink-icons"
+
+const USER = "rohan-pckg"
+const stats = await getGithubStats(USER)
+
+const S = 11 // cell size
+const P = 14 // pitch
+const LEFT = 30
+const TOP = 18
+
+const hash = (n: number) => {
+  const x = Math.sin(n * 12.9898) * 43758.5453
+  return x - Math.floor(x)
+}
+const j = (i: number, k: number, a = 0.9) => (hash(i * 7 + k) - 0.5) * 2 * a
+const f = (n: number) => n.toFixed(1)
+
+/** A square with wobbly corners and slightly bowed edges. */
+function cell(x: number, y: number, i: number) {
+  const c = [
+    [x + j(i, 1), y + j(i, 2)],
+    [x + S + j(i, 3), y + j(i, 4)],
+    [x + S + j(i, 5), y + S + j(i, 6)],
+    [x + j(i, 7), y + S + j(i, 8)],
+  ] as const
+  let d = `M${f(c[0][0])} ${f(c[0][1])}`
+  for (let e = 0; e < 4; e++) {
+    const a = c[e]!
+    const b = c[(e + 1) % 4]!
+    d += `Q${f((a[0] + b[0]) / 2 + j(i, 9 + e, 0.7))} ${f((a[1] + b[1]) / 2 + j(i, 13 + e, 0.7))} ${f(b[0])} ${f(b[1])}`
+  }
+  return d + "Z"
+}
+const hatch = (x: number, y: number, i: number) =>
+  `M${f(x + 2 + j(i, 20, 0.5))} ${f(y + S - 2)}L${f(x + S - 2)} ${f(y + 2 + j(i, 21, 0.5))}M${f(x + 2)} ${f(y + 5.5 + j(i, 22, 0.5))}L${f(x + 5.5)} ${f(y + 2)}M${f(x + 5.5)} ${f(y + S - 2)}L${f(x + S - 2)} ${f(y + 5.5)}`
+
+const weeks = stats?.weeks ?? []
+const width = LEFT + weeks.length * P
+const height = TOP + 7 * P + 26
+
+// Month labels: at the first column whose first day starts a new month.
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+const months: { x: number; label: string }[] = []
+let lastMonth = -1
+weeks.forEach((w, c) => {
+  const d = w.find(Boolean)
+  if (!d) return
+  const m = new Date(d.date + "T00:00:00Z").getUTCMonth()
+  if (m !== lastMonth) {
+    if (lastMonth !== -1 || c < weeks.length - 3) months.push({ x: LEFT + c * P, label: MONTHS[m]! })
+    lastMonth = m
+  }
+})
+const fmt = new Intl.NumberFormat("en-US")
+const mono =
+  "font-geist-mono text-[12px] leading-normal font-normal text-[rgb(var(--h-ink))] uppercase underline underline-offset-1 opacity-40 transition-opacity hover:opacity-80 focus-visible:opacity-100"
+---
+
+{
+  stats && (
+    <section
+      class="gh relative mt-2 min-w-0 overflow-hidden rounded-[4px] bg-(--h-paper) p-4 md:mt-4"
+      aria-label="GitHub activity"
+    >
+      <div class="flex items-start justify-between gap-x-4">
+        <div>
+          <p class="font-geist text-[14px] leading-normal font-medium opacity-80">
+            {fmt.format(stats.total)} contributions in the last year
+          </p>
+          <p class="font-geist mt-1 text-[14px] leading-normal font-medium opacity-40">
+            {stats.active} active days · longest streak {stats.longest} · current {stats.current}
+          </p>
+        </div>
+        <span class="font-geist-mono text-[12px] leading-normal whitespace-nowrap opacity-40">
+          LAST 12 MONTHS
+        </span>
+      </div>
+
+      <div class="gh-scroll">
+        <svg
+          class="gh-graph"
+          viewBox={`0 0 ${width} ${height}`}
+          width={width}
+          role="img"
+          aria-label={`${stats.total} GitHub contributions over the last year`}
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.15"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <g class="gh-labels" fill="currentColor" stroke="none" font-family="Geist Mono, monospace" font-size="9">
+            {months.map((m) => (
+              <text x={m.x} y="10">{m.label}</text>
+            ))}
+            {[["Mon", 1], ["Wed", 3], ["Fri", 5]].map(([l, r]) => (
+              <text x="0" y={TOP + (r as number) * P + 8.5}>{l}</text>
+            ))}
+          </g>
+          {weeks.map((w, c) =>
+            w.map((d, r) => {
+              if (!d) return null
+              const x = LEFT + c * P
+              const y = TOP + r * P
+              const i = c * 7 + r
+              return (
+                <g class="gh-cell" style={`--c:${c}`}>
+                  {d.level === 0 ? (
+                    <circle cx={x + S / 2} cy={y + S / 2} r="0.9" fill="currentColor" stroke="none" opacity="0.35" />
+                  ) : (
+                    <>
+                      <path d={cell(x, y, i)} fill={d.level === 4 ? "currentColor" : d.level === 3 ? "currentColor" : "none"} fill-opacity={d.level === 3 ? 0.5 : 1} />
+                      {d.level === 2 && <path d={hatch(x, y, i)} stroke-width="0.9" />}
+                    </>
+                  )}
+                  <title>{`${d.count} contribution${d.count === 1 ? "" : "s"} on ${d.date}`}</title>
+                </g>
+              )
+            })
+          )}
+          <g class="gh-legend" transform={`translate(${width - 5 * P - 56} ${TOP + 7 * P + 8})`}>
+            <text x="0" y="9" fill="currentColor" stroke="none" font-family="Geist Mono, monospace" font-size="9">Less</text>
+            {[0, 1, 2, 3, 4].map((l) => (
+              <g transform={`translate(${30 + l * P} 0)`}>
+                {l === 0 ? (
+                  <circle cx={S / 2} cy={S / 2} r="0.9" fill="currentColor" stroke="none" opacity="0.35" />
+                ) : (
+                  <>
+                    <path d={cell(0, 0, 900 + l)} fill={l >= 3 ? "currentColor" : "none"} fill-opacity={l === 3 ? 0.5 : 1} />
+                    {l === 2 && <path d={hatch(0, 0, 902)} stroke-width="0.9" />}
+                  </>
+                )}
+              </g>
+            ))}
+            <text x={30 + 5 * P + 4} y="9" fill="currentColor" stroke="none" font-family="Geist Mono, monospace" font-size="9">More</text>
+          </g>
+        </svg>
+      </div>
+
+      <div class="mt-4 flex items-end justify-between gap-x-4">
+        <h2 class="font-geist min-w-0 text-[14px] leading-normal font-medium opacity-40">GitHub</h2>
+        <a
+          class={`${mono} mb-px shrink-0`}
+          href={`https://github.com/${USER}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Open GitHub profile"
+        >
+          <Fragment set:html={inkIcon("arrow", 16)} />
+        </a>
+      </div>
+    </section>
+  )
+}
+
+<style>
+  .gh {
+    color: rgb(var(--h-ink));
+  }
+  .gh-scroll {
+    margin: 20px 0 4px;
+    overflow-x: auto;
+  }
+  .gh-graph {
+    display: block;
+    width: 100%;
+    min-width: 640px;
+    max-width: 980px;
+    height: auto;
+    margin: 0 auto;
+    overflow: visible;
+  }
+  .gh-labels,
+  .gh-legend {
+    opacity: 0.5;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    /* Cells draw in column by column when the block scrolls into view. */
+    .gh-graph.play .gh-cell {
+      animation: gh-pop 520ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+      animation-delay: calc(var(--c) * 14ms);
+      transform-box: fill-box;
+      transform-origin: center;
+    }
+    @keyframes gh-pop {
+      from {
+        opacity: 0;
+        transform: scale(0.4);
+      }
+    }
+  }
+</style>
