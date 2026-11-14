@@ -924,7 +924,11 @@ export function initDrawer(
       e.preventDefault()
       trigger =
         opener.querySelector<HTMLElement>("[data-story-link]") ?? opener
-      const post = opener.dataset.post || null
+      let post = opener.dataset.post || null
+      // Phones: a card on the home page opens its list (the menu page) first;
+      // the item is picked from there. (Side by side on desktop, the item opens
+      // next to the list straight away.)
+      if (isSheet() && !opener.closest("dialog")) post = null
       // A bare data-post opens in its own hub; Work items are design write-ups.
       const hub = opener.dataset.hub ?? (post ? hubOf(post) : null)
       if (!hub) return
