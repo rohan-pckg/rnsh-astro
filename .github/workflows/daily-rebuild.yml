@@ -1,0 +1,44 @@
+# Rebuilds the site once a day so build-time data (the GitHub stats block on the
+# homepage) stays fresh. It only pings a Vercel Deploy Hook; Vercel does the
+# build. Needs the repository secret VERCEL_DEPLOY_HOOK_URL.
+name: Daily rebuild
+
+on:
+  schedule:
+    # 02:30 UTC = 08:00 IST (UTC+5:30). Scheduled runs use the default branch.
+    - cron: "30 2 * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: daily-rebuild
+  cancel-in-progress: false
+
+jobs:
+  trigger:
+    name: Trigger Vercel deploy hook
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: POST to the deploy hook
+        env:
+          # Passed through the environment so the URL is never written into the
+          # script, and GitHub masks it in the logs.
+          VERCEL_DEPLOY_HOOK_URL: ${{ secrets.VERCEL_DEPLOY_HOOK_URL }}
+        run: |
+          set -euo pipefail
+          if [ -z "${VERCEL_DEPLOY_HOOK_URL}" ]; then
+            echo "::error::Repository secret VERCEL_DEPLOY_HOOK_URL is not set."
+            exit 1
+          fi
+          # --fail: any HTTP error (4xx/5xx) makes curl, and so the job, fail.
+          # --silent/--output: nothing from the response is printed.
+          status=$(curl --fail --silent --show-error \
+            --request POST \
+            --max-time 30 --retry 2 \
+            --output /dev/null \
+            --write-out '%{http_code}' \
+            "${VERCEL_DEPLOY_HOOK_URL}")
+          echo "Deploy hook accepted (HTTP ${status})."
