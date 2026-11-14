@@ -238,7 +238,7 @@ const mono = `font-geist-mono text-[12px] leading-normal font-normal text-[rgb(v
       {
         notes.filter((n) => n.card).map((story) => (
           <article
-            class="post group relative h-[260px] min-w-0 cursor-pointer overflow-hidden rounded-[4px] bg-(--h-paper)"
+            class="post group relative h-[300px] min-w-0 cursor-pointer overflow-hidden rounded-[4px] bg-(--h-paper)"
             data-hub={story.hub}
             data-post={story.hub === "notes" ? story.id : undefined}
             data-cuelume-open
@@ -402,7 +402,7 @@ const mono = `font-geist-mono text-[12px] leading-normal font-normal text-[rgb(v
   /* New-row cards: the image keeps its own aspect and scales down to fit the
      slot, never cropped. */
   .card-new {
-    height: 260px;
+    height: 300px;
   }
 
   /* Tablet / short viewports: normal scrolling page, sensible card heights. */
@@ -479,6 +479,13 @@ const mono = `font-geist-mono text-[12px] leading-normal font-normal text-[rgb(v
   .hero-doodle svg {
     width: 440px;
     height: auto;
+  }
+  /* Phones: slightly smaller card illustrations (the cards are a bit taller). */
+  @media (max-width: 767px) {
+    .art .doodle svg {
+      width: 160px;
+      height: 160px;
+    }
   }
   /* The doodle art is dark ink on transparent: flip it to light ink. */
   :root[data-theme="dark"] :is(.hero-art, .art, .sd-art) img,
