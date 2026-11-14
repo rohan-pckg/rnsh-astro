@@ -5,6 +5,8 @@
  * choice stored under "rnsh-theme", and an "rnsh-theme-change" event. The
  * bootstrap in layouts/main.astro applies the stored theme before first paint.
  */
+import { changeTheme, warmThemeSweep } from "../../lib/theme-sweep"
+
 const label = (dark: boolean) =>
   dark ? "Switch to light theme" : "Switch to dark theme"
 
@@ -20,19 +22,22 @@ export function initTheme(root: HTMLElement): () => void {
   const onClick = () => {
     const html = document.documentElement
     const next = html.dataset.theme === "dark" ? "light" : "dark"
-    html.classList.add("theme-transition")
-    html.dataset.theme = next
-    try {
-      localStorage.setItem("rnsh-theme", next)
-    } catch {
-      // Storage may be unavailable; the attribute still applies.
-    }
-    sync()
-    window.dispatchEvent(new CustomEvent("rnsh-theme-change", { detail: next }))
-    window.setTimeout(() => html.classList.remove("theme-transition"), 500)
+    void changeTheme(next, () => {
+      html.dataset.theme = next
+      try {
+        localStorage.setItem("rnsh-theme", next)
+      } catch {
+        // Storage may be unavailable; the attribute still applies.
+      }
+      sync()
+      window.dispatchEvent(new CustomEvent("rnsh-theme-change", { detail: next }))
+    })
   }
 
   sync()
   btn.addEventListener("click", onClick)
+  // Fetch glimm before the first click so the sweep starts at once.
+  btn.addEventListener("pointerenter", warmThemeSweep, { once: true })
+  btn.addEventListener("focus", warmThemeSweep, { once: true })
   return () => btn.removeEventListener("click", onClick)
 }

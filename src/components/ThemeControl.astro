@@ -21,6 +21,8 @@
 </button>
 
 <script>
+  import { changeTheme, warmThemeSweep } from "@/lib/theme-sweep"
+
   /**
    * Theme switching, and the label that has to follow it. The label is written
    * here as well as in the markup because the stored theme is only known on the
@@ -58,19 +60,18 @@
       button.addEventListener("click", () => {
         const next =
           document.documentElement.dataset.theme === "dark" ? "light" : "dark"
-        document.documentElement.classList.add("theme-transition")
-        document.documentElement.dataset.theme = next
-        try {
-          localStorage.setItem("rnsh-theme", next)
-        } catch {
-          // Storage may be unavailable; the DOM attribute still applies.
-        }
-        syncThemeControls()
-        window.dispatchEvent(new CustomEvent("rnsh-theme-change", { detail: next }))
-        window.setTimeout(() => {
-          document.documentElement.classList.remove("theme-transition")
-        }, 500)
+        void changeTheme(next, () => {
+          document.documentElement.dataset.theme = next
+          try {
+            localStorage.setItem("rnsh-theme", next)
+          } catch {
+            // Storage may be unavailable; the DOM attribute still applies.
+          }
+          syncThemeControls()
+          window.dispatchEvent(new CustomEvent("rnsh-theme-change", { detail: next }))
+        })
       })
+      button.addEventListener("pointerenter", warmThemeSweep, { once: true })
     }
   }
 
