@@ -64,7 +64,7 @@ export const GET: APIRoute = async ({ props }) => {
   if (kind === "note") {
     date = entry.data.date
     const pres = notePresentation[entry.id]
-    image = {
+    image = entry.data.image && {
       src: entry.data.image.src,
       width: entry.data.image.width,
       height: entry.data.image.height,

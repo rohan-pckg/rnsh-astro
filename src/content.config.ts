@@ -39,7 +39,10 @@ const notes = defineCollection({
       order: z.number().default(0),
       /** Which drawer hub the homepage card opens: the Notes list, or the Writing (blog) list. */
       hub: z.enum(["notes", "writing"]).default("notes"),
-      image: image(),
+      /** Optional: a note without art is just text in the drawer. */
+      image: image().optional(),
+      /** Whether the note also gets a card on the homepage (otherwise it only lives in the Notes list). */
+      card: z.boolean().default(true),
       imageAlt: z.string().default(""),
       /** One plain sentence shown under the title in the Writing list. */
       summary: z.string(),

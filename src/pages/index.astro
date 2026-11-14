@@ -43,6 +43,7 @@ const notes = (await getCollection("notes"))
     title: entry.data.title,
     date: entry.data.date,
     hub: entry.data.hub,
+    card: entry.data.card,
     summary: entry.data.summary,
   }))
 const blogs = (await getCollection("writing")).filter((p) => !p.data.draft)
@@ -235,7 +236,7 @@ const mono = `font-geist-mono text-[12px] leading-normal font-normal text-[rgb(v
 
     <section class="posts grid grid-cols-[minmax(0,1fr)] gap-2 md:grid-cols-[minmax(0,2.4fr)_minmax(280px,1fr)] md:gap-4">
       {
-        notes.map((story) => (
+        notes.filter((n) => n.card).map((story) => (
           <article
             class="post group relative h-[465px] min-w-0 cursor-pointer overflow-hidden rounded-[4px] bg-(--h-paper)"
             data-hub={story.hub}
