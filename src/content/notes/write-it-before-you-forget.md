@@ -1,6 +1,6 @@
 ---
 title: "Write it before you forget!"
-date: "10-12-22 10:00 AM"
+date: "09-10-26 07:05 PM"
 order: 2
 hub: writing
 image: "../../assets/write-it-before-you-forget.svg"

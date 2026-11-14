@@ -68,18 +68,13 @@ const mono =
 {
   stats && (
     <section
-      class="gh relative mt-2 min-w-0 overflow-hidden rounded-[4px] bg-(--h-paper) p-4 md:mt-4"
+      class="gh relative mt-2 flex min-h-[340px] min-w-0 flex-col overflow-hidden rounded-[4px] bg-(--h-paper) p-4 md:mt-4 md:min-h-[360px]"
       aria-label="GitHub activity"
     >
-      <div class="flex items-start justify-end gap-x-4">
-        <span class="font-geist-mono text-[12px] leading-normal whitespace-nowrap opacity-40">
-          LAST 12 MONTHS
-        </span>
-      </div>
-
-      <div class="gh-scroll">
+      <div class="gh-scroll flex flex-1 items-center overflow-x-auto py-7 md:py-4" style="direction:rtl">
         <svg
-          class="gh-graph"
+          class="gh-graph mx-auto block h-auto w-full max-w-[980px] min-w-[640px] flex-none overflow-visible"
+          style="direction:ltr"
           viewBox={`0 0 ${width} ${height}`}
           width={width}
           role="img"
@@ -138,7 +133,7 @@ const mono =
         </svg>
       </div>
 
-      <div class="mt-4 flex items-end justify-between gap-x-4">
+      <div class="mt-auto flex items-end justify-between gap-x-4">
         <h2 class="font-geist min-w-0 text-[14px] leading-normal font-medium opacity-40">GitHub</h2>
         <a
           class={`${mono} mb-px shrink-0`}
@@ -158,24 +153,10 @@ const mono =
   .gh {
     color: rgb(var(--h-ink));
   }
-  /* Narrow screens scroll sideways. direction: rtl starts the scroll at the
-     right edge, so the latest months are in view without scrolling; the graph
-     itself stays left-to-right. */
-  .gh-scroll {
-    margin: 20px 0 4px;
-    overflow-x: auto;
-    direction: rtl;
-  }
-  .gh-graph {
-    display: block;
-    width: 100%;
-    min-width: 640px;
-    max-width: 980px;
-    height: auto;
-    margin: 0 auto;
-    overflow: visible;
-    direction: ltr;
-  }
+  /* Layout lives in utility classes on the markup: the graph is centred in the
+     space above the title, which sits at the bottom of the card. On narrow
+     screens the graph scrolls sideways; direction: rtl starts the scroll at the
+     right edge (the latest months) while the graph itself stays left to right. */
   .gh-labels,
   .gh-legend {
     opacity: 0.5;

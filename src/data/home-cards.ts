@@ -20,14 +20,14 @@ export const homeCards: HomeCard[] = [
     id: "about",
     title: "More about me",
     action: "Read",
-    dateLabel: "10-12-22 10:00 AM",
+    dateLabel: "03-02-26 09:42 AM",
     image: "about",
   },
   {
     id: "work",
     title: "Design and code",
     action: "Open",
-    dateLabel: "10-12-22 10:00 AM",
+    dateLabel: "18-06-26 04:15 PM",
     image: "work",
   },
 ]

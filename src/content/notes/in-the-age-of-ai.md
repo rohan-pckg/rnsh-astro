@@ -1,6 +1,6 @@
 ---
 title: "In the age of AI."
-date: "10-12-22 10:00 AM"
+date: "27-08-26 11:28 AM"
 order: 1
 image: "../../assets/in-the-age-of-ai.svg"
 imageAlt: "Dot-matrix robot"
