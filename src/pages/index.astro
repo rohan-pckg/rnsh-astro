@@ -222,11 +222,7 @@ const mono = `font-geist-mono text-[12px] leading-normal font-normal text-[rgb(v
                 data-fluid-item
                 data-fluid-pad="3 6"
               >
-                {card.action === "Read" ? (
-                  <Fragment set:html={inkIcon("eye", 16)} />
-                ) : (
-                  card.action
-                )}
+                <Fragment set:html={inkIcon("arrow", 16)} />
               </a>
             </div>
           </article>
@@ -268,7 +264,7 @@ const mono = `font-geist-mono text-[12px] leading-normal font-normal text-[rgb(v
                 data-fluid-item
                 data-fluid-pad="3 6"
               >
-                <Fragment set:html={inkIcon("eye", 16)} />
+                <Fragment set:html={inkIcon("arrow", 16)} />
               </a>
             </div>
           </article>
