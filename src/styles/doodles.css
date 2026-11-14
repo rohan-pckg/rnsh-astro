@@ -1,0 +1,87 @@
+/* Animations for the inline ink doodles (src/assets/anim). A `.doodle` wrapper
+   plays them while it also has `.play` (the homepage toggles that as the
+   doodle scrolls into view; the lab sets it). Pure CSS, off for reduced motion. */
+
+/* ---- shared bits ---------------------------------------------------- */
+.doodle svg * { transform-box: fill-box; transform-origin: center; }
+.doodle [pathLength] { stroke-dasharray: 1; }
+
+@media (prefers-reduced-motion: no-preference) {
+  /* ===== About: bob, spin + pulse, scribbled ticks ===== */
+  .play .a-head { animation: bob 4.5s ease-in-out infinite; }
+  .play .a-burst { animation: spin 18s linear infinite, pulse 2.6s ease-in-out infinite; }
+  .play .a-t1, .play .a-t2, .play .a-t3 { animation: tick 3s ease-in-out infinite; stroke-dashoffset: 1; }
+  .play .a-t2 { animation-delay: 0.25s; } .play .a-t3 { animation-delay: 0.5s; }
+  @keyframes bob { 50% { transform: translateY(-5px); } }
+  @keyframes spin { to { rotate: 360deg; } }
+  @keyframes pulse { 50% { scale: 1.18; } }
+  @keyframes tick {
+    0% { stroke-dashoffset: 1; opacity: 1; } 18% { stroke-dashoffset: 0; }
+    70% { stroke-dashoffset: 0; opacity: 1; } 88%, 100% { stroke-dashoffset: 0; opacity: 0; }
+  }
+
+  /* ===== Work: write-on lines, </>, cursor glides in and clicks ===== */
+  .play .w-s { stroke-dashoffset: 1; animation: write 7s ease-in-out infinite; }
+  .play .w-s2 { animation-delay: 0.5s; } .play .w-s3 { animation-delay: 1s; }
+  .play .w-code { opacity: 0; animation: code 7s ease-in-out infinite; }
+  .play .w-cursor { translate: 90px 90px; opacity: 0; animation: cursor 7s ease-in-out infinite; }
+  .play .w-click { opacity: 0; animation: click 7s linear infinite; }
+  @keyframes write {
+    0% { stroke-dashoffset: 1; opacity: 1; } 16% { stroke-dashoffset: 0; }
+    84% { stroke-dashoffset: 0; opacity: 1; } 94%, 100% { stroke-dashoffset: 0; opacity: 0; }
+  }
+  @keyframes code { 0%, 30% { opacity: 0; } 38%, 84% { opacity: 1; } 94%, 100% { opacity: 0; } }
+  @keyframes cursor {
+    0% { translate: 90px 90px; opacity: 0; } 10% { opacity: 1; }
+    44% { translate: 0 0; scale: 1; } 48% { scale: 0.88; } 52% { scale: 1; }
+    80% { translate: 0 0; opacity: 1; } 92%, 100% { translate: -20px 60px; opacity: 0; }
+  }
+  @keyframes click { 0%, 46% { opacity: 0; } 49%, 56% { opacity: 1; } 60%, 100% { opacity: 0; } }
+
+  /* ===== AI: the tree grows out of the hand ===== */
+  .play .i-b { stroke-dashoffset: 1; animation: grow 6s ease-out infinite; }
+  .play .i-b0 { animation-delay: 0s; } .play .i-b1 { animation-delay: 0.7s; }
+  .play .i-b2 { animation-delay: 0.9s; } .play .i-b3 { animation-delay: 1.1s; }
+  .play .i-n { scale: 0; animation: pop 6s ease-out infinite; }
+  .play .i-n9 { scale: 1; animation: none; }
+  .play .i-n0 { animation-delay: 1.4s; } .play .i-n1 { animation-delay: 1.6s; }
+  .play .i-n2 { animation-delay: 1.7s; } .play .i-n3 { animation-delay: 1.9s; }
+  .play .i-n4 { animation-delay: 2.1s; }
+  .play .i-hand { animation: bob 4s ease-in-out infinite; }
+  @keyframes grow {
+    0% { stroke-dashoffset: 1; opacity: 1; } 22% { stroke-dashoffset: 0; }
+    84% { stroke-dashoffset: 0; opacity: 1; } 94%, 100% { stroke-dashoffset: 0; opacity: 0; }
+  }
+  @keyframes pop {
+    0% { scale: 0; opacity: 1; } 8% { scale: 1.3; } 13% { scale: 1; }
+    84% { scale: 1; opacity: 1; } 94%, 100% { scale: 1; opacity: 0; }
+  }
+
+  /* ===== Write: notes float and fill, the quill scribbles ===== */
+  .play .k-a { animation: float 5s ease-in-out infinite; }
+  .play .k-b { animation: float 6s ease-in-out -2s infinite; }
+  .play .k-c { animation: float 5.5s ease-in-out -1s infinite; }
+  .play .k-line { stroke-dashoffset: 1; animation: write 7s ease-in-out infinite; }
+  .play .k-l1 { animation-delay: 0.5s; } .play .k-l2 { animation-delay: 1s; }
+  .play .k-quill { animation: scribe 3.5s ease-in-out infinite; }
+  @keyframes float { 50% { transform: translateY(-5px) rotate(1.2deg); } }
+  @keyframes scribe {
+    0%, 100% { translate: 0 0; rotate: 0deg; } 20% { translate: -16px 8px; rotate: -4deg; }
+    40% { translate: -4px 16px; rotate: 3deg; } 60% { translate: -20px 24px; rotate: -4deg; }
+    80% { translate: -8px 30px; rotate: 3deg; }
+  }
+
+  /* ===== Hero: figures arrive, ground draws, then sway ===== */
+  .play .h-fig { opacity: 0; animation: arrive 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards, sway 4.5s ease-in-out infinite; }
+  .play .h-f0 { animation-delay: 0.3s, 1.1s; } .play .h-f1 { animation-delay: 0.7s, 1.5s; }
+  .play .h-f2 { animation-delay: 1.1s, 1.9s; } .play .h-f3 { animation-delay: 1.5s, 2.3s; }
+  .play .h-f4 { animation-delay: 1.9s, 2.7s; } .play .h-f5 { animation-delay: 2.3s, 3.1s; }
+  .play .h-ground { stroke-dashoffset: 1; animation: draw 1.8s ease-out forwards; }
+  @keyframes arrive { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+  @keyframes sway { 50% { rotate: 1.6deg; } }
+  @keyframes draw { to { stroke-dashoffset: 0; } }
+}
+
+.doodle svg {
+  overflow: visible;
+}

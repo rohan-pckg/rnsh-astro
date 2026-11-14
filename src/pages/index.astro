@@ -2,11 +2,16 @@
 import { getCollection } from "astro:content"
 import Layout from "@/layouts/main.astro"
 import StoryDrawer from "@/components/home/StoryDrawer.astro"
-import heroImage from "@/assets/hero.svg"
 import { homeCards } from "@/data/home-cards"
 import { aboutParagraphs, aboutLinks } from "@/data/home-about"
 import { projects } from "@/data/projects"
 import { inkIcon } from "@/data/ink-icons"
+import "@/styles/doodles.css"
+import heroSvg from "@/assets/anim/hero.svg?raw"
+import aboutSvg from "@/assets/anim/about.svg?raw"
+import workSvg from "@/assets/anim/work.svg?raw"
+import aiSvg from "@/assets/anim/ai.svg?raw"
+import writeSvg from "@/assets/anim/write.svg?raw"
 
 /**
  * Homepage, ported 1:1 from the Figma-exported Vite project ("Interactive
@@ -20,52 +25,66 @@ import { inkIcon } from "@/data/ink-icons"
 
 // ---- posts -------------------------------------------------------------
 const pad2 = (n: number) => String(n).padStart(2, "0")
+const ddmmyy = (d: Date) =>
+  `${pad2(d.getUTCDate())}-${pad2(d.getUTCMonth() + 1)}-${pad2(d.getUTCFullYear() % 100)}`
 // Note dates are display strings like "10-12-22 10:00 AM" (DD-MM-YY).
 const storyTime = (str: string) => {
   const m = /^(\d{2})-(\d{2})-(\d{2})/.exec(str)
   return m ? Date.UTC(2000 + +m[3], +m[2] - 1, +m[1]) : 0
 }
 
+// The homepage's bottom cards. "notes" cards are short notes that open in the
+// Notes hub; the "writing" card opens the Writing hub (the blog posts).
 const notes = (await getCollection("notes"))
   .sort((a, b) => a.data.order - b.data.order)
   .map((entry) => ({
     id: entry.id,
     title: entry.data.title,
     date: entry.data.date,
-    image: entry.data.image,
+    hub: entry.data.hub,
     summary: entry.data.summary,
   }))
-// Blog posts live on their own pages (/writing/<slug>); only their ids are
-// needed here, to forward old ?page=writing&post=<id> links.
-const blogIds = (await getCollection("writing"))
-  .filter((p) => !p.data.draft)
-  .map((p) => p.id)
+const blogs = (await getCollection("writing")).filter((p) => !p.data.draft)
 
-// The Notes hub: every note, newest first. Equal dates keep their existing
-// order (the sort is stable).
-const posts = notes
-  .map((s) => ({
-    id: s.id,
-    title: s.title,
-    date: s.date.slice(0, 8),
-    time: storyTime(s.date),
-    summary: s.summary,
-    kind: "note" as const,
-  }))
-  .sort((a, b) => b.time - a.time)
+// Everything the drawer can open in its left column, newest first (equal dates
+// keep their existing order).
+const posts = [
+  ...notes
+    .filter((n) => n.hub === "notes")
+    .map((n) => ({
+      id: n.id,
+      title: n.title,
+      date: n.date.slice(0, 8),
+      time: storyTime(n.date),
+      summary: n.summary,
+      kind: "note" as const,
+      hub: "notes" as const,
+    })),
+  ...blogs.map((p) => ({
+    id: p.id,
+    title: p.data.title,
+    date: ddmmyy(p.data.date),
+    time: p.data.date.valueOf(),
+    summary: p.data.description,
+    kind: "blog" as const,
+    hub: "writing" as const,
+  })),
+].sort((a, b) => b.time - a.time)
+/** The sentence that introduces the Writing hub (the Write-it card's summary). */
+const writingIntro = notes.find((n) => n.hub === "writing")?.summary
 
 // ---- the new row's cards -------------------------------------------------
 // Illustrations (src/assets/about.svg / work.svg) are optional: without the
 // file the slot stays empty.
-const cardImages = import.meta.glob<{ default: ImageMetadata }>(
-  "/src/assets/{about,work}.svg",
-  { eager: true }
-)
+// Animated inline doodles (src/assets/anim): the cards' graphics.
+const cardSvgs: Record<string, string> = { about: aboutSvg, work: workSvg }
+const noteSvgs: Record<string, string> = {
+  "in-the-age-of-ai": aiSvg,
+  "write-it-before-you-forget": writeSvg,
+}
 const cards = homeCards.map((c) => ({
   ...c,
-  img: c.image
-    ? cardImages[`/src/assets/${c.image}.svg`]?.default
-    : undefined,
+  svg: c.image ? cardSvgs[c.image] : undefined,
 }))
 
 // ---- "All of my work" rows: code projects + design case studies ----------
@@ -99,14 +118,6 @@ const mono = `font-geist-mono text-[12px] leading-normal font-normal text-[rgb(v
 ---
 
 <Layout>
-  <Fragment slot="head">
-    {/* Old blog links (?page=writing&post=<id>) open the post's own page. */}
-    <script is:inline define:vars={{ blogIds }}>
-      var q = new URLSearchParams(location.search)
-      if (q.get("page") === "writing" && blogIds.indexOf(q.get("post")) > -1)
-        location.replace("/writing/" + q.get("post") + "/")
-    </script>
-  </Fragment>
   <main
     id="main-content"
     class="home relative min-h-dvh [--spacing:4px] bg-(--h-ground) p-2 text-[rgb(var(--h-ink))] md:p-4"
@@ -147,12 +158,11 @@ const mono = `font-geist-mono text-[12px] leading-normal font-normal text-[rgb(v
       <div
         class="hero-art pointer-events-none flex min-h-0 items-center justify-center py-4 md:mr-[90px]"
       >
-        <img
-          class="h-auto max-h-full w-[440px] max-w-full object-contain"
-          src={heroImage.src}
-          width={heroImage.width}
-          height={heroImage.height}
-          alt="A sequence of figures evolving from a pixelated form into a person"
+        <div
+          class="doodle hero-doodle"
+          role="img"
+          aria-label="A sequence of figures evolving from an ape on all fours into a person holding a spear"
+          set:html={heroSvg}
         />
       </div>
 
@@ -196,15 +206,7 @@ const mono = `font-geist-mono text-[12px] leading-normal font-normal text-[rgb(v
             )}
 
             <div class="art art-free" aria-hidden="true">
-              {card.img && (
-                <img
-                  src={card.img.src}
-                  width={card.img.width}
-                  height={card.img.height}
-                  alt=""
-                  decoding="async"
-                />
-              )}
+              {card.svg && <div class="doodle" set:html={card.svg} />}
             </div>
 
             <div class="absolute inset-x-4 bottom-4 flex items-end justify-between gap-x-4">
@@ -220,7 +222,11 @@ const mono = `font-geist-mono text-[12px] leading-normal font-normal text-[rgb(v
                 data-fluid-item
                 data-fluid-pad="3 6"
               >
-                {card.action}
+                {card.action === "Read" ? (
+                  <Fragment set:html={inkIcon("eye", 16)} />
+                ) : (
+                  card.action
+                )}
               </a>
             </div>
           </article>
@@ -235,8 +241,8 @@ const mono = `font-geist-mono text-[12px] leading-normal font-normal text-[rgb(v
         notes.map((story) => (
           <article
             class="post group relative h-[465px] min-w-0 cursor-pointer overflow-hidden rounded-[4px] bg-(--h-paper)"
-            data-hub="notes"
-            data-post={story.id}
+            data-hub={story.hub}
+            data-post={story.hub === "notes" ? story.id : undefined}
             data-cuelume-open
             data-fluid-item
             data-fluid-tint="0.012"
@@ -246,15 +252,7 @@ const mono = `font-geist-mono text-[12px] leading-normal font-normal text-[rgb(v
             </time>
 
             <div class="art" aria-hidden="true">
-              <img
-                class="art-solo"
-                src={story.image.src}
-                width={story.image.width}
-                height={story.image.height}
-                alt=""
-                loading="lazy"
-                decoding="async"
-              />
+              <div class="doodle art-solo" set:html={noteSvgs[story.id]} />
             </div>
 
             <div class="absolute inset-x-4 bottom-4 flex items-end justify-between gap-x-4">
@@ -263,14 +261,14 @@ const mono = `font-geist-mono text-[12px] leading-normal font-normal text-[rgb(v
               </h2>
               <a
                 class={`${mono} mb-px shrink-0`}
-                href={`/?page=notes&post=${story.id}`}
+                href={story.hub === "notes" ? `/?page=notes&post=${story.id}` : `/?page=${story.hub}`}
                 aria-label={`Read ${story.title}`}
                 aria-haspopup="dialog"
                 data-story-link
                 data-fluid-item
                 data-fluid-pad="3 6"
               >
-                Read
+                <Fragment set:html={inkIcon("eye", 16)} />
               </a>
             </div>
           </article>
@@ -280,6 +278,7 @@ const mono = `font-geist-mono text-[12px] leading-normal font-normal text-[rgb(v
 
     <StoryDrawer
       posts={posts}
+      writingIntro={writingIntro}
       about={{ paragraphs: aboutParagraphs, links: aboutLinks }}
       work={workItems}
     />
@@ -396,22 +395,8 @@ const mono = `font-geist-mono text-[12px] leading-normal font-normal text-[rgb(v
   }
   /* New-row cards: the image keeps its own aspect and scales down to fit the
      slot, never cropped. */
-  .art-free img {
-    width: 190px;
-    height: 190px;
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
-  }
   .card-new {
     height: 260px;
-  }
-  /* Story cards: one solid dot-matrix graphic, centered, never cropped. */
-  .art-solo {
-    width: 190px;
-    height: 190px;
-    max-width: 100%;
-    object-fit: contain;
   }
 
   /* Tablet / short viewports: normal scrolling page, sensible card heights. */
@@ -479,8 +464,19 @@ const mono = `font-geist-mono text-[12px] leading-normal font-normal text-[rgb(v
     --h-chip-hover: #363632;
     --h-chip-down: #403f3b;
   }
-  /* The dot-matrix art is dark ink on transparent: flip it to light ink. */
-  :root[data-theme="dark"] :is(.hero-art, .art, .sd-art) img {
+  .doodle svg {
+    display: block;
+    width: 190px;
+    height: 190px;
+    max-width: 100%;
+  }
+  .hero-doodle svg {
+    width: 440px;
+    height: auto;
+  }
+  /* The doodle art is dark ink on transparent: flip it to light ink. */
+  :root[data-theme="dark"] :is(.hero-art, .art, .sd-art) img,
+  :root[data-theme="dark"] .doodle svg {
     filter: invert(1);
   }
   /* The drawer panel is the same grey as the cards: give it an edge. */
@@ -555,11 +551,24 @@ const mono = `font-geist-mono text-[12px] leading-normal font-normal text-[rgb(v
 <script>
   import { initHome } from "@/components/home/enhance"
 
+  // Doodles animate only while on screen (and restart when they come back).
+  let doodleObserver: IntersectionObserver | undefined
+  const watchDoodles = () => {
+    doodleObserver?.disconnect()
+    doodleObserver = new IntersectionObserver(
+      (entries) =>
+        entries.forEach((e) => e.target.classList.toggle("play", e.isIntersecting)),
+      { threshold: 0.25 }
+    )
+    document.querySelectorAll(".doodle").forEach((el) => doodleObserver!.observe(el))
+  }
+
   let cleanup: (() => void) | undefined
   // Runs on first load and after each ClientRouter navigation.
   document.addEventListener("astro:page-load", () => {
     cleanup?.()
     cleanup = initHome()
+    watchDoodles()
   })
   document.addEventListener("astro:before-swap", () => {
     cleanup?.()

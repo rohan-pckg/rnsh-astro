@@ -26,9 +26,9 @@ const design = defineCollection({
   }),
 })
 
-// Notes: short, philosophical pieces shown on the homepage and opened in its
-// drawer (the Notes hub). Longer blog posts live in `writing` and have their own
-// pages at /writing/<slug>.
+// Homepage cards. A card with hub "notes" is a short philosophical note that
+// opens in the Notes hub; the card with hub "writing" is the entry to the
+// Writing hub, which lists the blog posts (the `writing` collection).
 const notes = defineCollection({
   loader: glob({ pattern: "**/*.md", base: "./src/content/notes" }),
   schema: ({ image }) =>
@@ -37,6 +37,8 @@ const notes = defineCollection({
       /** Display string, e.g. "10-12-22 10:00 AM". */
       date: z.string(),
       order: z.number().default(0),
+      /** Which drawer hub the homepage card opens: the Notes list, or the Writing (blog) list. */
+      hub: z.enum(["notes", "writing"]).default("notes"),
       image: image(),
       imageAlt: z.string().default(""),
       /** One plain sentence shown under the title in the Writing list. */

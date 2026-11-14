@@ -49,9 +49,9 @@ interface Item {
   title: string
   /** Shown in the detail header until the body arrives. */
   date: string
-  /** The hub that owns this item (notes | work | about). */
+  /** The hub that owns this item (notes | writing | work | about). */
   hub: string
-  kind: "note" | "design" | "about"
+  kind: "note" | "blog" | "design" | "about"
 }
 interface PostData {
   title: string
@@ -146,11 +146,6 @@ export function initDrawer(
     let hub = sp.get("page")
     let post = sp.get("post")
     let legacy = false
-    // Notes used to be called Writing.
-    if (hub === "writing") {
-      hub = "notes"
-      legacy = true
-    }
     // Old contact URL.
     if (post === "contact" && !hub) {
       hub = "contact"
@@ -498,9 +493,11 @@ export function initDrawer(
     const full =
       kind === "design"
         ? `/design/${id}`
-        : kind === "about"
-          ? "/about"
-          : null
+        : kind === "blog"
+          ? `/writing/${id}`
+          : kind === "about"
+            ? "/about"
+            : null
     if (full) {
       const a = mk("a", "", "Open the full page")
       a.href = `${full}?full=1`
@@ -539,16 +536,57 @@ export function initDrawer(
     })
   }
 
+  /* The header's date gives way to the item's title once the title in the
+     content has scrolled out of view. */
+  const headTitle = detailArticle.querySelector<HTMLElement>("[data-sd-head-title]")
+  const detailScroll = detailArticle.querySelector<HTMLElement>(".sd-scroll")!
+  const headDate = detailArticle.querySelector<HTMLElement>("[data-sd-date]")!
+  let headPast = false
+  /** Date while the title is on screen; the title alone once it has scrolled away. */
+  function syncHead() {
+    const h = detailScroll.querySelector<HTMLElement>("#sd-title-post")
+    const past =
+      !!h &&
+      h.getBoundingClientRect().bottom <
+        detailScroll.getBoundingClientRect().top + 4
+    if (past === headPast || !headTitle) return
+    headPast = past
+    headDate.hidden = past
+    headTitle.hidden = !past
+    // Inline, so the title shows even if an older stylesheet is still cached.
+    headTitle.style.opacity = past ? "0.85" : ""
+    headTitle.style.transform = past ? "none" : ""
+    if (!reduced())
+      (past ? headTitle : headDate).animate(
+        [
+          { opacity: 0, transform: `translateY(${past ? 6 : -6}px)` },
+          { transform: "none" }, // opacity: the element's own resting value
+        ],
+        { duration: 220, easing: EASE_OUT }
+      )
+  }
+  let headRaf = 0
+  detailScroll.addEventListener(
+    "scroll",
+    () => {
+      cancelAnimationFrame(headRaf)
+      headRaf = requestAnimationFrame(syncHead)
+    },
+    { passive: true }
+  )
+
   async function renderDetail(id: string) {
     const t = items.find((x) => x.id === id)
     if (!t) return
     const content = detailArticle.querySelector<HTMLElement>("[data-sd-content]")!
     const date = detailArticle.querySelector<HTMLElement>("[data-sd-date]")!
     date.textContent = t.date
+    if (headTitle) headTitle.textContent = t.title
     detailArticle.setAttribute("aria-busy", "true")
     content.replaceChildren(skeleton(t.title))
     const sc = scrollOf("detail")
     if (sc) sc.scrollTop = 0
+    syncHead()
     try {
       const data = await getPost(id)
       if (cur.post !== id) return // the user moved on
@@ -571,7 +609,9 @@ export function initDrawer(
       enhanceLinks(prose)
       frag.append(prose)
       date.textContent = data.date
+      if (headTitle) headTitle.textContent = data.title
       content.replaceChildren(frag)
+      syncHead()
       content.animate(
         reduced()
           ? [{ opacity: 0 }, { opacity: 1 }]
@@ -608,9 +648,10 @@ export function initDrawer(
     void animateScrim(true)
   }
 
-  function openPanel(side: Side) {
+  /** Opens a panel; resolves when its slide-in has finished. */
+  function openPanel(side: Side): Promise<void> {
     const p = panels[side]
-    if (p.open) return
+    if (p.open) return Promise.resolve()
     p.open = true
     p.token++
     p.opener = trigger
@@ -626,10 +667,11 @@ export function initDrawer(
     syncChrome()
     // A hub opening (or closing) moves a detail panel that is already open.
     if (side === "hub" && panels.detail.open) placeDetail(true)
-    void animatePanel(side, true)
+    const slid = animatePanel(side, true)
     if (!first) panels[side].el.focus({ preventScroll: true })
     const art = side === "hub" ? activeHub() : null
     if (art) reveal(art)
+    return slid
   }
 
   async function closePanel(side: Side) {
@@ -740,12 +782,16 @@ export function initDrawer(
   function applyState(next: Snap) {
     const prev = cur
     cur = next
+    // Phones: opening an item from the home page shows its list (the menu
+    // page) first, and only once that page is in does the item slide over it.
+    let hubIn: Promise<void> | null = null
     // right (hub)
     if (next.hub !== prev.hub) {
       if (!next.hub) void closePanel("hub")
       else if (!panels.hub.open) {
         showHub(next.hub, next.view)
-        openPanel("hub")
+        const slid = openPanel("hub")
+        if (isSheet() && next.post && !prev.post) hubIn = slid
       } else void swapHub(next.hub, next.view)
     } else if (next.hub === "work" && next.view !== prev.view) {
       void applyView(next.view, true)
@@ -755,7 +801,12 @@ export function initDrawer(
       if (!next.post) void closePanel("detail")
       else if (!panels.detail.open) {
         void renderDetail(next.post)
-        openPanel("detail")
+        if (hubIn) {
+          const want = next.post
+          void hubIn.then(() => {
+            if (cur.post === want && !panels.detail.open) void openPanel("detail")
+          })
+        } else void openPanel("detail")
       } else void swapDetail(next.post)
     }
     markCurrent()

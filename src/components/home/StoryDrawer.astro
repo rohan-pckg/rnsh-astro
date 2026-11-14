@@ -9,7 +9,7 @@ import {
 /**
  * The drawer: ONE native <dialog> holding two independent panels, one shared
  * implementation for every section with nested pages.
- *  - hubs (far right): Contact, About, Work, Notes; one visible at a time;
+ *  - hubs (far right): Contact, About, Work, Notes, Writing; one visible at a time;
  *  - detail (left column): the item opened from a hub (a post, a design
  *    write-up, the full About content), filled on demand from
  *    /posts/<slug>.json. It docks just left of the hub, or takes the far-right
@@ -22,7 +22,8 @@ interface Post {
   title: string
   date: string
   summary: string
-  kind: "note"
+  kind: "note" | "blog"
+  hub: "notes" | "writing"
 }
 interface WorkItem {
   type: "code" | "design"
@@ -44,10 +45,12 @@ interface AboutLink {
 }
 interface Props {
   posts: Post[]
+  /** Introduces the Writing list. */
+  writingIntro?: string
   about: { paragraphs: string[]; links: AboutLink[] }
   work: WorkItem[]
 }
-const { posts, about, work } = Astro.props
+const { posts, writingIntro, about, work } = Astro.props
 
 // Normalize every href at render time; external-ness comes from the URL itself.
 const normalize = <T extends { href: string }>(rows: T[]) =>
@@ -65,7 +68,7 @@ const items = [
     id: p.id,
     title: p.title,
     date: p.date,
-    hub: "notes",
+    hub: p.hub,
     kind: p.kind,
   })),
   ...designItems.map((d) => ({
@@ -101,7 +104,10 @@ const subtitle =
     <article class="sd-post">
       <header class="sd-head" data-sd-drag>
         <span class="sd-handle" aria-hidden="true" />
-        <time class={label} data-sd-date></time>
+        <div class="sd-head-text">
+          <time class={label} data-sd-date></time>
+          <span class="sd-head-title" data-sd-head-title aria-hidden="true" hidden></span>
+        </div>
         <div class="sd-actions">
             <button
               type="button"
@@ -302,11 +308,68 @@ const subtitle =
       
         <ul class="sd-contacts">
           {
-            posts.map((p) => (
+            posts.filter((p) => p.hub === "notes").map((p) => (
               <li>
                 <a
                   class="sd-row sd-work-row"
                   href={`/?page=notes&post=${p.id}`}
+                  data-post={p.id}
+                  data-cuelume-select
+                  data-fluid-item
+                >
+                  <span class="sd-work-text">
+                    <span class="sd-row-title">{p.title}</span>
+                    <span class="sd-summary">{p.summary}</span>
+                  </span>
+                  <span class="sd-row-meta">{p.date}</span>
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </article>
+
+    {/* WRITING (?page=writing[&post=<slug>]): the blog posts */}
+    <article class="sd-post" data-sd-hub="writing" hidden>
+      <header class="sd-head" data-sd-drag>
+        <span class="sd-handle" aria-hidden="true" />
+        <span id="sd-title-writing" class={label} data-sd-label>Writing</span>
+        <div class="sd-actions">
+            <button
+              type="button"
+              class="sd-icon-btn sd-expand"
+              data-sd-expand
+              data-fluid-item
+              data-fluid-pad="3 3"
+              aria-pressed="false"
+              aria-label="Expand to full screen"
+            >
+              <Fragment set:html={inkIcon("expand", 14)} />
+              <Fragment set:html={inkIcon("collapse", 14)} />
+            </button>
+            <button
+              type="button"
+              class="sd-icon-btn"
+              data-sd-close
+              data-cuelume-close
+              data-fluid-item
+              data-fluid-pad="3 3"
+              aria-label="Close writing"
+            >
+              <Fragment set:html={inkIcon("close", 14)} />
+            </button>
+          </div>
+      </header>
+      <div class="sd-scroll" tabindex="-1">
+        {writingIntro && <p class="sd-prose">{writingIntro}</p>}
+        <ul class="sd-contacts">
+          {
+            posts.filter((p) => p.hub === "writing").map((p) => (
+              <li>
+                <a
+                  class="sd-row sd-work-row"
+                  href={`/?page=writing&post=${p.id}`}
                   data-post={p.id}
                   data-cuelume-select
                   data-fluid-item
@@ -487,16 +550,20 @@ const subtitle =
   .sd-panel:focus-visible {
     outline: none;
   }
+  /* Two docked panels share the viewport: the list (right) stays compact and
+     the routed item (left) gets the larger share. From 1280px up they are
+     equal (see the media query below). */
   .sd-hubs {
     right: 16px;
+    width: clamp(300px, 36vw, 440px);
   }
   /* The detail panel is anchored to the far-right slot like the hub; the
      script translates it left by the hub's width + 16px while a hub is open.
-     Width: up to 520px, shrinking to ~400px so two panels stay within ~85vw,
-     and never wider than the space left beside the hub. */
+     Width: up to 640px, and never wider than the space left beside the hub,
+     so it is always the larger of the two. */
   .sd-detail {
     right: 16px;
-    width: min(clamp(400px, calc(85vw - 536px), 520px), calc(100vw - 568px));
+    width: min(640px, calc(100vw - 48px - clamp(300px, 36vw, 440px)));
     transition:
       transform 320ms cubic-bezier(0.22, 1, 0.36, 1),
       width 460ms cubic-bezier(0.22, 1, 0.36, 1),
@@ -513,9 +580,6 @@ const subtitle =
   .sd-panel.is-full .sd-scroll {
     padding-inline: max(16px, calc((100% - 640px) / 2));
   }
-  .sd-panel.is-full .sd-prose {
-    max-width: none;
-  }
   .sd-scrim {
     transition:
       background-color 460ms ease,
@@ -529,6 +593,13 @@ const subtitle =
   .story-drawer[data-full] .sd-panel:not(.is-full) {
     opacity: 0;
     pointer-events: none;
+  }
+  /* Wide screens have room for two equal columns. */
+  @media (min-width: 1280px) {
+    .sd-hubs,
+    .sd-detail {
+      width: 520px;
+    }
   }
   .sd-panel[hidden] {
     display: none;
@@ -577,6 +648,29 @@ const subtitle =
       opacity: 0.9;
     }
   }
+  /* Detail header: the date, which gives way to the item's title once the
+     title has scrolled out of view (script toggles `hidden`, one at a time). */
+  .sd-head-text {
+    flex: 1;
+    min-width: 0;
+    height: 18px;
+    margin-right: 12px;
+  }
+  .sd-head-text [hidden] {
+    display: none;
+  }
+  .sd-head-title {
+    display: block;
+    overflow: hidden;
+    font-family: "Geist:Medium", sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 18px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    color: rgb(var(--h-ink) / 0.85);
+    pointer-events: none;
+  }
   .sd-ic {
     display: block;
     line-height: 0;
@@ -607,7 +701,6 @@ const subtitle =
   }
   .sd-prose {
     margin-top: 12px;
-    max-width: 460px;
     font-family: "Geist:Medium", sans-serif;
     font-size: 14px;
     font-weight: 500;
@@ -831,46 +924,41 @@ const subtitle =
     margin-top: 28px;
   }
 
-  /* Work: Code / Design segmented toggle. A recessed track with a raised
-     sliding thumb; the inactive label is quiet, the active one is full ink. */
+  /* Work: Code / Design underline tabs. A hairline runs the panel's width; an
+     ink underline slides under the active tab. Two equal 120px tabs, so the
+     indicator is a plain 120px translate. */
   .sd-seg {
     position: relative;
-    display: inline-flex;
-    margin-top: 16px;
-    padding: 3px;
-    border-radius: 8px;
-    background: rgb(var(--h-ink) / 0.06);
+    display: grid;
+    grid-template-columns: 120px 120px 1fr;
+    margin-top: 12px;
+    border-bottom: 1px solid rgb(var(--h-ink) / 0.12);
   }
   .sd-seg-ind {
     position: absolute;
-    top: 3px;
-    bottom: 3px;
-    left: 3px;
-    width: calc(50% - 3px);
-    border-radius: 6px;
-    background: var(--h-paper);
-    box-shadow:
-      0 0 0 1px rgb(var(--h-ink) / 0.1),
-      0 1px 2px rgb(0 0 0 / 0.1);
+    bottom: -1px;
+    left: 0;
+    width: 120px;
+    height: 2px;
+    border-radius: 1px;
+    background: rgb(var(--h-ink));
     transition: transform 300ms cubic-bezier(0.22, 1, 0.36, 1);
   }
   .sd-seg[data-active="design"] .sd-seg-ind {
-    transform: translateX(100%);
+    transform: translateX(120px);
   }
   .sd-seg-tab {
     position: relative;
     display: inline-flex;
     align-items: baseline;
     justify-content: center;
-    min-width: 104px;
-    padding: 7px 16px;
-    border-radius: 6px;
+    padding: 8px 0 11px;
     font-family: "Geist Mono:Regular", monospace;
     font-size: 12px;
     line-height: 1.5;
     letter-spacing: 0.06em;
     text-transform: uppercase;
-    color: rgb(var(--h-ink) / 0.5);
+    color: rgb(var(--h-ink) / 0.45);
     cursor: pointer;
     transition: color 180ms ease;
   }
@@ -881,7 +969,7 @@ const subtitle =
   }
   @media (hover: hover) {
     .sd-seg-tab:not([aria-selected="true"]):hover {
-      color: rgb(var(--h-ink) / 0.85);
+      color: rgb(var(--h-ink) / 0.8);
     }
   }
   .sd-seg-tab[aria-selected="true"] {
@@ -889,7 +977,8 @@ const subtitle =
   }
   .sd-seg-tab:focus-visible {
     outline: 1.5px solid rgb(var(--h-ink) / 0.5);
-    outline-offset: 1px;
+    outline-offset: -2px;
+    border-radius: 2px;
   }
   .sd-views {
     margin-top: 16px;

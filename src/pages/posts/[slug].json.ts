@@ -1,9 +1,8 @@
 /**
  * Per-item HTML fragment, generated at build time: /posts/<slug>.json.
  * The homepage drawer fetches it on demand, so no body ships in the homepage
- * HTML. Covers the homepage notes, the design write-ups and the full About
- * content (slug "full"); slugs are unique across them. Blog posts (the
- * `writing` collection) are not here: they are standalone pages.
+ * HTML. Covers the homepage notes, the blog posts (Writing hub), the design
+ * write-ups and the full About content (slug "full"); slugs are unique across them.
  */
 import type { APIRoute, GetStaticPaths } from "astro"
 import { getCollection, render } from "astro:content"
@@ -18,11 +17,16 @@ const ddmmyy = (d: Date) =>
 
 export const getStaticPaths = (async () => {
   const notes = await getCollection("notes")
+  const writing = (await getCollection("writing")).filter((p) => !p.data.draft)
   const designs = (await getCollection("design")).filter((p) => !p.data.draft)
   return [
     ...notes.map((entry) => ({
       params: { slug: entry.id },
       props: { kind: "note" as const, entry },
+    })),
+    ...writing.map((entry) => ({
+      params: { slug: entry.id },
+      props: { kind: "blog" as const, entry },
     })),
     ...designs.map((entry) => ({
       params: { slug: entry.id },
