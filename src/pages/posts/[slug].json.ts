@@ -1,14 +1,15 @@
 /**
  * Per-item HTML fragment, generated at build time: /posts/<slug>.json.
  * The homepage drawer fetches it on demand, so no body ships in the homepage
- * HTML. Covers the homepage stories, the published blog posts, the design
- * write-ups and the full About content (slug "full"); slugs are unique across them.
+ * HTML. Covers the homepage notes, the design write-ups and the full About
+ * content (slug "full"); slugs are unique across them. Blog posts (the
+ * `writing` collection) are not here: they are standalone pages.
  */
 import type { APIRoute, GetStaticPaths } from "astro"
 import { getCollection, render } from "astro:content"
 import { experimental_AstroContainer as AstroContainer } from "astro/container"
 import mdxRenderer from "@astrojs/mdx/server.js"
-import { storyPresentation } from "@/data/story-presentation"
+import { notePresentation } from "@/data/note-presentation"
 import AboutFull from "@/components/home/AboutFull.astro"
 
 const pad2 = (n: number) => String(n).padStart(2, "0")
@@ -16,17 +17,12 @@ const ddmmyy = (d: Date) =>
   `${pad2(d.getUTCDate())}-${pad2(d.getUTCMonth() + 1)}-${pad2(d.getUTCFullYear() % 100)}`
 
 export const getStaticPaths = (async () => {
-  const stories = await getCollection("stories")
-  const writing = (await getCollection("writing")).filter((p) => !p.data.draft)
+  const notes = await getCollection("notes")
   const designs = (await getCollection("design")).filter((p) => !p.data.draft)
   return [
-    ...stories.map((entry) => ({
+    ...notes.map((entry) => ({
       params: { slug: entry.id },
-      props: { kind: "story" as const, entry },
-    })),
-    ...writing.map((entry) => ({
-      params: { slug: entry.id },
-      props: { kind: "writing" as const, entry },
+      props: { kind: "note" as const, entry },
     })),
     ...designs.map((entry) => ({
       params: { slug: entry.id },
@@ -61,9 +57,9 @@ export const GET: APIRoute = async ({ props }) => {
 
   let image: Record<string, unknown> | null = null
   let date: string
-  if (kind === "story") {
+  if (kind === "note") {
     date = entry.data.date
-    const pres = storyPresentation[entry.id]
+    const pres = notePresentation[entry.id]
     image = {
       src: entry.data.image.src,
       width: entry.data.image.width,

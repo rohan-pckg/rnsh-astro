@@ -1,4 +1,5 @@
 ---
+import { inkIcon } from "@/data/ink-icons"
 import {
   homeContacts,
   normalizeHref,
@@ -8,7 +9,7 @@ import {
 /**
  * The drawer: ONE native <dialog> holding two independent panels, one shared
  * implementation for every section with nested pages.
- *  - hubs (far right): Contact, About, Work, Writing; one visible at a time;
+ *  - hubs (far right): Contact, About, Work, Notes; one visible at a time;
  *  - detail (left column): the item opened from a hub (a post, a design
  *    write-up, the full About content), filled on demand from
  *    /posts/<slug>.json. It docks just left of the hub, or takes the far-right
@@ -21,7 +22,7 @@ interface Post {
   title: string
   date: string
   summary: string
-  kind: "story" | "writing"
+  kind: "note"
 }
 interface WorkItem {
   type: "code" | "design"
@@ -64,7 +65,7 @@ const items = [
     id: p.id,
     title: p.title,
     date: p.date,
-    hub: "writing",
+    hub: "notes",
     kind: p.kind,
   })),
   ...designItems.map((d) => ({
@@ -78,7 +79,7 @@ const items = [
 ]
 
 const btn =
-  "font-geist-mono cursor-pointer text-[12px] leading-normal font-normal text-black uppercase underline underline-offset-1 opacity-40 transition-opacity hover:opacity-80"
+  "font-geist-mono cursor-pointer text-[12px] leading-normal font-normal text-[rgb(var(--h-ink))] uppercase underline underline-offset-1 opacity-40 transition-opacity hover:opacity-80"
 const label =
   "font-geist-mono text-[12px] leading-normal uppercase opacity-40"
 const subtitle =
@@ -101,19 +102,42 @@ const subtitle =
       <header class="sd-head" data-sd-drag>
         <span class="sd-handle" aria-hidden="true" />
         <time class={label} data-sd-date></time>
-        <div>
-          <button
-            type="button"
-            class={btn}
-            data-sd-close
-            data-cuelume-close
-            data-fluid-item
-            data-fluid-pad="3 6"
-            aria-label="Close"
-          >
-            Close
-          </button>
-        </div>
+        <div class="sd-actions">
+            <button
+              type="button"
+              class="sd-icon-btn sd-copy"
+              data-sd-copy
+              data-fluid-item
+              data-fluid-pad="3 3"
+              aria-label="Copy link"
+            >
+              <span class="sd-ic" data-ic="link"><Fragment set:html={inkIcon("link", 14)} /></span>
+              <span class="sd-ic" data-ic="done" hidden><Fragment set:html={inkIcon("check", 14)} /></span>
+            </button>
+            <button
+              type="button"
+              class="sd-icon-btn sd-expand"
+              data-sd-expand
+              data-fluid-item
+              data-fluid-pad="3 3"
+              aria-pressed="false"
+              aria-label="Expand to full screen"
+            >
+              <Fragment set:html={inkIcon("expand", 14)} />
+              <Fragment set:html={inkIcon("collapse", 14)} />
+            </button>
+            <button
+              type="button"
+              class="sd-icon-btn"
+              data-sd-close
+              data-cuelume-close
+              data-fluid-item
+              data-fluid-pad="3 3"
+              aria-label="Close"
+            >
+              <Fragment set:html={inkIcon("close", 14)} />
+            </button>
+          </div>
       </header>
       <div class="sd-scroll" tabindex="-1">
         <div data-sd-content></div>
@@ -128,19 +152,31 @@ const subtitle =
       <header class="sd-head" data-sd-drag>
         <span class="sd-handle" aria-hidden="true" />
         <span id="sd-title-contact" class={label} data-sd-label>Contact</span>
-        <div>
-          <button
-            type="button"
-            class={btn}
-            data-sd-close
-            data-cuelume-close
-            data-fluid-item
-            data-fluid-pad="3 6"
-            aria-label="Close contact"
-          >
-            Close
-          </button>
-        </div>
+        <div class="sd-actions">
+            <button
+              type="button"
+              class="sd-icon-btn sd-expand"
+              data-sd-expand
+              data-fluid-item
+              data-fluid-pad="3 3"
+              aria-pressed="false"
+              aria-label="Expand to full screen"
+            >
+              <Fragment set:html={inkIcon("expand", 14)} />
+              <Fragment set:html={inkIcon("collapse", 14)} />
+            </button>
+            <button
+              type="button"
+              class="sd-icon-btn"
+              data-sd-close
+              data-cuelume-close
+              data-fluid-item
+              data-fluid-pad="3 3"
+              aria-label="Close contact"
+            >
+              <Fragment set:html={inkIcon("close", 14)} />
+            </button>
+          </div>
       </header>
 
       <div class="sd-scroll" tabindex="-1">
@@ -172,19 +208,31 @@ const subtitle =
       <header class="sd-head" data-sd-drag>
         <span class="sd-handle" aria-hidden="true" />
         <span id="sd-title-about" class={label} data-sd-label>About</span>
-        <div>
-          <button
-            type="button"
-            class={btn}
-            data-sd-close
-            data-cuelume-close
-            data-fluid-item
-            data-fluid-pad="3 6"
-            aria-label="Close about"
-          >
-            Close
-          </button>
-        </div>
+        <div class="sd-actions">
+            <button
+              type="button"
+              class="sd-icon-btn sd-expand"
+              data-sd-expand
+              data-fluid-item
+              data-fluid-pad="3 3"
+              aria-pressed="false"
+              aria-label="Expand to full screen"
+            >
+              <Fragment set:html={inkIcon("expand", 14)} />
+              <Fragment set:html={inkIcon("collapse", 14)} />
+            </button>
+            <button
+              type="button"
+              class="sd-icon-btn"
+              data-sd-close
+              data-cuelume-close
+              data-fluid-item
+              data-fluid-pad="3 3"
+              aria-label="Close about"
+            >
+              <Fragment set:html={inkIcon("close", 14)} />
+            </button>
+          </div>
       </header>
       <div class="sd-scroll" tabindex="-1">
         <h2 class={subtitle}>More about me</h2>
@@ -219,24 +267,36 @@ const subtitle =
       </div>
     </article>
 
-    {/* WRITING (?page=writing[&post=<slug>]) */}
-    <article class="sd-post" data-sd-hub="writing" hidden>
+    {/* NOTES (?page=notes[&post=<slug>]): short philosophical notes */}
+    <article class="sd-post" data-sd-hub="notes" hidden>
       <header class="sd-head" data-sd-drag>
         <span class="sd-handle" aria-hidden="true" />
-        <span id="sd-title-writing" class={label} data-sd-label>Writing</span>
-        <div>
-          <button
-            type="button"
-            class={btn}
-            data-sd-close
-            data-cuelume-close
-            data-fluid-item
-            data-fluid-pad="3 6"
-            aria-label="Close writing"
-          >
-            Close
-          </button>
-        </div>
+        <span id="sd-title-notes" class={label} data-sd-label>Notes</span>
+        <div class="sd-actions">
+            <button
+              type="button"
+              class="sd-icon-btn sd-expand"
+              data-sd-expand
+              data-fluid-item
+              data-fluid-pad="3 3"
+              aria-pressed="false"
+              aria-label="Expand to full screen"
+            >
+              <Fragment set:html={inkIcon("expand", 14)} />
+              <Fragment set:html={inkIcon("collapse", 14)} />
+            </button>
+            <button
+              type="button"
+              class="sd-icon-btn"
+              data-sd-close
+              data-cuelume-close
+              data-fluid-item
+              data-fluid-pad="3 3"
+              aria-label="Close notes"
+            >
+              <Fragment set:html={inkIcon("close", 14)} />
+            </button>
+          </div>
       </header>
       <div class="sd-scroll" tabindex="-1">
       
@@ -246,7 +306,7 @@ const subtitle =
               <li>
                 <a
                   class="sd-row sd-work-row"
-                  href={`/?page=writing&post=${p.id}`}
+                  href={`/?page=notes&post=${p.id}`}
                   data-post={p.id}
                   data-cuelume-select
                   data-fluid-item
@@ -269,19 +329,31 @@ const subtitle =
       <header class="sd-head" data-sd-drag>
         <span class="sd-handle" aria-hidden="true" />
         <span id="sd-title-work" class={label} data-sd-label>Work</span>
-        <div>
-          <button
-            type="button"
-            class={btn}
-            data-sd-close
-            data-cuelume-close
-            data-fluid-item
-            data-fluid-pad="3 6"
-            aria-label="Close work"
-          >
-            Close
-          </button>
-        </div>
+        <div class="sd-actions">
+            <button
+              type="button"
+              class="sd-icon-btn sd-expand"
+              data-sd-expand
+              data-fluid-item
+              data-fluid-pad="3 3"
+              aria-pressed="false"
+              aria-label="Expand to full screen"
+            >
+              <Fragment set:html={inkIcon("expand", 14)} />
+              <Fragment set:html={inkIcon("collapse", 14)} />
+            </button>
+            <button
+              type="button"
+              class="sd-icon-btn"
+              data-sd-close
+              data-cuelume-close
+              data-fluid-item
+              data-fluid-pad="3 3"
+              aria-label="Close work"
+            >
+              <Fragment set:html={inkIcon("close", 14)} />
+            </button>
+          </div>
       </header>
       <div class="sd-scroll" tabindex="-1">
 
@@ -289,10 +361,10 @@ const subtitle =
         <div class="sd-seg" role="tablist" aria-label="Type of work" data-active="code" data-sd-tabs>
           <span class="sd-seg-ind" aria-hidden="true"></span>
           <button type="button" role="tab" id="sd-tab-code" class="sd-seg-tab" aria-selected="true" aria-controls="sd-view-code" tabindex="0" data-sd-tab="code">
-            Code
+            Code<span class="sd-seg-n" style="margin-left:7px">{codeItems.length}</span>
           </button>
           <button type="button" role="tab" id="sd-tab-design" class="sd-seg-tab" aria-selected="false" aria-controls="sd-view-design" tabindex="-1" data-sd-tab="design">
-            Design
+            Design<span class="sd-seg-n" style="margin-left:7px">{designItems.length}</span>
           </button>
         </div>
 
@@ -376,7 +448,7 @@ const subtitle =
     padding: 0;
     border: 0;
     background: transparent;
-    color: #000;
+    color: rgb(var(--h-ink));
     overflow: hidden;
   }
   .story-drawer:focus,
@@ -402,7 +474,10 @@ const subtitle =
     max-width: calc(100% - 32px);
     overflow: hidden;
     border-radius: 4px;
-    background: #fff;
+    transition:
+      width 460ms cubic-bezier(0.22, 1, 0.36, 1),
+      opacity 260ms ease;
+    background: var(--h-paper);
     box-shadow:
       0 24px 80px rgba(0, 0, 0, 0.12),
       0 0 0 1px rgba(0, 0, 0, 0.04);
@@ -422,7 +497,38 @@ const subtitle =
   .sd-detail {
     right: 16px;
     width: min(clamp(400px, calc(85vw - 536px), 520px), calc(100vw - 568px));
-    transition: transform 280ms cubic-bezier(0.22, 1, 0.36, 1);
+    transition:
+      transform 320ms cubic-bezier(0.22, 1, 0.36, 1),
+      width 460ms cubic-bezier(0.22, 1, 0.36, 1),
+      opacity 260ms ease;
+  }
+  /* Full screen: the panel grows leftwards to fill the page (keeping the
+     16px gutter) while the page behind it blurs. Content stays a readable
+     column. */
+  .sd-panel.is-full {
+    z-index: 3 !important;
+    width: calc(100vw - 32px);
+    max-width: none;
+  }
+  .sd-panel.is-full .sd-scroll {
+    padding-inline: max(16px, calc((100% - 640px) / 2));
+  }
+  .sd-panel.is-full .sd-prose {
+    max-width: none;
+  }
+  .sd-scrim {
+    transition:
+      background-color 460ms ease,
+      backdrop-filter 460ms ease;
+  }
+  .story-drawer[data-full] .sd-scrim {
+    background: rgba(0, 0, 0, 0.28);
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+  }
+  .story-drawer[data-full] .sd-panel:not(.is-full) {
+    opacity: 0;
+    pointer-events: none;
   }
   .sd-panel[hidden] {
     display: none;
@@ -448,6 +554,43 @@ const subtitle =
   .sd-handle {
     display: none;
   }
+  /* Header icon buttons: 14px ink-doodle glyphs with a 28px hit area, pulled
+     into the header's 16px padding so the glyph sits on the grid. */
+  .sd-actions {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    margin: -7px -7px 0 0;
+  }
+  .sd-icon-btn {
+    padding: 7px;
+    border: 0;
+    background: none;
+    color: rgb(var(--h-ink));
+    line-height: 0;
+    cursor: pointer;
+    opacity: 0.55;
+    transition: opacity 150ms ease;
+  }
+  @media (hover: hover) {
+    .sd-icon-btn:hover {
+      opacity: 0.9;
+    }
+  }
+  .sd-ic {
+    display: block;
+    line-height: 0;
+  }
+  .sd-ic[hidden] {
+    display: none;
+  }
+  .sd-expand .i-collapse,
+  .sd-expand[aria-pressed="true"] .i-expand {
+    display: none;
+  }
+  .sd-expand[aria-pressed="true"] .i-collapse {
+    display: block;
+  }
   .sd-scroll {
     flex: 1;
     min-height: 0;
@@ -469,12 +612,12 @@ const subtitle =
     font-size: 14px;
     font-weight: 500;
     line-height: 1.625;
-    color: rgba(0, 0, 0, 0.6);
+    color: rgb(var(--h-ink) / 0.6);
   }
   .sd-prose > * + * {
     margin-top: 16px;
   }
-  /* Shared by the Work, Writing and Design rows. */
+  /* Shared by the Work, Notes and Design rows. */
   .sd-row-title {
     min-width: 0;
     font-family: "Geist:Medium", sans-serif;
@@ -496,10 +639,10 @@ const subtitle =
     margin: 8px 0 0;
     padding: 0;
     list-style: none;
-    border-top: 1px solid rgba(0, 0, 0, 0.06);
+    border-top: 1px solid rgb(var(--h-ink) / 0.06);
   }
   .sd-contacts li {
-    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    border-bottom: 1px solid rgb(var(--h-ink) / 0.06);
   }
   .sd-row {
     display: flex;
@@ -508,7 +651,7 @@ const subtitle =
     gap: 16px;
     min-height: 48px;
     padding: 0 4px;
-    color: #000;
+    color: rgb(var(--h-ink));
     text-decoration: none;
   }
   .sd-row-label {
@@ -537,7 +680,7 @@ const subtitle =
   .sd-prose h3,
   .sd-prose h4 {
     margin-top: 28px;
-    color: #000;
+    color: rgb(var(--h-ink));
     font-size: 14px;
     font-weight: 500;
     line-height: 1.5;
@@ -554,16 +697,16 @@ const subtitle =
     margin-top: 8px;
   }
   .sd-prose a {
-    color: rgba(0, 0, 0, 0.85);
+    color: rgb(var(--h-ink) / 0.85);
     text-decoration: underline;
-    text-decoration-color: rgba(0, 0, 0, 0.25);
+    text-decoration-color: rgb(var(--h-ink) / 0.25);
     text-underline-offset: 3px;
   }
   .sd-prose a:hover {
-    text-decoration-color: rgba(0, 0, 0, 0.7);
+    text-decoration-color: rgb(var(--h-ink) / 0.7);
   }
   .sd-prose strong {
-    color: rgba(0, 0, 0, 0.85);
+    color: rgb(var(--h-ink) / 0.85);
     font-weight: 600;
   }
   .sd-prose ul,
@@ -588,21 +731,21 @@ const subtitle =
   }
   .sd-prose blockquote {
     padding-left: 12px;
-    border-left: 2px solid rgba(0, 0, 0, 0.12);
+    border-left: 2px solid rgb(var(--h-ink) / 0.12);
   }
   .sd-prose code {
     font-family: "Geist Mono:Regular", monospace;
     font-size: 12px;
     padding: 1px 4px;
     border-radius: 2px;
-    background: #f4f4f4;
+    background: var(--h-surface);
   }
   .sd-prose pre {
     max-width: 100%;
     overflow-x: auto;
     padding: 12px;
     border-radius: 2px;
-    background: #f6f6f6;
+    background: var(--h-surface2);
     line-height: 1.5;
   }
   .sd-prose pre code {
@@ -624,12 +767,12 @@ const subtitle =
   .sd-prose th,
   .sd-prose td {
     padding: 6px 10px;
-    border: 1px solid rgba(0, 0, 0, 0.08);
+    border: 1px solid rgb(var(--h-ink) / 0.08);
     text-align: left;
   }
   .sd-prose hr {
     border: 0;
-    border-top: 1px solid rgba(0, 0, 0, 0.08);
+    border-top: 1px solid rgb(var(--h-ink) / 0.08);
   }
   /* The "Sketchbook" post ends with a small call-to-action link. */
   .sd-prose .sketchbook-afterthought a {
@@ -648,7 +791,7 @@ const subtitle =
     display: block;
     height: 12px;
     border-radius: 2px;
-    background: rgba(0, 0, 0, 0.06);
+    background: rgb(var(--h-ink) / 0.06);
   }
   .sd-skel i:nth-child(2) {
     width: 92%;
@@ -662,7 +805,7 @@ const subtitle =
     font-size: 14px;
     font-weight: 500;
     line-height: 1.5;
-    color: rgba(0, 0, 0, 0.6);
+    color: rgb(var(--h-ink) / 0.6);
   }
   .sd-error button,
   .sd-error a {
@@ -672,7 +815,7 @@ const subtitle =
     text-transform: uppercase;
     text-decoration: underline;
     text-underline-offset: 3px;
-    color: rgba(0, 0, 0, 0.5);
+    color: rgb(var(--h-ink) / 0.5);
     cursor: pointer;
   }
   .sd-error {
@@ -688,43 +831,65 @@ const subtitle =
     margin-top: 28px;
   }
 
-  /* Work: Code / Design segmented toggle (a sliding highlight). */
+  /* Work: Code / Design segmented toggle. A recessed track with a raised
+     sliding thumb; the inactive label is quiet, the active one is full ink. */
   .sd-seg {
     position: relative;
     display: inline-flex;
     margin-top: 16px;
-    padding: 2px;
-    border-radius: 2px;
-    background: #f4f4f4;
+    padding: 3px;
+    border-radius: 8px;
+    background: rgb(var(--h-ink) / 0.06);
   }
   .sd-seg-ind {
     position: absolute;
-    top: 2px;
-    bottom: 2px;
-    left: 2px;
-    width: calc(50% - 2px);
-    border-radius: 2px;
-    background: #e3e3e3;
-    transition: transform 180ms cubic-bezier(0.22, 1, 0.36, 1);
+    top: 3px;
+    bottom: 3px;
+    left: 3px;
+    width: calc(50% - 3px);
+    border-radius: 6px;
+    background: var(--h-paper);
+    box-shadow:
+      0 0 0 1px rgb(var(--h-ink) / 0.1),
+      0 1px 2px rgb(0 0 0 / 0.1);
+    transition: transform 300ms cubic-bezier(0.22, 1, 0.36, 1);
   }
   .sd-seg[data-active="design"] .sd-seg-ind {
     transform: translateX(100%);
   }
   .sd-seg-tab {
     position: relative;
-    min-width: 88px;
-    padding: 6px 14px;
-    border-radius: 2px;
+    display: inline-flex;
+    align-items: baseline;
+    justify-content: center;
+    min-width: 104px;
+    padding: 7px 16px;
+    border-radius: 6px;
     font-family: "Geist Mono:Regular", monospace;
     font-size: 12px;
     line-height: 1.5;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
-    color: rgba(0, 0, 0, 0.45);
+    color: rgb(var(--h-ink) / 0.5);
     cursor: pointer;
-    transition: color 150ms ease;
+    transition: color 180ms ease;
+  }
+  .sd-seg-n {
+    font-size: 10px;
+    letter-spacing: 0;
+    opacity: 0.6;
+  }
+  @media (hover: hover) {
+    .sd-seg-tab:not([aria-selected="true"]):hover {
+      color: rgb(var(--h-ink) / 0.85);
+    }
   }
   .sd-seg-tab[aria-selected="true"] {
-    color: rgba(0, 0, 0, 0.8);
+    color: rgb(var(--h-ink));
+  }
+  .sd-seg-tab:focus-visible {
+    outline: 1.5px solid rgb(var(--h-ink) / 0.5);
+    outline-offset: 1px;
   }
   .sd-views {
     margin-top: 16px;
@@ -738,9 +903,9 @@ const subtitle =
     padding: 12px 8px;
     border-radius: 2px;
   }
-  /* The open post's row in the Writing list keeps a soft fill. */
+  /* The open note's row in the Notes list keeps a soft fill. */
   .sd-work-row[aria-current="true"] {
-    background: #f4f4f4;
+    background: var(--h-surface);
   }
   .sd-work-text {
     display: flex;
@@ -754,7 +919,7 @@ const subtitle =
     font-size: 13px;
     font-weight: 500;
     line-height: 1.5;
-    color: rgba(0, 0, 0, 0.45);
+    color: rgb(var(--h-ink) / 0.45);
   }
   /* Design view: cards separated by space only (no rules, no image border). */
   .sd-designs {
@@ -770,7 +935,7 @@ const subtitle =
     display: block;
     padding: 8px;
     border-radius: 4px;
-    color: #000;
+    color: rgb(var(--h-ink));
     text-decoration: none;
   }
   .sd-design:hover {
@@ -781,7 +946,7 @@ const subtitle =
     width: 100%;
     aspect-ratio: 16 / 10;
     border-radius: 2px;
-    background: #f4f4f4;
+    background: var(--h-surface);
     object-fit: cover;
   }
   .sd-design-head {
@@ -806,40 +971,37 @@ const subtitle =
     }
   }
 
+  /* Phones: a panel is a normal page. It covers the whole viewport (no sheet,
+     no handle, no swipe) and slides in from the right. Close returns. */
   @media (max-width: 767px) {
     .sd-panel,
     .sd-detail {
-      top: auto;
+      top: 0;
       right: 0;
       bottom: 0;
       left: 0;
       width: auto;
       max-width: none;
-      height: 90dvh;
+      height: 100dvh;
+      border-radius: 0;
+      box-shadow: none;
+      transition: none;
     }
-    /* The routed-content sheet layers on top of a hub sheet, a bit taller. */
+    /* A routed item layers over its hub, like pushing a page. */
     .sd-detail {
       z-index: 2;
-      height: 94dvh;
-      transition: none;
     }
     .sd-hubs {
       z-index: 1;
     }
     .sd-head {
-      padding-top: 28px;
-      touch-action: none;
+      padding-top: max(16px, env(safe-area-inset-top));
     }
-    .sd-handle {
-      position: absolute;
-      top: 8px;
-      left: 50%;
-      display: block;
-      width: 36px;
-      height: 4px;
-      margin-left: -18px;
-      border-radius: 2px;
-      background: rgba(0, 0, 0, 0.15);
+    .sd-scroll {
+      padding-bottom: max(32px, env(safe-area-inset-bottom));
+    }
+    .sd-expand {
+      display: none;
     }
   }
 
@@ -851,7 +1013,7 @@ const subtitle =
     z-index: 5;
     pointer-events: none;
     border-radius: 4px;
-    background: rgba(0, 0, 0, 0.04);
+    background: rgb(var(--h-ink) / 0.04);
     opacity: 0;
     will-change: transform, width, height;
     transition:

@@ -2,11 +2,11 @@
 import { getCollection } from "astro:content"
 import Layout from "@/layouts/main.astro"
 import StoryDrawer from "@/components/home/StoryDrawer.astro"
-import heroImage from "@/assets/9d6ca.png"
-import { storyPresentation } from "@/data/story-presentation"
+import heroImage from "@/assets/hero.svg"
 import { homeCards } from "@/data/home-cards"
 import { aboutParagraphs, aboutLinks } from "@/data/home-about"
 import { projects } from "@/data/projects"
+import { inkIcon } from "@/data/ink-icons"
 
 /**
  * Homepage, ported 1:1 from the Figma-exported Vite project ("Interactive
@@ -20,58 +20,51 @@ import { projects } from "@/data/projects"
 
 // ---- posts -------------------------------------------------------------
 const pad2 = (n: number) => String(n).padStart(2, "0")
-const ddmmyy = (d: Date) =>
-  `${pad2(d.getUTCDate())}-${pad2(d.getUTCMonth() + 1)}-${pad2(d.getUTCFullYear() % 100)}`
-// Story dates are display strings like "10-12-22 10:00 AM" (DD-MM-YY).
+// Note dates are display strings like "10-12-22 10:00 AM" (DD-MM-YY).
 const storyTime = (str: string) => {
   const m = /^(\d{2})-(\d{2})-(\d{2})/.exec(str)
   return m ? Date.UTC(2000 + +m[3], +m[2] - 1, +m[1]) : 0
 }
 
-const stories = (await getCollection("stories"))
+const notes = (await getCollection("notes"))
   .sort((a, b) => a.data.order - b.data.order)
   .map((entry) => ({
     id: entry.id,
     title: entry.data.title,
     date: entry.data.date,
     image: entry.data.image,
-    rotated: storyPresentation[entry.id]?.rotated ?? false,
     summary: entry.data.summary,
   }))
-const writing = (await getCollection("writing")).filter((p) => !p.data.draft)
+// Blog posts live on their own pages (/writing/<slug>); only their ids are
+// needed here, to forward old ?page=writing&post=<id> links.
+const blogIds = (await getCollection("writing"))
+  .filter((p) => !p.data.draft)
+  .map((p) => p.id)
 
-// The Writing hub: every post (homepage stories + published blog posts),
-// newest first. Equal dates keep their existing order (the sort is stable).
-const posts = [
-  ...stories.map((s) => ({
+// The Notes hub: every note, newest first. Equal dates keep their existing
+// order (the sort is stable).
+const posts = notes
+  .map((s) => ({
     id: s.id,
     title: s.title,
     date: s.date.slice(0, 8),
     time: storyTime(s.date),
     summary: s.summary,
-    kind: "story" as const,
-  })),
-  ...writing.map((p) => ({
-    id: p.id,
-    title: p.data.title,
-    date: ddmmyy(p.data.date),
-    time: p.data.date.valueOf(),
-    summary: p.data.description,
-    kind: "writing" as const,
-  })),
-].sort((a, b) => b.time - a.time)
+    kind: "note" as const,
+  }))
+  .sort((a, b) => b.time - a.time)
 
 // ---- the new row's cards -------------------------------------------------
-// Illustrations (src/assets/about.png / work.png) are optional: without the
+// Illustrations (src/assets/about.svg / work.svg) are optional: without the
 // file the slot stays empty.
 const cardImages = import.meta.glob<{ default: ImageMetadata }>(
-  "/src/assets/{about,work}.png",
+  "/src/assets/{about,work}.svg",
   { eager: true }
 )
 const cards = homeCards.map((c) => ({
   ...c,
   img: c.image
-    ? cardImages[`/src/assets/${c.image}.png`]?.default
+    ? cardImages[`/src/assets/${c.image}.svg`]?.default
     : undefined,
 }))
 
@@ -102,17 +95,25 @@ const workItems = [
 
 // Keyboard focus rings are drawn by the `.home :focus-visible` rule below.
 const focusRing = "focus-visible:opacity-100"
-const mono = `font-geist-mono text-[12px] leading-normal font-normal text-black uppercase underline underline-offset-1 opacity-40 transition-opacity hover:opacity-80 ${focusRing}`
+const mono = `font-geist-mono text-[12px] leading-normal font-normal text-[rgb(var(--h-ink))] uppercase underline underline-offset-1 opacity-40 transition-opacity hover:opacity-80 ${focusRing}`
 ---
 
 <Layout>
+  <Fragment slot="head">
+    {/* Old blog links (?page=writing&post=<id>) open the post's own page. */}
+    <script is:inline define:vars={{ blogIds }}>
+      var q = new URLSearchParams(location.search)
+      if (q.get("page") === "writing" && blogIds.indexOf(q.get("post")) > -1)
+        location.replace("/writing/" + q.get("post") + "/")
+    </script>
+  </Fragment>
   <main
     id="main-content"
-    class="home relative min-h-dvh [--spacing:4px] bg-[#f9f9f9] p-2 text-black md:p-4"
+    class="home relative min-h-dvh [--spacing:4px] bg-(--h-ground) p-2 text-[rgb(var(--h-ink))] md:p-4"
   >
     <div class="first mb-2 grid gap-2 md:mb-4 md:gap-4">
     <section
-      class="hero relative h-[572px] min-w-0 overflow-hidden rounded-[4px] bg-white p-4"
+      class="hero relative h-[572px] min-w-0 overflow-hidden rounded-[4px] bg-(--h-paper) p-4"
       aria-labelledby="profile-name"
     >
       <header class="hero-header min-w-0">
@@ -129,19 +130,25 @@ const mono = `font-geist-mono text-[12px] leading-normal font-normal text-black 
         </p>
       </header>
 
-      {/* Decorative live clock (desktop only; display:none on phones). Empty
-          until the script fills it; the width is reserved so nothing shifts. */}
-      <time
-        class="hero-time font-geist-mono text-[12px] leading-normal font-normal whitespace-nowrap opacity-40"
-        data-clock
-        aria-hidden="true"
-      ></time>
+      {/* Light/dark toggle: a hand-drawn moon (light mode) or sun (dark mode). */}
+      <button
+        type="button"
+        class="theme-btn"
+        data-theme-btn
+        data-fluid-item
+        data-fluid-pad="3 3"
+        aria-label="Switch to dark theme"
+        aria-pressed="false"
+      >
+        <Fragment set:html={inkIcon("moon", 16)} />
+        <Fragment set:html={inkIcon("sun", 16)} />
+      </button>
 
       <div
         class="hero-art pointer-events-none flex min-h-0 items-center justify-center py-4 md:mr-[90px]"
       >
         <img
-          class="h-auto max-h-full w-[342px] max-w-full object-contain"
+          class="h-auto max-h-full w-[440px] max-w-full object-contain"
           src={heroImage.src}
           width={heroImage.width}
           height={heroImage.height}
@@ -176,7 +183,7 @@ const mono = `font-geist-mono text-[12px] leading-normal font-normal text-black 
       {
         cards.map((card) => (
           <article
-            class="card-new group relative min-w-0 cursor-pointer overflow-hidden rounded-[4px] bg-white"
+            class="card-new group relative min-w-0 cursor-pointer overflow-hidden rounded-[4px] bg-(--h-paper)"
             data-hub={card.id}
             data-cuelume-open
             data-fluid-item
@@ -196,7 +203,6 @@ const mono = `font-geist-mono text-[12px] leading-normal font-normal text-black 
                   height={card.img.height}
                   alt=""
                   decoding="async"
-                  style={card.opacity ? `opacity:${card.opacity}` : undefined}
                 />
               )}
             </div>
@@ -226,10 +232,10 @@ const mono = `font-geist-mono text-[12px] leading-normal font-normal text-black 
 
     <section class="posts grid grid-cols-[minmax(0,1fr)] gap-2 md:grid-cols-[minmax(0,2.4fr)_minmax(280px,1fr)] md:gap-4">
       {
-        stories.map((story) => (
+        notes.map((story) => (
           <article
-            class="post group relative h-[465px] min-w-0 cursor-pointer overflow-hidden rounded-[4px] bg-white"
-            data-hub="writing"
+            class="post group relative h-[465px] min-w-0 cursor-pointer overflow-hidden rounded-[4px] bg-(--h-paper)"
+            data-hub="notes"
             data-post={story.id}
             data-cuelume-open
             data-fluid-item
@@ -240,9 +246,15 @@ const mono = `font-geist-mono text-[12px] leading-normal font-normal text-black 
             </time>
 
             <div class="art" aria-hidden="true">
-              <div class={`art-frame ${story.rotated ? "art-rot" : "art-sq"}`}>
-                <img src={story.image.src} alt="" loading="lazy" decoding="async" />
-              </div>
+              <img
+                class="art-solo"
+                src={story.image.src}
+                width={story.image.width}
+                height={story.image.height}
+                alt=""
+                loading="lazy"
+                decoding="async"
+              />
             </div>
 
             <div class="absolute inset-x-4 bottom-4 flex items-end justify-between gap-x-4">
@@ -251,7 +263,7 @@ const mono = `font-geist-mono text-[12px] leading-normal font-normal text-black 
               </h2>
               <a
                 class={`${mono} mb-px shrink-0`}
-                href={`/?page=writing&post=${story.id}`}
+                href={`/?page=notes&post=${story.id}`}
                 aria-label={`Read ${story.title}`}
                 aria-haspopup="dialog"
                 data-story-link
@@ -275,8 +287,8 @@ const mono = `font-geist-mono text-[12px] leading-normal font-normal text-black 
 </Layout>
 
 <style>
-  /* Hero: a grid. Desktop: clock top-right, tagline bottom-left, Contact
-     bottom-right. Phones: no clock, Contact under the tagline. */
+  /* Hero: a grid. Desktop: tagline bottom-left, Contact
+     bottom-right. Phones: Contact under the tagline. */
   .hero {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
@@ -290,13 +302,26 @@ const mono = `font-geist-mono text-[12px] leading-normal font-normal text-black 
   .hero-header {
     grid-area: header;
   }
-  .hero-time {
-    grid-area: time;
-    align-self: start;
-    justify-self: end;
-    min-width: 17ch; /* "06-11-26 03:15 AM", reserved so nothing shifts */
-    text-align: right;
-    font-variant-numeric: tabular-nums;
+  /* Theme toggle: top-right corner of the hero, a 16px ink-doodle icon with
+     an 8px padded hit area (the hero is position: relative). */
+  .theme-btn {
+    position: absolute;
+    top: 10px;
+    right: 8px;
+    z-index: 1;
+    padding: 8px;
+    border: 0;
+    background: none;
+    color: rgb(var(--h-ink));
+    line-height: 0;
+    cursor: pointer;
+    opacity: 0.55;
+    transition: opacity 150ms ease;
+  }
+  @media (hover: hover) {
+    .theme-btn:hover {
+      opacity: 0.9;
+    }
   }
   .hero-art {
     grid-area: art;
@@ -312,20 +337,20 @@ const mono = `font-geist-mono text-[12px] leading-normal font-normal text-black 
     padding: 6px 10px;
     border: 0;
     border-radius: 2px;
-    background: #e3e3e3;
-    color: #4a4a4a;
+    background: var(--h-chip);
+    color: var(--h-chip-ink);
     transition: background-color 150ms ease;
   }
   .contact-btn:active {
-    background: #d0d0d0;
+    background: var(--h-chip-down);
   }
   @media (hover: hover) {
     .contact-btn:hover {
-      background: #d9d9d9;
+      background: var(--h-chip-hover);
     }
   }
 
-  /* Phones: no clock; Contact sits under the tagline. It keeps the desktop
+  /* Phones: Contact sits under the tagline. It keeps the desktop
      button's exact size (6px 10px); the tap area is extended invisibly. */
   @media (max-width: 767px) {
     .hero {
@@ -336,9 +361,6 @@ const mono = `font-geist-mono text-[12px] leading-normal font-normal text-black 
         "art"
         "tag"
         "contact";
-    }
-    .hero-time {
-      display: none;
     }
     .hero-tag {
       align-self: start;
@@ -372,19 +394,11 @@ const mono = `font-geist-mono text-[12px] leading-normal font-normal text-black 
     justify-content: center;
     pointer-events: none;
   }
-  .art-frame {
-    position: relative;
-    height: 100%;
-    max-width: 100%;
-  }
-  .art-frame img {
-    object-fit: cover;
-  }
   /* New-row cards: the image keeps its own aspect and scales down to fit the
      slot, never cropped. */
   .art-free img {
-    width: auto;
-    height: auto;
+    width: 190px;
+    height: 190px;
     max-width: 100%;
     max-height: 100%;
     object-fit: contain;
@@ -392,30 +406,12 @@ const mono = `font-geist-mono text-[12px] leading-normal font-normal text-black 
   .card-new {
     height: 260px;
   }
-  .art-sq {
-    aspect-ratio: 273 / 223;
-    max-height: 223px;
-  }
-  .art-sq img {
-    width: 100%;
-    height: 100%;
-  }
-  /* The arrows sketch is displayed turned 90deg: size the image from the
-     frame's transposed box. */
-  .art-rot {
-    aspect-ratio: 271 / 353;
-    max-height: 353px;
-    container-type: size;
-    opacity: 0.7;
-  }
-  .art-rot img {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 100cqh;
-    height: 100cqw;
-    max-width: none;
-    transform: translate(-50%, -50%) rotate(90deg);
+  /* Story cards: one solid dot-matrix graphic, centered, never cropped. */
+  .art-solo {
+    width: 190px;
+    height: 190px;
+    max-width: 100%;
+    object-fit: contain;
   }
 
   /* Tablet / short viewports: normal scrolling page, sensible card heights. */
@@ -459,6 +455,53 @@ const mono = `font-geist-mono text-[12px] leading-normal font-normal text-black 
 </style>
 
 <style is:global>
+  /* Homepage palette. Every colour on the page reads these, so dark mode is a
+     second set of values (the dark neutrals match global.css's dark theme). */
+  :root {
+    --h-ink: 0 0 0; /* text / lines, as an "r g b" triplet for alpha use */
+    --h-ground: #f9f9f9;
+    --h-paper: #ffffff;
+    --h-surface: #f4f4f4;
+    --h-surface2: #f6f6f6;
+    --h-chip: #e3e3e3;
+    --h-chip-ink: #4a4a4a;
+    --h-chip-hover: #d9d9d9;
+    --h-chip-down: #d0d0d0;
+  }
+  :root[data-theme="dark"] {
+    --h-ink: 238 238 236;
+    --h-ground: #0d0d0c;
+    --h-paper: #1a1a18;
+    --h-surface: #232321;
+    --h-surface2: #21211f;
+    --h-chip: #2c2c29;
+    --h-chip-ink: #d6d6d2;
+    --h-chip-hover: #363632;
+    --h-chip-down: #403f3b;
+  }
+  /* The dot-matrix art is dark ink on transparent: flip it to light ink. */
+  :root[data-theme="dark"] :is(.hero-art, .art, .sd-art) img {
+    filter: invert(1);
+  }
+  /* The drawer panel is the same grey as the cards: give it an edge. */
+  :root[data-theme="dark"] .sd-panel {
+    box-shadow:
+      0 24px 80px rgba(0, 0, 0, 0.5),
+      0 0 0 1px rgb(var(--h-ink) / 0.1);
+  }
+  .theme-btn svg {
+    display: block;
+  }
+  .theme-btn .i-sun {
+    display: none;
+  }
+  :root[data-theme="dark"] .theme-btn .i-moon {
+    display: none;
+  }
+  :root[data-theme="dark"] .theme-btn .i-sun {
+    display: block;
+  }
+
   /* Focus: nothing shows a ring for mouse or programmatic focus. Only real
      keyboard focus (:focus-visible, last input = keyboard) on links and
      buttons gets a subtle ring. */
@@ -479,7 +522,7 @@ const mono = `font-geist-mono text-[12px] leading-normal font-normal text-black 
      use the Figma page ground. Scoped to pages that contain .home. */
   body:has(.home) {
     margin: 0;
-    background-color: #f9f9f9;
+    background-color: var(--h-ground);
   }
 
   /* Safety net only; the layout itself never overflows horizontally. */

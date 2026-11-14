@@ -1,7 +1,11 @@
 export async function copyText(value: string) {
   if (navigator.clipboard?.writeText) {
-    await navigator.clipboard.writeText(value)
-    return
+    try {
+      await navigator.clipboard.writeText(value)
+      return
+    } catch {
+      // Denied (permissions, insecure origin, focus): use the legacy path.
+    }
   }
 
   const textarea = document.createElement("textarea")

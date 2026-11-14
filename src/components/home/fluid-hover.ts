@@ -71,7 +71,7 @@ export function createFluidHover(
     hl.style.transform = `translate(${b.x}px, ${b.y}px)`
     hl.style.borderRadius = `${b.radius}px`
     const tint = el.dataset.fluidTint
-    hl.style.background = tint ? `rgba(0, 0, 0, ${tint})` : ""
+    hl.style.background = tint ? `rgb(var(--h-ink) / ${tint})` : ""
   }
 
   function show(el: HTMLElement) {

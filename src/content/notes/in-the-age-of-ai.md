@@ -2,8 +2,8 @@
 title: "In the age of AI."
 date: "10-12-22 10:00 AM"
 order: 1
-image: "../../assets/4e5be.png"
-imageAlt: "Pencil sketch of arrows rising from a shaded band"
+image: "../../assets/in-the-age-of-ai.svg"
+imageAlt: "Dot-matrix robot"
 summary: "A note on preserving human judgment, curiosity, and care as our tools get more capable."
 ---
 

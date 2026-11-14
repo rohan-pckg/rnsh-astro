@@ -26,9 +26,11 @@ const design = defineCollection({
   }),
 })
 
-// Posts shown on the homepage and opened in its drawer.
-const stories = defineCollection({
-  loader: glob({ pattern: "**/*.md", base: "./src/content/stories" }),
+// Notes: short, philosophical pieces shown on the homepage and opened in its
+// drawer (the Notes hub). Longer blog posts live in `writing` and have their own
+// pages at /writing/<slug>.
+const notes = defineCollection({
+  loader: glob({ pattern: "**/*.md", base: "./src/content/notes" }),
   schema: ({ image }) =>
     z.object({
       title: z.string(),
@@ -42,4 +44,4 @@ const stories = defineCollection({
     }),
 })
 
-export const collections = { writing, design, stories }
+export const collections = { writing, design, notes }

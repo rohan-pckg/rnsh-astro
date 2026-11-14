@@ -13,8 +13,6 @@ export interface HomeCard {
   action: string
   dateLabel?: string
   image?: string
-  /** Image opacity (the Figma export draws these sketches slightly faded). */
-  opacity?: number
 }
 
 export const homeCards: HomeCard[] = [
@@ -24,7 +22,6 @@ export const homeCards: HomeCard[] = [
     action: "Read",
     dateLabel: "10-12-22 10:00 AM",
     image: "about",
-    opacity: 0.6,
   },
   {
     id: "work",
@@ -32,6 +29,5 @@ export const homeCards: HomeCard[] = [
     action: "Open",
     dateLabel: "10-12-22 10:00 AM",
     image: "work",
-    opacity: 0.7,
   },
 ]

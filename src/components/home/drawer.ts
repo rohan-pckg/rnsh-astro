@@ -19,12 +19,14 @@
  * from an inline script on the page (see index.astro).
  */
 import { createFluidHover, type FluidHover } from "./fluid-hover"
+import { copyText } from "../../lib/clipboard"
 
 // A critically damped spring look: fast start, soft landing.
 const EASE_OUT = "cubic-bezier(0.22, 1, 0.36, 1)"
 const EASE_IN = "cubic-bezier(0.4, 0, 0.6, 1)"
 const OPEN_MS = 320
 const CLOSE_MS = 220
+const SWIPE_DISMISS = false
 
 const reduced = () => matchMedia("(prefers-reduced-motion: reduce)").matches
 const isSheet = () => matchMedia("(max-width: 767px)").matches
@@ -47,9 +49,9 @@ interface Item {
   title: string
   /** Shown in the detail header until the body arrives. */
   date: string
-  /** The hub that owns this item (writing | work | about). */
+  /** The hub that owns this item (notes | work | about). */
   hub: string
-  kind: "story" | "writing" | "design" | "about"
+  kind: "note" | "design" | "about"
 }
 interface PostData {
   title: string
@@ -144,6 +146,11 @@ export function initDrawer(
     let hub = sp.get("page")
     let post = sp.get("post")
     let legacy = false
+    // Notes used to be called Writing.
+    if (hub === "writing") {
+      hub = "notes"
+      legacy = true
+    }
     // Old contact URL.
     if (post === "contact" && !hub) {
       hub = "contact"
@@ -219,9 +226,49 @@ export function initDrawer(
   /** Gap between the two docked panels, and the page gutter. */
   const GAP = 16
 
+  /** The panel currently expanded to full screen (desktop only). */
+  let fullSide: Side | null = null
+  function setFull(side: Side | null) {
+    if (side === fullSide) return
+    fullSide = side
+    for (const sd of ["detail", "hub"] as Side[]) {
+      const on = sd === side
+      const el = panels[sd].el
+      el.classList.toggle("is-full", on)
+      el.querySelectorAll<HTMLElement>("[data-sd-expand]").forEach((b) => {
+        b.setAttribute("aria-pressed", String(on))
+        b.setAttribute(
+          "aria-label",
+          on ? "Exit full screen" : "Expand to full screen"
+        )
+      })
+    }
+    dlg!.toggleAttribute("data-full", side !== null)
+    placeDetail(true)
+  }
+  /** Go full screen without the grow animation (shared links). */
+  function setFullInstant(side: Side) {
+    const els = [panels.detail.el, panels.hub.el, scrim]
+    els.forEach((e) => (e.style.transition = "none"))
+    setFull(side)
+    void dlg!.offsetWidth
+    els.forEach((e) => (e.style.transition = ""))
+  }
+  /** Reset without animating (when a panel or the drawer has just closed). */
+  function resetFull() {
+    if (fullSide === null) return
+    const els = [panels.detail.el, panels.hub.el, scrim]
+    els.forEach((e) => (e.style.transition = "none"))
+    setFull(null)
+    void dlg!.offsetWidth
+    els.forEach((e) => (e.style.transition = ""))
+  }
+
   /** How far the detail panel sits left of the far-right slot (0 = no hub). */
   const hubOffset = () =>
-    !isSheet() && panels.hub.open ? hubsEl.offsetWidth + GAP : 0
+    !isSheet() && panels.hub.open && fullSide === null
+      ? hubsEl.offsetWidth + GAP
+      : 0
 
   /** Current horizontal translation of an element, in px. */
   const currentX = (el: HTMLElement) => {
@@ -238,9 +285,10 @@ export function initDrawer(
         : [{ opacity: 1 }, { opacity: 0 }]
     }
     if (isSheet()) {
+      // Phones: a full page that slides in from the right and back out.
       return open
-        ? [{ transform: "translateY(100%)" }, { transform: "none" }]
-        : [{ transform: `translateY(${from})` }, { transform: "translateY(100%)" }]
+        ? [{ transform: "translateX(100%)" }, { transform: "none" }]
+        : [{ transform: "none" }, { transform: "translateX(100%)" }]
     }
     if (side === "hub") {
       return open
@@ -450,11 +498,9 @@ export function initDrawer(
     const full =
       kind === "design"
         ? `/design/${id}`
-        : kind === "writing"
-          ? `/writing/${id}`
-          : kind === "about"
-            ? "/about"
-            : null
+        : kind === "about"
+          ? "/about"
+          : null
     if (full) {
       const a = mk("a", "", "Open the full page")
       a.href = `${full}?full=1`
@@ -605,6 +651,7 @@ export function initDrawer(
     p.anims.forEach((a) => a.cancel())
     p.el.hidden = true
     p.el.style.transform = ""
+    if (fullSide === side || last) resetFull()
     if (side === "detail")
       detailArticle.querySelector("[data-sd-content]")?.replaceChildren()
     if (last) {
@@ -752,6 +799,40 @@ export function initDrawer(
     closeTo(withoutSide(side), source, fromY)
   const closeAll = (source: "button" | "other") => closeTo(EMPTY, source)
 
+  /* ---- copy link ------------------------------------------------------ */
+  /** A shareable URL for the open item. Visiting it opens the item full screen. */
+  function shareUrl(): string | null {
+    if (!cur.post) return null
+    const hub = hubOf(cur.post) ?? cur.hub
+    const u = new URL(
+      urlFor({ hub, view: hub === "work" ? "design" : "code", post: cur.post }),
+      location.origin
+    )
+    u.searchParams.set("full", "1")
+    return u.toString()
+  }
+  let copiedTimer = 0
+  async function copyLink(btn: HTMLElement) {
+    const url = shareUrl()
+    if (!url) return
+    try {
+      await copyText(url)
+    } catch {
+      return
+    }
+    const ic = (n: string) => btn.querySelector<HTMLElement>(`[data-ic=${n}]`)
+    const show = (copied: boolean) => {
+      ic("link")!.hidden = copied
+      ic("done")!.hidden = !copied
+      btn.toggleAttribute("data-copied", copied)
+      btn.setAttribute("aria-label", copied ? "Link copied" : "Copy link")
+    }
+    show(true)
+    announce("Link copied")
+    clearTimeout(copiedTimer)
+    copiedTimer = window.setTimeout(() => show(false), 1800)
+  }
+
   /* ---- events --------------------------------------------------------- */
   const modified = (e: MouseEvent) =>
     e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey
@@ -760,6 +841,18 @@ export function initDrawer(
     const t = e.target as Element
     if (t.closest("[data-sd-retry]")) {
       if (cur.post) void renderDetail(cur.post)
+      return
+    }
+    const copyBtn = t.closest<HTMLElement>("[data-sd-copy]")
+    if (copyBtn) {
+      void copyLink(copyBtn)
+      return
+    }
+    const expandBtn = t.closest("[data-sd-expand]")
+    if (expandBtn) {
+      const side = expandBtn.closest<HTMLElement>("[data-sd-side]")?.dataset
+        .sdSide as Side | undefined
+      if (side && !isSheet()) setFull(fullSide === side ? null : side)
       return
     }
     const closeBtn = t.closest("[data-sd-close]")
@@ -874,7 +967,8 @@ export function initDrawer(
   let drag: { side: Side; y0: number; t0: number; dy: number; id: number } | null =
     null
   const onPointerDown = (e: PointerEvent) => {
-    if (!isSheet() || !dlg.open) return
+    // Phones show full pages now, so there is no swipe-to-dismiss.
+    if (!SWIPE_DISMISS || !isSheet() || !dlg.open) return
     const zone = (e.target as Element).closest("[data-sd-drag]")
     const sideEl = zone?.closest<HTMLElement>("[data-sd-side]")
     if (!zone || !sideEl || (e.target as Element).closest("button, a")) return
@@ -936,7 +1030,13 @@ export function initDrawer(
   // Legacy URLs (?post=<blog>, ?post=contact) are rewritten in place.
   if (legacy) history.replaceState(history.state, "", urlFor(initial))
   snaps.set(d, initial)
-  if (!same(initial, EMPTY)) requestAnimationFrame(() => applyState(initial))
+  // A shared link (?full=1) opens the item full screen straight away.
+  const wantFull = new URL(location.href).searchParams.get("full") === "1"
+  if (!same(initial, EMPTY))
+    requestAnimationFrame(() => {
+      applyState(initial)
+      if (wantFull && initial.post && !isSheet()) setFullInstant("detail")
+    })
 
   return {
     destroy() {
